@@ -1,17 +1,9 @@
 <template>
-    <div :style="cssVars">
+    <div  class="banner" :style="cssVars">
 
-    <div class="banner">
-            <div class="row">
-                <div class="col-1 extra-left-banner" ></div>
-                <div class="col-1 left-banner" ></div>
-                <div class="col-8 middle-banner">
-                    <h1>{{ title }}</h1>
-                    <p><i>{{ subtitle }}</i></p>
-                </div>
-                <div class="col-2 right-banner" ></div>
-            </div>
-        </div>
+        <h1>{{ title }}</h1>
+        <p><i>{{ subtitle }}</i></p>
+
     </div>
 
 </template>
@@ -50,27 +42,11 @@ import { mapState } from 'vuex'
 <style scoped lang="scss">
 
     .banner{
+        background-color: var(--color-main);
         color: #FFFFFF;
         padding: 20px 10px 10px 10px;
         height: 150px;
         margin-bottom: 10px;
-    }
-    .extra-left-banner{
-        background: var(--color-secondary);
-    }
-    .left-banner{
-        background:    linear-gradient(to bottom left,transparent 50%, var(--color-secondary) 50.1%)
-        left -1px top 0
-        /30% 100%
-        no-repeat,
-        var(--color-main);
-    }
-
-    .right-banner {
-            background: var(--color-main);
-    }
-    .middle-banner{
-        background: var(--color-main);
     }
 
     p {

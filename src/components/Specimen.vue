@@ -67,8 +67,8 @@
                         <td>
                             <select name="choice" :id="specimen.key+'_choice'" v-model="status_list[specimen.key]">
                                   <option value=""></option>
-                                  <option value="yes">Yes</option>
-                                  <option value="no">No</option>
+                                  <option value="true">Yes</option>
+                                  <option value="false">No</option>
                             </select>
                         </td>
                         <td>
@@ -113,7 +113,7 @@
 
             <div class="button-container">
                 <button class="secondary" @click="back()">Back to list</button>
-                <button>Save</button>
+                <button :disabled="to_disable" @click="save()">Save</button>
             </div>
 
         </div>
@@ -125,6 +125,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import axios from 'axios';
 import PanelMoreLess from '@/components/PanelMoreLess.vue'
 
     export default {
@@ -135,7 +136,7 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
       data() {
         return {
             status_list_init: {},
-            saved: false,
+            saved: null,
             expanded: [],
             sort: {
                 by: '$mean',
@@ -144,7 +145,7 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
         };
       },
       computed: {
-        ...mapState(['theme_color', 'material_citation_selection', 'specimen_characteristics']),
+        ...mapState(['urls', 'theme_color', 'material_citation_selection', 'specimen_characteristics']),
         cssVars () {
                 return{
                     '--color': this.theme_color.main,
@@ -166,19 +167,51 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
                 this.loadStatus();
             }
             return (this.status_list_init)
+        },
+        saved_string(){
+            var specimens_saved = {}
+            var done = true
+            Object.entries(this.status_list).forEach(entry => {
+                const [key, value] = entry;
+                if (value != ""){
+                    specimens_saved[key] = {"match": (value.toLowerCase() === 'true'),"comment": ""}
+                }
+                else {
+                    done = false
+                }
+            });
+
+            if(Object.entries(this.status_list).length != this.material_citation_selection.institutionOccurrences.length){
+                done = false;
+            }
+            return {"done": done,"specimens": specimens_saved}
+        },
+        to_disable(){
+            if (JSON.stringify(this.saved) == JSON.stringify(this.saved_string)){
+                return true;
+            }
+            else {
+                return false;
+            }
         }
 
       },
       methods:{
         ...mapActions(['updateMaterialCitationSelection']),
             loadStatus(){
-                for (const i in this.material_citation_selection.institutionOccurrences){
-                    const element = this.material_citation_selection.institutionOccurrences[i]
-                    this.status_list_init[element.key] = ""
-                }
+                this.status_list_init = this.material_citation_selection.specimen_status
+            },
+            save(){
+               const saved_data = this.saved_string
+               axios.post(this.urls.material_citations_status+this.material_citation_selection.materialCitationOccurrence.key, saved_data)
+                    .then(response => {
+                        if(response.data == null){
+                            this.saved = saved_data
+                        }
+                    });
             },
             back(){
-               if (!this.saved){
+               if (JSON.stringify(this.saved) != JSON.stringify(this.saved_string)){
                     if (confirm('Are you sure you want to leaving without saving?')) {
                         this.updateMaterialCitationSelection(null)
                         this.$router.push({ name: 'Home', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
@@ -235,6 +268,9 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
                 }
            },
       },
+      mounted: function () {
+            this.saved = this.saved_string
+      }
     }
 
 </script>
@@ -339,6 +375,12 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
 
     .button-table:hover {
       background-color: var(--color);
+    }
+
+    button:disabled,
+    button[disabled]{
+      background-color: #cccccc;
+      color: #666666;
     }
 
     .mini {

@@ -48,18 +48,7 @@
                                      <th style="width:5%"></th>
                                 </tr>
 
-                                <tr v-for="material_citation in processed_material_citations.slice(item_min, item_max)" :key="material_citation.materialCitationOccurrence.gbifID">
-
-                                        <td>{{ material_citation.materialCitationOccurrence.key }}</td>
-                                        <td>{{ material_citation.materialCitationOccurrence.acceptedScientificName }}</td>
-                                        <td>{{ material_citation.materialCitationOccurrence.verbatimLabel }}</td>
-                                        <td>{{ material_citation.materialCitationOccurrence.year }}</td>
-                                        <td>{{ material_citation.institutionOccurrences.length }}</td>
-                                        <td v-if="material_citation.materialCitationOccurrence.status=='not-done'"><img src="../assets/images/icon_status_not-done.png" class="small"/></td>
-                                        <td v-if="material_citation.materialCitationOccurrence.status=='partial'"><img src="../assets/images/icon_status_partial.png" class="small"/></td>
-                                        <td v-if="material_citation.materialCitationOccurrence.status=='finished'"><img src="../assets/images/icon_status_finished.png" class="small"/></td>
-                                        <td><button @click="displaySpecimen(material_citation)" class="button-table"><img src="../assets/images/icon_todo.png"  class="mini"/></button></td>
-                                </tr>
+                                <MaterialCitation v-for="material_citation in processed_material_citations.slice(item_min, item_max)" :key="material_citation.materialCitationOccurrence.gbifID" :material_citation="material_citation"/>
 
                             </table>
 
@@ -92,6 +81,7 @@ import { mapState, mapActions } from 'vuex'
 import axios from 'axios';
 import vPagination from 'vue-plain-pagination'
 import Facets from '@/components/Facets.vue'
+import MaterialCitation from '@/components/MaterialCitation.vue'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 import shared from '@/components/shared.js'
 
@@ -100,6 +90,7 @@ import shared from '@/components/shared.js'
       components: {
         vPagination,
         Facets,
+        MaterialCitation,
         PulseLoader
       },
       data() {
@@ -190,23 +181,26 @@ import shared from '@/components/shared.js'
       },
       methods:{
         ...mapActions(['updateMaterialCitations', 'updateMaterialCitationsFacet', 'updateMaterialCitationsSort','updateMaterialCitationSelection']),
-        async searchMcAPI () {
+        searchMcAPI () {
             var mc = []
             if (this.institution_selection.key){
-                try {
-                    const response = await axios.get(this.urls.material_citations+this.institution_selection.key)
-                    for (var key in response.data.data){
-                        mc.push(response.data.data[key])
-                    }
-                } catch (e) {
-                    alert ("failed to load material citation for "+this.institution_selection.name)
-                }
+                axios
+                      .get(this.urls.material_citations+this.institution_selection.key)
+                      .then(response => {
+                            for (var key in response.data.data){
+                                mc.push(response.data.data[key])
+                            }
+                            this.current_page = 1
+                            mc = this.processFacets(mc)
+                            this.updateMaterialCitations(mc)
+                      })
+                      .catch(error => {
+                        alert ("failed to load material citation for "+this.institution_selection.name+": "+error )
+                      })
+                      .finally(() => this.in_progress = false)
+
             }
-            this.current_page = 1
-            mc = this.getStatus(mc)
-            mc = this.processFacets(mc)
-            this.updateMaterialCitations(mc)
-            this.in_progress = false
+
         },
         showAll(){
             this.per_page= this.processed_material_citations.length;
@@ -216,12 +210,6 @@ import shared from '@/components/shared.js'
         showSome(){
             this.per_page= 10
             this.show_size = false
-        },
-        getStatus(mc){
-            for (var v = 0; v < mc.length; v++ ) {
-                mc[v].materialCitationOccurrence.status = "not-done"
-            }
-            return mc
         },
         processFacets(mc){
             for (var v = 0; v < mc.length; v++ ) {
@@ -271,10 +259,6 @@ import shared from '@/components/shared.js'
             }
             this.updateMaterialCitationsFacet({'facet': 'date', 'list': this.filters.material_citations.date })
         },
-        displaySpecimen(selection){
-            this.updateMaterialCitationSelection(selection)
-            this.$router.push({ name: 'Home', hash: '#specimen', query: this.$route.query}).catch(()=>{});
-        },
         goToTop(){
             this.$router.push({ name: 'Home', query: this.$route.query}).catch(()=>{});
             this.$router.push({ name: 'Home', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
@@ -317,21 +301,6 @@ import shared from '@/components/shared.js'
         margin-right: 20px;
     }
 
-    .button-table {
-      display: inline-block;
-      border-radius:5px;
-      background-color: #AAA;
-      border: none;
-      color: #FFFFFF;
-      text-align: center;
-      padding: 5px 5px;
-      cursor: pointer;
-    }
-
-    .button-table:hover {
-      background-color: var(--color);
-    }
-
     .page-box {
       display: flex;
       justify-content: center;
@@ -369,14 +338,6 @@ import shared from '@/components/shared.js'
     .filters-remove:hover {
       cursor:pointer;
       color: var(--color);
-    }
-
-    .small {
-        width: 50px;
-    }
-
-    .mini {
-        width: 15px;
     }
 
     table {

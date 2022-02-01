@@ -12,6 +12,8 @@ export default new Vuex.Store({
     urls: {
         institutions: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/browse/institutions",
         material_citations: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/data/",
+        material_citations_status: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/materialcitation/",
+        specimen_saved: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/materialcitation/",
     },
     institutions: {
         list: [],
