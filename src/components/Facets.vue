@@ -17,7 +17,7 @@
 
             <div v-for="facet in filters.facets" :key="facet.name">
 
-                <PanelHideShow :expanded_init="true" size="small" v-if="facets_with_status(facet).length > 0">
+                <PanelHideShow :expanded_init="true" size="small">
 
                     <template v-slot:title>{{ facet.title }}</template>
                     <template v-slot:content>

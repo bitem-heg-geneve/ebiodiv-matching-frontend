@@ -13,7 +13,7 @@ export default new Vuex.Store({
         institutions: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/browse/institutions",
         material_citations: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/data/",
         material_citations_status: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/materialcitation/",
-        specimen_saved: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/materialcitation/",
+        institution_status: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/data/",
     },
     institutions: {
         list: [],
@@ -26,6 +26,7 @@ export default new Vuex.Store({
     },
     material_citations: [],
     material_citation_selection: null,
+    matching: null,
     user_selection: {
         material_citations: {
              facets: {
@@ -50,7 +51,7 @@ export default new Vuex.Store({
     },
     filters: {
         material_citations: {
-            sort: ['material citation ID', 'scientific name', 'date', 'specimen number'],
+            sort: ['material citation ID', 'scientific name', 'date', 'specimens number'],
             facets: [
                 {title: 'Date', short: 'date', multi: false},
                 {title: 'Curation status', short: 'status', multi: true},
@@ -114,6 +115,9 @@ export default new Vuex.Store({
     UPDATE_MATERIAL_CITATIONS_FILTER_DATE(state, value){
         state.filters.material_citations.date = value
     },
+    UPDATE_MATCHING(state, matching) {
+        state.matching = matching
+    },
   },
   actions: {
     updateInstitutions(context, value) {
@@ -136,6 +140,9 @@ export default new Vuex.Store({
     },
     updateMaterialCitationsFacet(context, value) {
         context.commit('UPDATE_MATERIAL_CITATIONS_FACET', value)
+    },
+    updateMatching(context, value) {
+       context.commit('UPDATE_MATCHING', value)
     },
   },
   modules: {

@@ -13,7 +13,7 @@
     </div>
 
     <div class="row" id="specimen"  v-if="material_citation_selection">
-        <Specimen/>
+        <Specimens/>
     </div>
 
   </div>
@@ -25,7 +25,7 @@
 import Banner from '@/components/Banner.vue'
 import Institutions from '@/components/Institutions.vue'
 import MaterialCitations from '@/components/MaterialCitations.vue'
-import Specimen from '@/components/Specimen.vue'
+import Specimens from '@/components/Specimens.vue'
 import { mapState } from 'vuex'
 
 export default {
@@ -34,7 +34,7 @@ export default {
     Banner,
     Institutions,
     MaterialCitations,
-    Specimen
+    Specimens
   },
   computed: {
         ...mapState(['material_citation_selection']),

@@ -35,6 +35,13 @@ export default {
                             break;
                         }
                     }
+                    // When no date is available, consider it as a 0
+                    if (document.processed_facets[key].length == 0){
+                        if (0 < minmax[0] || 0 > minmax[1]){
+                            status = false;
+                            break;
+                        }
+                    }
                 }
 
             }

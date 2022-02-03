@@ -3,7 +3,7 @@
     <div class="component-container" :style="cssVars">
 
         <div class="separator">
-            <h2><span>Specimen for the material citation {{ material_citation_selection.materialCitationOccurrence.key }}</span></h2>
+            <h2><span>Specimens for the material citation {{ material_citation_selection.materialCitationOccurrence.key }}</span></h2>
         </div>
 
         <div class="abstract-container">
@@ -50,7 +50,7 @@
                     <th>Expand</th>
                 </tr>
 
-                <template v-for="specimen in material_citation_selection.institutionOccurrences">
+                <template v-for="specimen in processed_specimens">
 
                     <tr :key="specimen.key">
                         <td>{{ specimen.key }}</td>
@@ -145,7 +145,7 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
         };
       },
       computed: {
-        ...mapState(['urls', 'theme_color', 'material_citation_selection', 'specimen_characteristics']),
+        ...mapState(['urls', 'theme_color', 'material_citation_selection', 'matching', 'specimen_characteristics']),
         cssVars () {
                 return{
                     '--color': this.theme_color.main,
@@ -153,7 +153,9 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
                 }
         },
         processed_specimens () {
-            var filtered_specimen = this.material_citation_selection.institutionOccurrences
+
+            var filtered_specimen = Object.keys(this.material_citation_selection.institutionOccurrences).map(key => this.material_citation_selection.institutionOccurrences[key]);
+
             if (this.sort.asc){
                 filtered_specimen.sort((a, b) => ('$score' in a ? parseFloat(a.$score[this.sort.by]): 0) - ('$score' in b ? parseFloat(b.$score[this.sort.by]): 0));
             }
@@ -172,7 +174,7 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
             var specimens_saved = {}
             var done = true
             Object.entries(this.status_list).forEach(entry => {
-                const [key, value] = entry;
+                var [key, value] = entry;
                 if (value != ""){
                     specimens_saved[key] = {"match": (value.toLowerCase() === 'true'),"comment": ""}
                 }
@@ -181,7 +183,7 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
                 }
             });
 
-            if(Object.entries(this.status_list).length != this.material_citation_selection.institutionOccurrences.length){
+            if(Object.entries(this.status_list).length != Object.entries(this.material_citation_selection.institutionOccurrences).length){
                 done = false;
             }
             return {"done": done,"specimens": specimens_saved}
@@ -197,16 +199,23 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
 
       },
       methods:{
-        ...mapActions(['updateMaterialCitationSelection']),
+        ...mapActions(['updateMaterialCitationSelection', 'updateMatching']),
             loadStatus(){
-                this.status_list_init = this.material_citation_selection.specimen_status
+                if (this.matching != null){
+                     for (let i=0; i<this.matching.length; i++){
+                        if (this.matching[i].key == this.material_citation_selection.materialCitationOccurrence.key){
+                            this.status_list_init = this.matching[i].specimens_status
+                        }
+                    }
+                }
             },
             save(){
-               const saved_data = this.saved_string
+               var saved_data = this.saved_string
                axios.post(this.urls.material_citations_status+this.material_citation_selection.materialCitationOccurrence.key, saved_data)
                     .then(response => {
                         if(response.data == null){
                             this.saved = saved_data
+                            this.updateMatching(null)
                         }
                     });
             },
@@ -224,7 +233,7 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
                 }
            },
            toggle(id) {
-              const index = this.expanded.indexOf(id);
+              var index = this.expanded.indexOf(id);
               if (index > -1) {
                 this.expanded.splice(index, 1)
               } else {

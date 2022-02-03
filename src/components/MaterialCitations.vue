@@ -23,16 +23,7 @@
 
                     <div class="full-container">
 
-                        <div class="active-filters">
-                            <span class="filter-name" v-for="filter in active_filters" :key="filter.name" >
-                                <span class="filter-remove" @click="removeFilter(filter.type, filter.name)">x </span> {{ filter.name }}
-                            </span>
-                            <span class="filters-remove" v-if="active_filters.length > 1">
-                                <span @click="removeAllFilters">Remove all filters</span>
-                            </span>
-                        </div>
-
-                        <p v-if="processed_material_citations.length==0 && material_citations.length >0"><br/>No material citation retrieved with your filters. <a @click="removeAllFilters">Delete filters</a> to see all material citations.</p>
+                        <FiltersSelection :processed_size="processed_material_citations.length" :total_size="material_citations.length"/>
 
                         <div v-if="processed_material_citations.length > 0">
 
@@ -48,7 +39,7 @@
                                      <th style="width:5%"></th>
                                 </tr>
 
-                                <MaterialCitation v-for="material_citation in processed_material_citations.slice(item_min, item_max)" :key="material_citation.materialCitationOccurrence.gbifID" :material_citation="material_citation"/>
+                                <MaterialCitation v-for="material_citation in processed_material_citations.slice(item_min, item_max)" :key="material_citation.materialCitationOccurrence.gbifID" :material_citation="material_citation" />
 
                             </table>
 
@@ -59,7 +50,7 @@
                             </div>
 
                             <p v-if="!show_size && processed_material_citations.length > per_page"><a @click="showAll()">Show all material citations</a></p>
-                            <p v-if="show_size && processed_material_citations.length > 10"><a @click="showSome()">Show 10 material citations per page</a></p>
+                            <p v-if="show_size && processed_material_citations.length > per_page_init"><a @click="showSome()">Show {{ per_page_init }} material citations per page</a></p>
 
                         </div>
 
@@ -81,6 +72,7 @@ import { mapState, mapActions } from 'vuex'
 import axios from 'axios';
 import vPagination from 'vue-plain-pagination'
 import Facets from '@/components/Facets.vue'
+import FiltersSelection from '@/components/FiltersSelection.vue'
 import MaterialCitation from '@/components/MaterialCitation.vue'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 import shared from '@/components/shared.js'
@@ -91,12 +83,15 @@ import shared from '@/components/shared.js'
         vPagination,
         Facets,
         MaterialCitation,
+        FiltersSelection,
         PulseLoader
       },
       data() {
         return {
+            status: [],
             in_progress: false,
             current_page: 1,
+            per_page_init: 30,
             per_page: 30,
             show_size: false,
             bootstrapPaginationClasses: {
@@ -115,7 +110,7 @@ import shared from '@/components/shared.js'
         };
       },
       computed: {
-        ...mapState(['urls', 'institution_selection', 'material_citations', 'user_selection', 'filters', 'theme_color']),
+        ...mapState(['urls', 'institution_selection', 'material_citations', 'matching', 'user_selection', 'filters', 'theme_color']),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
@@ -139,13 +134,13 @@ import shared from '@/components/shared.js'
                 filtered_mc.sort((a, b) => parseFloat(a.materialCitationOccurrence.key) - parseFloat(b.materialCitationOccurrence.key));
             }
             if (this.user_selection.material_citations.sort == "date"){
-                filtered_mc.sort((a, b) => parseFloat(b.materialCitationOccurrence.year) - parseFloat(a.materialCitationOccurrence.year));
+                filtered_mc.sort((a, b) => ('year' in b.materialCitationOccurrence && b.materialCitationOccurrence.year != "" ? parseFloat(b.materialCitationOccurrence.year): 0) - ('year' in a.materialCitationOccurrence && a.materialCitationOccurrence.year != "" ? parseFloat(a.materialCitationOccurrence.year): 0));
             }
             if (this.user_selection.material_citations.sort == "scientific name"){
                 filtered_mc.sort((a, b) => a.materialCitationOccurrence.scientificName.localeCompare(b.materialCitationOccurrence.scientificName))
             }
-            if (this.user_selection.material_citations.sort == "specimen number"){
-                filtered_mc.sort((a, b) => parseFloat(b.institutionOccurrences.length) - parseFloat(a.institutionOccurrences.length));
+            if (this.user_selection.material_citations.sort == "specimens number"){
+                filtered_mc.sort((a, b) => parseFloat(Object.keys(b.institutionOccurrences).length) - parseFloat(Object.keys(a.institutionOccurrences).length));
             }
 
             // Filter facets
@@ -155,52 +150,91 @@ import shared from '@/components/shared.js'
             return filtered_mc;
 
         },
-        active_filters(){
-            var active_filters = []
-            for (const key in this.user_selection.material_citations.facets) {
-                var list = this.user_selection.material_citations.facets[key]
-                if (key != "date"){
-                    for (var i=0; i<list.length; i++){
-                        var item = {}
-                        item.name = list[i]
-                        item.type = key
-                        active_filters.push(item)
-                    }
-                }
-                else {
-                    if (this.filters.material_citations.date[0] != this.user_selection.material_citations.facets.date[0] || this.filters.material_citations.date[1] != this.user_selection.material_citations.facets.date[1]){
-                        var item_date = {}
-                        item_date.name = "date range"
-                        item_date.type = key
-                        active_filters.push(item_date)
-                    }
-                }
-            }
-            return active_filters;
-        },
+
       },
       methods:{
-        ...mapActions(['updateMaterialCitations', 'updateMaterialCitationsFacet', 'updateMaterialCitationsSort','updateMaterialCitationSelection']),
+        ...mapActions(['updateMaterialCitations', 'updateMatching', 'updateMaterialCitationsFacet', 'updateMaterialCitationsSort','updateMaterialCitationSelection']),
         searchMcAPI () {
-            var mc = []
             if (this.institution_selection.key){
                 axios
                       .get(this.urls.material_citations+this.institution_selection.key)
                       .then(response => {
+                            var mc = []
                             for (var key in response.data.data){
                                 mc.push(response.data.data[key])
                             }
                             this.current_page = 1
                             mc = this.processFacets(mc)
                             this.updateMaterialCitations(mc)
+                            this.statusAPI()
                       })
                       .catch(error => {
                         alert ("failed to load material citation for "+this.institution_selection.name+": "+error )
                       })
-                      .finally(() => this.in_progress = false)
 
             }
 
+        },
+        statusAPI () {
+            if (this.institution_selection.key){
+                axios
+                      .get(this.urls.institution_status+this.institution_selection.key)
+                      .then(response => {
+                        var matching = []
+                        if (response.message == "Internal Server Error"){
+                            alert ("Failed to load status for "+this.institution_selection.name )
+                        }
+                        for (var mc_key in response.data){
+                            var mc_matching = response.data[mc_key]
+
+                            var matching_instance = {}
+                            matching_instance['key'] = mc_key
+
+                             // Load specimen status
+                            var specimens_status = {}
+                            if ('institutionOccurrences' in mc_matching){
+                                 Object.entries(mc_matching.institutionOccurrences).forEach(entry => {
+                                    var [specimen_key, specimen_value] = entry;
+                                    if (specimen_value.match != null){
+                                        specimens_status[specimen_key] = specimen_value.match.toString()
+                                    }
+                                });
+                            }
+                            matching_instance['specimens_status'] = specimens_status
+
+                            // Load material citation status
+                            var status_string = ""
+                            if (mc_matching.done == false){
+                                status_string = "not-done"
+                                if (Object.keys(specimens_status).length > 0){
+                                    status_string = "partial"
+                                }
+                            }
+                            else if (mc_matching.done == true){
+                                status_string = "finished"
+                            }
+                            matching_instance['material_citation_status'] = status_string
+
+                            // Store facets
+                            for (let v = 0; v < this.material_citations.length; v++ ) {
+                                if (this.material_citations[v].materialCitationOccurrence.key == mc_key){
+                                    this.material_citations[v].processed_facets["status"] = [status_string]
+                                }
+                            }
+                            this.updateMaterialCitations(this.material_citations)
+
+                            matching.push(matching_instance)
+
+                        }
+                        // Store matching
+                        this.updateMatching(matching)
+                      })
+                      .catch(error => {
+                        alert ("Failed to load status for "+this.institution_selection.name+": "+error )
+                      })
+                      .finally(() => this.in_progress = false)
+
+            }
         },
         showAll(){
             this.per_page= this.processed_material_citations.length;
@@ -208,7 +242,7 @@ import shared from '@/components/shared.js'
             this.show_size = true
         },
         showSome(){
-            this.per_page= 10
+            this.per_page= this.per_page_init
             this.show_size = false
         },
         processFacets(mc){
@@ -238,27 +272,6 @@ import shared from '@/components/shared.js'
             }
             return mc
         },
-        removeFilter(facet_name, value){
-            var facet_name_low = facet_name.toLowerCase()
-            if (facet_name_low != "date"){
-                var filter_list = this.user_selection.material_citations.facets[facet_name_low]
-                for (var i = 0; i < filter_list.length; i++ ) {
-                   if (filter_list[i] == value) {
-                     filter_list.splice(i, 1)
-                   }
-                }
-                this.updateMaterialCitationsFacet({'facet': facet_name_low, 'list': filter_list })
-            }
-            else{
-                this.updateMaterialCitationsFacet({'facet': 'date', 'list': this.filters.material_citations.date })
-            }
-        },
-        removeAllFilters(){
-            for (var key in this.user_selection.material_citations.facets){
-                this.updateMaterialCitationsFacet({'facet': key, 'list': [] })
-            }
-            this.updateMaterialCitationsFacet({'facet': 'date', 'list': this.filters.material_citations.date })
-        },
         goToTop(){
             this.$router.push({ name: 'Home', query: this.$route.query}).catch(()=>{});
             this.$router.push({ name: 'Home', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
@@ -270,7 +283,10 @@ import shared from '@/components/shared.js'
                 this.searchMcAPI()
             },
             processed_material_citations: function () {
-                this.goToTop()
+            //    this.goToTop()
+                if (this.current_page > this.page_total){
+                    this.current_page = 1;
+                }
             },
             per_page: function () {
                 this.goToTop()
@@ -278,6 +294,12 @@ import shared from '@/components/shared.js'
             current_page: function () {
                 this.goToTop()
             },
+        },
+        created: function () {
+            if (this.material_citations.length > 0 && this.matching == null){
+                this.in_progress = true
+                this.statusAPI()
+            }
         }
 
     }
@@ -304,40 +326,6 @@ import shared from '@/components/shared.js'
     .page-box {
       display: flex;
       justify-content: center;
-    }
-
-    .active-filters{
-      text-align: left;
-      margin-bottom: 10px;
-    }
-
-    .filter-name {
-      background-color: #f2f2f2;
-      border-radius: 10px;
-      padding: 2px 10px;
-      margin-right: 5px;
-      font-size: 0.8em;
-    }
-
-    .filter-remove {
-      color: #AAAAAA;
-      border-right: 1px solid #AAAAAA;
-      margin-right: 5px;
-    }
-
-    .filter-remove:hover {
-      cursor:pointer;
-      color: var(--color);
-    }
-
-    .filters-remove {
-      padding: 2px 10px;
-      margin-right: 5px;
-      font-size: 0.8em;
-    }
-    .filters-remove:hover {
-      cursor:pointer;
-      color: var(--color);
     }
 
     table {
