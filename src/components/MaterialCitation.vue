@@ -58,7 +58,7 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
         ...mapActions(['updateMaterialCitations', 'updateMaterialCitationSelection']),
         displaySpecimen(selection){
             this.updateMaterialCitationSelection(selection)
-            this.$router.push({ name: 'Home', hash: '#specimen', query: this.$route.query}).catch(()=>{});
+            this.$router.push({ name: 'HomePage', hash: '#specimen', query: this.$route.query}).catch(()=>{});
         },
       },
     }

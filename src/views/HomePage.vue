@@ -2,18 +2,18 @@
 
   <div class="container-fluid">
 
-    <Banner title="eBioDiv" subtitle="Linking material citations to specimen" />
+    <BannerComponent title="eBioDiv" subtitle="Linking material citations to specimen" />
 
     <div class="row" id="institutions"  v-if="!material_citation_selection">
-        <Institutions />
+        <InstitutionChoice />
     </div>
 
     <div class="row" id="materialcitations"  v-if="!material_citation_selection">
-        <MaterialCitations/>
+        <MaterialCitationList/>
     </div>
 
     <div class="row" id="specimen"  v-if="material_citation_selection">
-        <Specimens/>
+        <SpecimenList/>
     </div>
 
   </div>
@@ -22,19 +22,19 @@
 
 <script>
 // @ is an alias to /src
-import Banner from '@/components/Banner.vue'
-import Institutions from '@/components/Institutions.vue'
-import MaterialCitations from '@/components/MaterialCitations.vue'
-import Specimens from '@/components/Specimens.vue'
+import BannerComponent from '@/components/BannerComponent.vue'
+import InstitutionChoice from '@/components/InstitutionChoice.vue'
+import MaterialCitationList from '@/components/MaterialCitationList.vue'
+import SpecimenList from '@/components/SpecimenList.vue'
 import { mapState } from 'vuex'
 
 export default {
-  name: 'Home',
+  name: 'HomePage',
   components: {
-    Banner,
-    Institutions,
-    MaterialCitations,
-    Specimens
+    BannerComponent,
+    InstitutionChoice,
+    MaterialCitationList,
+    SpecimenList
   },
   computed: {
         ...mapState(['material_citation_selection']),

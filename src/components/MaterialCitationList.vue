@@ -19,7 +19,7 @@
 
                 <div class="content">
 
-                    <Facets class="facets" collection_name="mc" :documents="material_citations" :filters="filters.material_citations" :user_selection="user_selection.material_citations" :updateFacet="updateMaterialCitationsFacet" :updateSort="updateMaterialCitationsSort"/>
+                    <MaterialCitationFacets class="facets" collection_name="mc" :documents="material_citations" :filters="filters.material_citations" :user_selection="user_selection.material_citations" :updateFacet="updateMaterialCitationsFacet" :updateSort="updateMaterialCitationsSort"/>
 
                     <div class="full-container">
 
@@ -71,17 +71,17 @@
 import { mapState, mapActions } from 'vuex'
 import axios from 'axios';
 import vPagination from 'vue-plain-pagination'
-import Facets from '@/components/Facets.vue'
+import MaterialCitationFacets from '@/components/MaterialCitationFacets.vue'
 import FiltersSelection from '@/components/FiltersSelection.vue'
 import MaterialCitation from '@/components/MaterialCitation.vue'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 import shared from '@/components/shared.js'
 
     export default {
-      name: 'MaterialCitations',
+      name: 'MaterialCitationList',
       components: {
         vPagination,
-        Facets,
+        MaterialCitationFacets,
         MaterialCitation,
         FiltersSelection,
         PulseLoader

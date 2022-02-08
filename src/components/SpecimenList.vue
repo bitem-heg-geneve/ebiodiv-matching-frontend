@@ -129,7 +129,7 @@ import axios from 'axios';
 import PanelMoreLess from '@/components/PanelMoreLess.vue'
 
     export default {
-      name: 'Specimen',
+      name: 'SpecimenList',
       components: {
         PanelMoreLess
       },
@@ -223,12 +223,12 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
                if (JSON.stringify(this.saved) != JSON.stringify(this.saved_string)){
                     if (confirm('Are you sure you want to leaving without saving?')) {
                         this.updateMaterialCitationSelection(null)
-                        this.$router.push({ name: 'Home', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
+                        this.$router.push({ name: 'HomePage', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
                     }
                 }
                 else {
                     this.updateMaterialCitationSelection(null)
-                    this.$router.push({ name: 'Home', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
+                    this.$router.push({ name: 'HomePage', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
 
                 }
            },

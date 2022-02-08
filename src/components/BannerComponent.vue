@@ -13,7 +13,7 @@
 import { mapState } from 'vuex'
 
     export default {
-      name: 'Banner',
+      name: 'BannerComponent',
       props: {
         title: {
             type: String,
