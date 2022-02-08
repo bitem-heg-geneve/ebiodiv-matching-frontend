@@ -1,7 +1,7 @@
 publicPath: process.env.NODE_ENV === 'production'
 module.exports = {
- publicPath: process.env.NODE_ENV === 'production'? '/ebiodivgui/': '/',
+ publicPath: process.env.NODE_ENV === 'production'? '/eBioDiv/demo/': '/',
  outputDir: process.env.NODE_ENV === 'production'
-    ? 'dist'
+    ? 'demo'
     : 'dist'
 }

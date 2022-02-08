@@ -23,7 +23,7 @@ const routes = [
 const router = new VueRouter({
   mode: 'history',
   hash: false,
-  base: '/ebiodivgui',
+  base: '/eBioDiv/demo',
   routes,
   scrollBehavior(to, from, savedPosition) {
       if (to.hash) {
