@@ -42,7 +42,7 @@ import { mapState } from 'vuex'
 <style scoped lang="scss">
 
     .banner{
-        background-color: var(--color-main);
+        background: conic-gradient(at 0% 30%, var(--color-secondary) 10%, var(--color-main) 30%, var(--color-secondary) 50%);
         color: #FFFFFF;
         padding: 20px 10px 10px 10px;
         height: 150px;
