@@ -29,5 +29,5 @@ jobs:
       env:
         REPO: self
         BRANCH: dist
-        FOLDER: dist
+        FOLDER: demo
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
