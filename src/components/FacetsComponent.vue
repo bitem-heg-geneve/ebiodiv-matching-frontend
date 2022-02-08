@@ -94,7 +94,7 @@
 
 
     export default {
-      name: 'MaterialCitationFacets',
+      name: 'FacetsComponent',
       components: {
         PanelHideShow,
         PanelMoreLess,
