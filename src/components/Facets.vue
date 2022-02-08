@@ -89,7 +89,7 @@
     import PanelHideShow from '@/components/PanelHideShow.vue'
     import PanelMoreLess from '@/components/PanelMoreLess.vue'
     import VueSlider from 'vue-slider-component'
-    import 'vue-slider-component/theme/ebiodiv.css'
+    import '../assets/css/ebiodiv.css'
     import shared from '@/components/shared.js'
 
 
