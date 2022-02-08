@@ -122,7 +122,7 @@ import { mapState, mapActions } from 'vuex'
             this.scrollToMC();
         },
         scrollToMC(){
-            this.$router.push({ name: 'Home', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
+            this.$router.push({ name: 'HomePage', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
         }
       },
       mounted(){
