@@ -273,8 +273,8 @@ import shared from '@/components/shared.js'
             return mc
         },
         goToTop(){
-            this.$router.push({ name: 'Home', query: this.$route.query}).catch(()=>{});
-            this.$router.push({ name: 'Home', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
+            this.$router.push({ name: 'HomePage', query: this.$route.query}).catch(()=>{});
+            this.$router.push({ name: 'HomePage', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
         }
       },
        watch: {
