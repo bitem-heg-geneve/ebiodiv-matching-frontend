@@ -118,6 +118,10 @@ export default new Vuex.Store({
     UPDATE_MATCHING(state, matching) {
         state.matching = matching
     },
+    UPDATE_INIT_MC_DATE_FILTER(state, dates) {
+        state.filters.material_citations.date = dates
+        state.user_selection.material_citations.facets.date = dates
+    },
   },
   actions: {
     updateInstitutions(context, value) {
@@ -144,6 +148,9 @@ export default new Vuex.Store({
     updateMatching(context, value) {
        context.commit('UPDATE_MATCHING', value)
     },
+    updateInitMcDateFilter(context, value){
+       context.commit('UPDATE_INIT_MC_DATE_FILTER', value)
+    }
   },
   modules: {
   }

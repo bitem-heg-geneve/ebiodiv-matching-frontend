@@ -153,7 +153,7 @@ import shared from '@/components/shared.js'
 
       },
       methods:{
-        ...mapActions(['updateMaterialCitations', 'updateMatching', 'updateMaterialCitationsFacet', 'updateMaterialCitationsSort','updateMaterialCitationSelection']),
+        ...mapActions(['updateMaterialCitations', 'updateMatching', 'updateMaterialCitationsFacet', 'updateMaterialCitationsSort','updateMaterialCitationSelection', 'updateInitMcDateFilter']),
         searchMcAPI () {
             if (this.institution_selection.key){
                 axios
@@ -246,6 +246,8 @@ import shared from '@/components/shared.js'
             this.show_size = false
         },
         processFacets(mc){
+            var min_date = 2022
+            var max_date = 0
             for (var v = 0; v < mc.length; v++ ) {
                 var document = mc[v].materialCitationOccurrence
                 var processed_facets = {}
@@ -261,7 +263,14 @@ import shared from '@/components/shared.js'
                     // For dates
                     else if (facet_name == "date"){
                         if ("year" in document){
-                            entities.push(document.year)
+                            var year = parseInt(document.year)
+                            if (year < min_date){
+                                min_date = year
+                            }
+                            if (year > max_date){
+                                max_date = year
+                            }
+                            entities.push(year)
                         }
                     }
                     // Remove duplicates
@@ -270,6 +279,7 @@ import shared from '@/components/shared.js'
                 }
                 mc[v].processed_facets = processed_facets
             }
+            this.updateInitMcDateFilter([min_date, max_date])
             return mc
         },
         goToTop(){
