@@ -2,7 +2,7 @@
 
   <div class="container-fluid">
 
-    <BannerComponent title="eBioDiv" subtitle="Linking material citations to specimen" />
+    <BannerComponent title="eBioDiv" subtitle="Linking material citations to specimens" />
 
     <div class="row" id="institutions"  v-if="!material_citation_selection">
         <InstitutionChoice />
