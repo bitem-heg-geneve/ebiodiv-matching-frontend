@@ -11,7 +11,7 @@
             </span>
         </div>
 
-        <p v-if="processed_size==0 && total_size >0"><br/>No material citation retrieved with your filters. <a @click="removeAllFilters">Delete filters</a> to see all material citations.</p>
+        <p v-if="processed_size==0 && total_size >0"><br/>No {{ entity_name }} retrieved with your filters. <a @click="removeAllFilters">Delete filters</a> to see all results.</p>
 
     </div>
 
@@ -19,11 +19,15 @@
 
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapState } from 'vuex'
 
     export default {
       name: 'FiltersSelection',
       props: {
+        entity_name: {
+            type: String,
+            required: true
+        },
         processed_size: {
             type: Number,
             required: true
@@ -32,9 +36,21 @@ import { mapState, mapActions } from 'vuex'
             type: Number,
             required: true
         },
+        user_selection: {
+            type: Object,
+            required: true
+        },
+        filters: {
+            type: Object,
+            required: true
+        },
+        updateFacet: {
+            type: Function,
+            required: true
+        },
       },
       computed: {
-        ...mapState(['user_selection', 'filters', 'theme_color']),
+        ...mapState(['theme_color']),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
@@ -42,8 +58,8 @@ import { mapState, mapActions } from 'vuex'
         },
         active_filters(){
             var active_filters = []
-            for (const key in this.user_selection.material_citations.facets) {
-                var list = this.user_selection.material_citations.facets[key]
+            for (const key in this.user_selection.facets) {
+                var list = this.user_selection.facets[key]
                 if (key != "date"){
                     for (var i=0; i<list.length; i++){
                         var item = {}
@@ -53,7 +69,7 @@ import { mapState, mapActions } from 'vuex'
                     }
                 }
                 else {
-                    if (this.filters.material_citations.date[0] != this.user_selection.material_citations.facets.date[0] || this.filters.material_citations.date[1] != this.user_selection.material_citations.facets.date[1]){
+                    if (this.filters.date[0] != this.user_selection.facets.date[0] || this.filters.date[1] != this.user_selection.facets.date[1]){
                         var item_date = {}
                         item_date.name = "date range"
                         item_date.type = key
@@ -65,26 +81,25 @@ import { mapState, mapActions } from 'vuex'
         },
       },
       methods:{
-        ...mapActions(['updateMaterialCitationsFacet']),
         removeFilter(facet_name, value){
             if (facet_name != "date"){
-                var filter_list = this.user_selection.material_citations.facets[facet_name]
+                var filter_list = this.user_selection.facets[facet_name]
                 for (var i = 0; i < filter_list.length; i++ ) {
                    if (filter_list[i] == value) {
                      filter_list.splice(i, 1)
                    }
                 }
-                this.updateMaterialCitationsFacet({'facet': facet_name, 'list': filter_list })
+                this.updateFacet({'facet': facet_name, 'list': filter_list })
             }
             else{
-                this.updateMaterialCitationsFacet({'facet': 'date', 'list': this.filters.material_citations.date })
+                this.updateFacet({'facet': 'date', 'list': this.filters.date })
             }
         },
         removeAllFilters(){
-            for (var key in this.user_selection.material_citations.facets){
-                this.updateMaterialCitationsFacet({'facet': key, 'list': [] })
+            for (var key in this.user_selection.facets){
+                this.updateFacet({'facet': key, 'list': [] })
             }
-            this.updateMaterialCitationsFacet({'facet': 'date', 'list': this.filters.material_citations.date })
+            this.updateFacet({'facet': 'date', 'list': this.filters.date })
         },
       },
     }

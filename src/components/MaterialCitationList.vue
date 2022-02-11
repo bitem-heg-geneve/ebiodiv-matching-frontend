@@ -23,7 +23,7 @@
 
                     <div class="full-container">
 
-                        <FiltersSelection :processed_size="processed_material_citations.length" :total_size="material_citations.length"/>
+                        <FiltersSelection :processed_size="processed_material_citations.length" :total_size="material_citations.length" entity_name="material citation" :user_selection="this.user_selection.material_citations" :filters="this.filters.material_citations" :updateFacet="this.updateMaterialCitationsFacet"/>
 
                         <div v-if="processed_material_citations.length > 0">
 
@@ -271,6 +271,9 @@ import shared from '@/components/shared.js'
                                 max_date = year
                             }
                             entities.push(year)
+                        }
+                        else {
+                            min_date = 0
                         }
                     }
                     // Remove duplicates
