@@ -39,7 +39,7 @@
                                      <th style="width:5%"></th>
                                 </tr>
 
-                                <MaterialCitation v-for="material_citation in processed_material_citations.slice(item_min, item_max)" :key="material_citation.materialCitationOccurrence.gbifID" :material_citation="material_citation" />
+                                <MaterialCitationElement v-for="material_citation in processed_material_citations.slice(item_min, item_max)" :key="material_citation.materialCitationOccurrence.gbifID" :material_citation="material_citation" />
 
                             </table>
 
@@ -73,7 +73,7 @@ import axios from 'axios';
 import vPagination from 'vue-plain-pagination'
 import FacetsComponent from '@/components/FacetsComponent.vue'
 import FiltersSelection from '@/components/FiltersSelection.vue'
-import MaterialCitation from '@/components/MaterialCitation.vue'
+import MaterialCitationElement from '@/components/MaterialCitationElement.vue'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 import shared from '@/components/shared.js'
 
@@ -82,7 +82,7 @@ import shared from '@/components/shared.js'
       components: {
         vPagination,
         FacetsComponent,
-        MaterialCitation,
+        MaterialCitationElement,
         FiltersSelection,
         PulseLoader
       },

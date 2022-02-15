@@ -21,7 +21,7 @@ import { mapState, mapActions } from 'vuex'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 
     export default {
-      name: 'MaterialCitation',
+      name: 'MaterialCitationElement',
       components: {
         PulseLoader
       },
@@ -58,7 +58,7 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
         ...mapActions(['updateMaterialCitations', 'updateMaterialCitationSelection']),
         displaySpecimen(selection){
             this.updateMaterialCitationSelection(selection)
-            this.$router.push({ name: 'HomePage', hash: '#specimen', query: this.$route.query}).catch(()=>{});
+            this.$router.push({ name: 'HomePage', query: this.$route.query}).catch(()=>{});
         },
       },
     }

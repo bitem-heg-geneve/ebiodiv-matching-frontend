@@ -46,68 +46,12 @@
                 <tr>
                     <th>Key</th>
                     <th v-for="char in specimen_characteristics" :key="char.short+'sp-th'" class="clickable-th" @click="sortBy(char.short)">{{ char.name }}</th>
-                    <th>Choice</th>
+                    <th>Yes</th>
+                    <th>No</th>
                     <th>Expand</th>
                 </tr>
 
-                <template v-for="specimen in processed_specimens">
-
-                    <tr :key="specimen.key">
-                        <td>{{ specimen.key }}</td>
-                        <template v-if="hasScore(specimen)">
-                             <td v-for="char in specimen_characteristics" :key="char.short+'sp-td'" :class="cellColor(specimen.$score[char.short])" :title="specimen[char.short]+'\n'+material_citation_selection.materialCitationOccurrence[char.short]">
-                                {{ normalizeValue(specimen.$score[char.short]) }}
-                            </td>
-                        </template>
-                        <template v-else>
-                            <td v-for="char in specimen_characteristics" :key="char.short+'sp-td'" :title="specimen[char.short]+'\n'+material_citation_selection.materialCitationOccurrence[char.short]">
-                                unknown
-                            </td>
-                        </template>
-                        <td>
-                            <select name="choice" :id="specimen.key+'_choice'" v-model="status_list[specimen.key]">
-                                  <option value=""></option>
-                                  <option value="true">Yes</option>
-                                  <option value="false">No</option>
-                            </select>
-                        </td>
-                        <td>
-                            <button @click="toggle(specimen.key)" class="button-table">
-                                <img v-if="!expanded.includes(specimen.key)" src="../assets/images/icon_expand.png"  class="mini"/>
-                                <img v-if="expanded.includes(specimen.key)" src="../assets/images/icon_reduce.png"  class="mini"/>
-                            </button>
-                        </td>
-                    </tr>
-
-                    <tr class="expanded" v-if="expanded.includes(specimen.key)" :key="specimen.key+'_expanded'">
-                        <td colspan="19">
-                            <table>
-
-                                <tr>
-                                    <th></th>
-                                    <th>Material citation</th>
-                                    <th>Specimen</th>
-                                </tr>
-
-                                <template v-for="char in specimen_characteristics">
-                                    <tr v-if="char.value" :key="char.short+'sp-td-exp'">
-                                        <td>{{ char.name }}</td>
-                                         <template v-if="hasScore(specimen)">
-                                            <td :class="cellColor(specimen.$score[char.short])">{{ specimen[char.short] }}</td>
-                                            <td :class="cellColor(specimen.$score[char.short])">{{ material_citation_selection.materialCitationOccurrence[char.short] }}</td>
-                                         </template>
-                                         <template v-else>
-                                            <td>{{ specimen[char.short] }}</td>
-                                            <td>{{ material_citation_selection.materialCitationOccurrence[char.short] }}</td>
-                                         </template>
-                                    </tr>
-                                </template>
-
-                            </table>
-                        </td>
-                    </tr>
-
-                </template>
+            <SpecimenElement @clicked="storeStatus" v-for="specimen in processed_specimens" :key="specimen.key" :specimen="specimen" :status="getStatus(specimen.key)"/>
 
             </table>
 
@@ -127,21 +71,24 @@
 import { mapState, mapActions } from 'vuex'
 import axios from 'axios';
 import PanelMoreLess from '@/components/PanelMoreLess.vue'
+import SpecimenElement from '@/components/SpecimenElement.vue'
 
     export default {
       name: 'SpecimenList',
       components: {
-        PanelMoreLess
+        PanelMoreLess,
+        SpecimenElement
       },
       data() {
         return {
-            status_list_init: {},
+            status_list_saved: null,
+            status_list: null,
             saved: null,
-            expanded: [],
             sort: {
                 by: '$mean',
                 asc: false
-            }
+            },
+            to_disable: true
         };
       },
       computed: {
@@ -153,7 +100,6 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
                 }
         },
         processed_specimens () {
-
             var filtered_specimen = Object.keys(this.material_citation_selection.institutionOccurrences).map(key => this.material_citation_selection.institutionOccurrences[key]);
 
             if (this.sort.asc){
@@ -163,12 +109,6 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
                 filtered_specimen.sort((a, b) => ('$score' in b ? parseFloat(b.$score[this.sort.by]): 0) - ('$score' in a ? parseFloat(a.$score[this.sort.by]): 0));
             }
             return filtered_specimen;
-        },
-        status_list(){
-            if (Object.keys(this.status_list_init).length == 0){
-                this.loadStatus();
-            }
-            return (this.status_list_init)
         },
         saved_string(){
             var specimens_saved = {}
@@ -188,14 +128,7 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
             }
             return {"done": done,"specimens": specimens_saved}
         },
-        to_disable(){
-            if (JSON.stringify(this.saved) == JSON.stringify(this.saved_string)){
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
+
 
       },
       methods:{
@@ -204,23 +137,40 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
                 if (this.matching != null){
                      for (let i=0; i<this.matching.length; i++){
                         if (this.matching[i].key == this.material_citation_selection.materialCitationOccurrence.key){
-                            this.status_list_init = this.matching[i].specimens_status
+                            this.status_list_saved = this.matching[i].specimens_status
                         }
                     }
                 }
+                this.status_list = JSON.parse(JSON.stringify(this.status_list_saved))
+            },
+            getStatus(key){
+                if (this.status_list_saved == null){
+                    this.loadStatus()
+                }
+                var status = "unknown"
+                if (key in this.status_list_saved){
+                    if (this.status_list_saved[key] == "true"){
+                        return "yes"
+                    }
+                    else {
+                        return "no"
+                    }
+                }
+                return status;
             },
             save(){
                var saved_data = this.saved_string
                axios.post(this.urls.material_citations_status+this.material_citation_selection.materialCitationOccurrence.key, saved_data)
                     .then(response => {
                         if(response.data == null){
-                            this.saved = saved_data
                             this.updateMatching(null)
+                            this.status_list_saved = JSON.parse(JSON.stringify(this.status_list))
+                            this.updateDisable()
                         }
                     });
             },
             back(){
-               if (JSON.stringify(this.saved) != JSON.stringify(this.saved_string)){
+               if (JSON.stringify(this.status_list_saved) != JSON.stringify(this.status_list)){
                     if (confirm('Are you sure you want to leaving without saving?')) {
                         this.updateMaterialCitationSelection(null)
                         this.$router.push({ name: 'HomePage', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
@@ -232,33 +182,6 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
 
                 }
            },
-           toggle(id) {
-              var index = this.expanded.indexOf(id);
-              if (index > -1) {
-                this.expanded.splice(index, 1)
-              } else {
-                this.expanded.push(id)
-              }
-           },
-           cellColor(value){
-                var class_name = "cell-color-na"
-                if (value >= 0.8){
-                    class_name = "cell-color-good"
-                }
-                else if (value >= 0.4){
-                    class_name = "cell-color-medium"
-                }
-                else if (value >= 0.0){
-                    class_name = "cell-color-bad"
-                }
-                return class_name
-           },
-           normalizeValue(value){
-                if (value == null){
-                    return "NA"
-                }
-                return value
-           },
            sortBy(name){
                 if (name == this.sort.by){
                     this.sort.asc = !this.sort.asc
@@ -268,18 +191,25 @@ import PanelMoreLess from '@/components/PanelMoreLess.vue'
                     this.sort.asc = false
                 }
            },
-           hasScore(specimen){
-                if ("$score" in specimen){
-                    return true;
+           storeStatus (value) {
+            if (value.status != "unknown"){
+               this.status_list[value.id] = value.status
+            }
+            else {
+                delete this.status_list[value.id]
+            }
+            this.updateDisable()
+            },
+            updateDisable(){
+                 if (JSON.stringify(this.status_list_saved) == JSON.stringify(this.status_list)){
+                    this.to_disable = true;
                 }
                 else {
-                    return false;
+                    this.to_disable = false;
                 }
-           },
+            }
+
       },
-      mounted: function () {
-            this.saved = this.saved_string
-      }
     }
 
 </script>
