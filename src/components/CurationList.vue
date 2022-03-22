@@ -3,7 +3,7 @@
     <div class="component-container" :style="cssVars">
 
         <div class="separator">
-            <h2><span>Specimens for the material citation {{ material_citation_selection.materialCitationOccurrence.key }}</span></h2>
+            <h2><span>{{ get_curation_name }}s for the {{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection[get_occurrence_json].key }}</span></h2>
         </div>
 
         <div class="abstract-container">
@@ -11,20 +11,20 @@
             <PanelMoreLess :visible_length="1" :items_length="2" message_more="Show details" message_less="Hide details" >
 
                 <template slot="default-list">
-                    <p>{{ material_citation_selection.materialCitationOccurrence.verbatimLabel }}</p>
+                    <p>{{ occurrences_selection[get_occurrence_json].verbatimLabel }}</p>
                 </template>
 
                 <template slot="extra-list">
 
                     <table>
                         <tr>
-                            <template v-for="char in specimen_characteristics">
+                            <template v-for="char in curation_characteristics">
                                 <th v-if="char.value" :key="char.short+'mc-th'">{{ char.name }}</th>
                             </template>
                         </tr>
                         <tr>
-                            <template v-for="char in specimen_characteristics">
-                                <td v-if="char.value" :key="char.short+'mc_td'">{{ material_citation_selection.materialCitationOccurrence[char.short] }}</td>
+                            <template v-for="char in curation_characteristics">
+                                <td v-if="char.value" :key="char.short+'mc_td'">{{ occurrences_selection[get_occurrence_json][char.short] }}</td>
                             </template>
                         </tr>
                     </table>
@@ -38,20 +38,20 @@
         <div>
 
             <p>
-                {{ processed_specimens.length }} specimen<span v-if="processed_specimens.length > 1">s</span>
+                {{ processed_curation.length }} specimen<span v-if="processed_curation.length > 1">s</span>
             </p>
 
             <table>
 
                 <tr>
                     <th>Key</th>
-                    <th v-for="char in specimen_characteristics" :key="char.short+'sp-th'" class="clickable-th" @click="sortBy(char.short)">{{ char.name }}</th>
+                    <th v-for="char in curation_characteristics" :key="char.short+'sp-th'" class="clickable-th" @click="sortBy(char.short)">{{ char.name }}</th>
                     <th>Yes</th>
                     <th>No</th>
                     <th>Expand</th>
                 </tr>
 
-            <SpecimenElement @clicked="storeStatus" v-for="specimen in processed_specimens" :key="specimen.key" :specimen="specimen" :status="getStatus(specimen.key)"/>
+            <CurationElement @clicked="storeStatus" v-for="curation in processed_curation" :key="curation.key" :curation="curation" :status="getStatus(curation.key)"/>
 
             </table>
 
@@ -71,13 +71,13 @@
 import { mapState, mapActions } from 'vuex'
 import axios from 'axios';
 import PanelMoreLess from '@/components/PanelMoreLess.vue'
-import SpecimenElement from '@/components/SpecimenElement.vue'
+import CurationElement from '@/components/CurationElement.vue'
 
     export default {
-      name: 'SpecimenList',
+      name: 'CurationList',
       components: {
         PanelMoreLess,
-        SpecimenElement
+        CurationElement
       },
       data() {
         return {
@@ -92,51 +92,63 @@ import SpecimenElement from '@/components/SpecimenElement.vue'
         };
       },
       computed: {
-        ...mapState(['urls', 'theme_color', 'material_citation_selection', 'matching', 'specimen_characteristics']),
+        ...mapState(['urls', 'theme_color', 'occurrences_selection', 'matching', 'curation_characteristics', 'format_selection', 'fields']),
         cssVars () {
                 return{
                     '--color': this.theme_color.main,
                     '--color-secondary': this.theme_color.secondary,
                 }
         },
-        processed_specimens () {
-            var filtered_specimen = Object.keys(this.material_citation_selection.institutionOccurrences).map(key => this.material_citation_selection.institutionOccurrences[key]);
+        get_occurrence_name(){
+            return this.fields[this.format_selection].format_occurrence.name
+        },
+        get_occurrence_json(){
+            return this.fields[this.format_selection].format_occurrence.json
+        },
+        get_curation_name(){
+            return this.fields[this.format_selection].format_curation.name
+        },
+        get_curation_json(){
+            return this.fields[this.format_selection].format_curation.json
+        },
+        processed_curation () {
+            var filtered_curation = Object.keys(this.occurrences_selection[this.get_curation_json]).map(key => this.occurrences_selection[this.get_curation_json][key]);
 
             if (this.sort.asc){
-                filtered_specimen.sort((a, b) => ('$score' in a ? parseFloat(a.$score[this.sort.by]): 0) - ('$score' in b ? parseFloat(b.$score[this.sort.by]): 0));
+                filtered_curation.sort((a, b) => ('$score' in a ? parseFloat(a.$score[this.sort.by]): 0) - ('$score' in b ? parseFloat(b.$score[this.sort.by]): 0));
             }
             else {
-                filtered_specimen.sort((a, b) => ('$score' in b ? parseFloat(b.$score[this.sort.by]): 0) - ('$score' in a ? parseFloat(a.$score[this.sort.by]): 0));
+                filtered_curation.sort((a, b) => ('$score' in b ? parseFloat(b.$score[this.sort.by]): 0) - ('$score' in a ? parseFloat(a.$score[this.sort.by]): 0));
             }
-            return filtered_specimen;
+            return filtered_curation;
         },
         saved_string(){
-            var specimens_saved = {}
+            var curation_saved = {}
             var done = true
             Object.entries(this.status_list).forEach(entry => {
                 var [key, value] = entry;
                 if (value != ""){
-                    specimens_saved[key] = {"match": (value.toLowerCase() === 'true'),"comment": ""}
+                    curation_saved[key] = {"match": (value.toLowerCase() === 'true'),"comment": ""}
                 }
                 else {
                     done = false
                 }
             });
 
-            if(Object.entries(this.status_list).length != Object.entries(this.material_citation_selection.institutionOccurrences).length){
+            if(Object.entries(this.status_list).length != Object.entries(this.occurrences_selection[this.get_curation_json]).length){
                 done = false;
             }
-            return {"done": done,"specimens": specimens_saved}
+            return {"done": done,"specimens": curation_saved}
         },
 
 
       },
       methods:{
-        ...mapActions(['updateMaterialCitationSelection', 'updateMatching']),
+        ...mapActions(['updateOccurrencesSelection', 'updateMatching']),
             loadStatus(){
                 if (this.matching != null){
                      for (let i=0; i<this.matching.length; i++){
-                        if (this.matching[i].key == this.material_citation_selection.materialCitationOccurrence.key){
+                        if (this.matching[i].key == this.occurrences_selection[this.get_occurrence_json].key){
                             this.status_list_saved = this.matching[i].specimens_status
                         }
                     }
@@ -148,38 +160,42 @@ import SpecimenElement from '@/components/SpecimenElement.vue'
                     this.loadStatus()
                 }
                 var status = "unknown"
-                if (key in this.status_list_saved){
-                    if (this.status_list_saved[key] == "true"){
-                        return "yes"
-                    }
-                    else {
-                        return "no"
+                if (this.status_list_saved != null){
+                   if (key in this.status_list_saved){
+                        if (this.status_list_saved[key] == "true"){
+                            return "yes"
+                        }
+                        else {
+                            return "no"
+                        }
                     }
                 }
                 return status;
             },
             save(){
                var saved_data = this.saved_string
-               axios.post(this.urls.material_citations_status+this.material_citation_selection.materialCitationOccurrence.key, saved_data)
+               axios.post(this.urls.material_citations_status+this.occurrences_selection[this.get_occurrence_json].key, saved_data)
                     .then(response => {
-                        if(response.data == null){
+                        if('status' in response.data && response.data.status == "ok"){
                             this.updateMatching(null)
                             this.status_list_saved = JSON.parse(JSON.stringify(this.status_list))
                             this.updateDisable()
                         }
+                    })
+                    .catch(error => {
+                        alert ("Failed to save"+error )
                     });
             },
             back(){
                if (JSON.stringify(this.status_list_saved) != JSON.stringify(this.status_list)){
                     if (confirm('Are you sure you want to leaving without saving?')) {
-                        this.updateMaterialCitationSelection(null)
-                        this.$router.push({ name: 'HomePage', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
+                        this.updateOccurrencesSelection(null)
+                        this.$router.push({ name: 'HomePage', hash: '#occurrences', query: this.$route.query}).catch(()=>{});
                     }
                 }
                 else {
-                    this.updateMaterialCitationSelection(null)
-                    this.$router.push({ name: 'HomePage', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
-
+                    this.updateOccurrencesSelection(null)
+                    this.$router.push({ name: 'HomePage', hash: '#occurrences', query: this.$route.query}).catch(()=>{});
                 }
            },
            sortBy(name){

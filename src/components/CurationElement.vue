@@ -3,14 +3,14 @@
     <tbody>
 
         <tr >
-            <td>{{ specimen.key }}</td>
-            <template v-if="hasScore(specimen)">
-                <td v-for="char in specimen_characteristics" :key="char.short+'sp-td'" :class="cellColor(specimen.$score[char.short])" :title="specimen[char.short]+'\n'+material_citation_selection.materialCitationOccurrence[char.short]">
-                    {{ normalizeValue(specimen.$score[char.short]) }}
+            <td>{{ curation.key }}</td>
+            <template v-if="hasScore(curation)">
+                <td v-for="char in curation_characteristics" :key="char.short+'sp-td'" :class="cellColor(curation.$score[char.short])" :title="curation[char.short]+'\n'+occurrences_selection[get_occurrence_json][char.short]">
+                    {{ normalizeValue(curation.$score[char.short]) }}
                 </td>
             </template>
             <template v-else>
-                <td v-for="char in specimen_characteristics" :key="char.short+'sp-td'" :title="specimen[char.short]+'\n'+material_citation_selection.materialCitationOccurrence[char.short]">
+                <td v-for="char in curation_characteristics" :key="char.short+'sp-td'" :title="curation[char.short]+'\n'+occurrences_selection[get_occurrence_json][char.short]">
                     unknown
                 </td>
             </template>
@@ -29,28 +29,33 @@
         </tr>
 
         <tr class="expanded" v-if="expanded">
-            <td colspan="18">
+            <td colspan="19">
                 <table>
 
                     <tr>
                         <th></th>
-                        <th>Material citation</th>
-                        <th>Specimen</th>
+                        <th>{{ get_occurrence_name }}</th>
+                        <th>{{ get_curation_name }}</th>
                     </tr>
 
-                    <template v-for="char in specimen_characteristics">
+                    <template v-for="char in curation_characteristics">
                         <tr v-if="char.value" :key="char.short+'sp-td-exp'">
                             <td>{{ char.name }}</td>
-                            <template v-if="hasScore(specimen)">
-                                <td :class="cellColor(specimen.$score[char.short])">{{ specimen[char.short] }}</td>
-                                <td :class="cellColor(specimen.$score[char.short])">{{ material_citation_selection.materialCitationOccurrence[char.short] }}</td>
+                            <template v-if="hasScore(curation)">
+                                <td :class="cellColor(curation.$score[char.short])">{{ occurrences_selection[get_occurrence_json][char.short] }}</td>
+                                <td :class="cellColor(curation.$score[char.short])">{{ curation[char.short] }}</td>
                             </template>
                             <template v-else>
-                                <td>{{ specimen[char.short] }}</td>
-                                <td>{{ material_citation_selection.materialCitationOccurrence[char.short] }}</td>
+                                <td>{{ occurrences_selection[get_occurrence_json][char.short] }}</td>
+                                <td>{{ curation[char.short] }}</td>
                             </template>
                         </tr>
                     </template>
+                    <tr>
+                        <td>GBIF</td>
+                        <td><a :href="'https://www.gbif.org/occurrence/'+occurrences_selection[get_occurrence_json]['key']" target="_blank">See in GBIF</a></td>
+                        <td><a :href="'https://www.gbif.org/occurrence/'+curation['key']" target="_blank">See in GBIF</a></td>
+                    </tr>
 
                 </table>
             </td>
@@ -65,11 +70,11 @@
 import { mapState } from 'vuex'
 
     export default {
-      name: 'SpecimenElement',
+      name: 'CurationElement',
       components: {
       },
       props: {
-        specimen: {
+        curation: {
             type: Object,
             required: true
         },
@@ -86,11 +91,20 @@ import { mapState } from 'vuex'
         };
       },
       computed: {
-        ...mapState(['theme_color', 'material_citation_selection', 'matching', 'specimen_characteristics']),
+        ...mapState(['theme_color', 'occurrences_selection', 'matching', 'curation_characteristics', 'fields', 'format_selection']),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
             }
+        },
+        get_occurrence_name(){
+            return this.fields[this.format_selection].format_occurrence.name
+        },
+        get_occurrence_json(){
+            return this.fields[this.format_selection].format_occurrence.json
+        },
+        get_curation_name(){
+            return this.fields[this.format_selection].format_curation.name
         },
         is_yes_selected(){
            if (this.checked_yes == true){
@@ -135,8 +149,8 @@ import { mapState } from 'vuex'
                 }
                 return class_name
         },
-        hasScore(specimen){
-                if ("$score" in specimen){
+        hasScore(curation){
+                if ("$score" in curation){
                     return true;
                 }
                 else {
@@ -164,7 +178,7 @@ import { mapState } from 'vuex'
             else if (this.checked_no){
                 status = "false"
             }
-            this.$emit('clicked', {"id": this.specimen.key, "status": status})
+            this.$emit('clicked', {"id": this.curation.key, "status": status})
         }
       },
       mounted: function () {

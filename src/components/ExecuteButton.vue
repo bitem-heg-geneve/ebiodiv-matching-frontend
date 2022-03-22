@@ -1,11 +1,11 @@
 <template>
 
-  <div :style="cssVars">
+  <span :style="cssVars">
        <button class="button" v-on="$listeners">
            <span>{{ button_text }}</span>
        </button>
 
-  </div>
+  </span>
 
 </template>
 

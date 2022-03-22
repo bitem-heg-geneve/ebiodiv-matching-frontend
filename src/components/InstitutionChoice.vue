@@ -10,7 +10,7 @@
             <v-select class="select" :options="institutions.list" @input="clearMC()" v-model="institution_selection.name"></v-select>
             <br/><br/>
 
-            <div v-if="institution_selection.name">
+            <div v-if="institution_found">
                 <p>
                     <label>Description: </label>{{ institution_description }}
                 </p>
@@ -24,7 +24,8 @@
 
         </div>
 
-        <ExecuteButton v-if="institution_selection.name" @click="displayMC()" button_text="See material citations"/>
+        <ExecuteButton v-if="institution_selection.name" @click="displayOccurrences('matcit_specimen')" button_text="See material citations"/>
+        <ExecuteButton v-if="institution_selection.name" @click="displayOccurrences('specimen_matcit')" button_text="See specimens"/>
 
     </div>
 
@@ -45,7 +46,15 @@ import { mapState, mapActions } from 'vuex'
         vSelect
       },
       computed: {
-        ...mapState(['urls', 'institutions', 'institution_selection']),
+        ...mapState(['urls', 'institutions', 'institution_selection', 'format_selection', 'urls_parameters']),
+        institution_found(){
+            if (this.institution_selection.name in this.institutions.info_dict){
+                return true
+            }
+            else {
+                return false
+            }
+        },
         institution_description() {
             if ('description' in this.institutions.info_dict[this.institution_selection.name]){
                 return(this.institutions.info_dict[this.institution_selection.name].description)
@@ -85,7 +94,7 @@ import { mapState, mapActions } from 'vuex'
         }
       },
       methods:{
-        ...mapActions(['updateInstitutions', 'updateInstitutionSelection']),
+        ...mapActions(['updateInstitutions', 'updateInstitutionSelection', 'updateFormatSelection']),
         async queryInstitutionsAPI () {
             try {
                 var institutions_list = []
@@ -110,6 +119,18 @@ import { mapState, mapActions } from 'vuex'
                 institutions_list = [...new Set(institutions_list)];
                 institutions_list.sort();
                 this.updateInstitutions({'list': institutions_list, 'keys': institutions_keys, 'info': institutions_info})
+                if(this.urls_parameters.institution != null){
+                    for (const [key, value] of Object.entries(this.institutions.keys_dict)){
+                        if (value == this.urls_parameters.institution){
+                            this.updateInstitutionSelection({'key': value, 'name': key})
+                        }
+                    }
+                }
+
+                if (this.format_selection != null && (this.institution_selection.name != null || this.institution_selection.name != "")){
+                    this.displayOccurrences(this.format_selection)
+                }
+
             } catch (e) {
                 alert ("failed to load institutions")
             }
@@ -117,12 +138,13 @@ import { mapState, mapActions } from 'vuex'
         clearMC(){
             this.updateInstitutionSelection({'key': null, 'name': this.institution_selection.name})
         },
-        displayMC(){
+        displayOccurrences(format){
+            this.updateFormatSelection(format)
             this.updateInstitutionSelection({'key': this.institutions.keys_dict[this.institution_selection.name], 'name': this.institution_selection.name})
-            this.scrollToMC();
+            this.scrollToOccurrences(format);
         },
-        scrollToMC(){
-            this.$router.push({ name: 'HomePage', hash: '#materialcitations', query: this.$route.query}).catch(()=>{});
+        scrollToOccurrences(format){
+            this.$router.push({ name: 'HomePage', hash: '#occurrences', query: { institution: this.institution_selection.key, format: format }}).catch(()=>{});
         }
       },
       mounted(){

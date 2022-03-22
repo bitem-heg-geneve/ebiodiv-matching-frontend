@@ -11,9 +11,14 @@ export default new Vuex.Store({
     },
     urls: {
         institutions: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/browse/institutions",
-        material_citations: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/data/",
+        occurrences: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/data/",
         material_citations_status: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/materialcitation/",
         institution_status: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/data/",
+    },
+    urls_parameters: {
+        institution: null,
+        format: null,
+        occurrence: null
     },
     institutions: {
         list: [],
@@ -24,11 +29,35 @@ export default new Vuex.Store({
         key: null,
         name: null,
     },
-    material_citations: [],
-    material_citation_selection: null,
+    occurrences: [],
+    occurrences_selection: null,
+    format_selection: "matcit_specimen",
     matching: null,
+    fields: {
+        matcit_specimen: {
+            format_occurrence: {
+                name: "Material citation",
+                json: "materialCitationOccurrence",
+            },
+            format_curation: {
+                name: "Specimen",
+                json: "institutionOccurrences",
+            }
+        },
+        specimen_matcit: {
+            format_occurrence: {
+                name: "Specimen",
+                json: "institutionOccurrence",
+
+            },
+            format_curation: {
+                name: "Material citation",
+                json: "materialCitationOccurrences",
+            }
+        }
+    },
     user_selection: {
-        material_citations: {
+        occurrences: {
              facets: {
                 status: [],
                 collectionCode: [],
@@ -41,17 +70,17 @@ export default new Vuex.Store({
                 species: [],
                 date: [0, 2022],
             },
-            sort: 'material citation ID',
+            sort: 'ID',
         },
-        specimens: {
+        curation: {
              facets: {
             },
-            sort: 'material citation ID',
+            sort: 'ID',
         }
     },
     filters: {
-        material_citations: {
-            sort: ['material citation ID', 'scientific name', 'date', 'specimens number'],
+        occurrences: {
+            sort: ['ID', 'scientific name', 'date', 'matching number'],
             facets: [
                 {title: 'Date', short: 'date', multi: false},
                 {title: 'Curation status', short: 'status', multi: true},
@@ -67,7 +96,7 @@ export default new Vuex.Store({
             date: [0, 2022]
         }
     },
-    specimen_characteristics: [
+    curation_characteristics: [
         {name: 'Score', short: '$mean', value: false},
         {name: 'Family', short: 'family', value: true},
         {name: 'Genus', short: 'genus', value: true},
@@ -75,13 +104,14 @@ export default new Vuex.Store({
         {name: 'Latitude', short: 'decimalLatitude', value: true},
         {name: 'Longitude', short: 'decimalLongitude', value: true},
         {name: 'Elevation', short: 'elevation', value: true},
+        {name: 'Locality', short: 'locality', value: true},
         {name: 'Country', short: 'country', value: true},
         {name: 'Month', short: 'month', value: true},
         {name: 'Year', short: 'year', value: true},
         {name: 'Coll code', short: 'collectionCode', value: true},
         {name: 'Catalog nb', short: 'catalogNumber', value: true},
         {name: 'Individual nb', short: 'individualCount',  value: true},
-        {name: 'Recorded by', short: 'recordedBy', value: true},
+        {name: 'Collector (recorded by)', short: 'recordedBy', value: true},
     ]
   },
   mutations: {
@@ -100,27 +130,33 @@ export default new Vuex.Store({
     UPDATE_INSTITUTION_SELECTION_NAME(state, institution_name) {
         state.institution_selection.name = institution_name
     },
-    UPDATE_MATERIAL_CITATIONS(state, material_citations) {
-        state.material_citations = material_citations
+    UPDATE_FORMAT_SELECTION(state, modality) {
+        state.format_selection = modality
     },
-    UPDATE_MATERIAL_CITATION_SELECTION(state, material_citation_selection) {
-        state.material_citation_selection = material_citation_selection
+    UPDATE_OCCURRENCES(state, occurrences) {
+        state.occurrences = occurrences
     },
-    UPDATE_MATERIAL_CITATIONS_SORT(state, value){
-        state.user_selection.material_citations.sort = value
+    UPDATE_OCCURRENCES_SELECTION(state, occurrences_selection) {
+        state.occurrences_selection = occurrences_selection
     },
-    UPDATE_MATERIAL_CITATIONS_FACET(state, value){
-        state.user_selection.material_citations.facets[value.facet] = value.list
+    UPDATE_OCCURRENCES_SORT(state, value){
+        state.user_selection.occurrences.sort = value
     },
-    UPDATE_MATERIAL_CITATIONS_FILTER_DATE(state, value){
-        state.filters.material_citations.date = value
+    UPDATE_OCCURRENCES_FACET(state, value){
+        state.user_selection.occurrences.facets[value.facet] = value.list
+    },
+    UPDATE_OCCURRENCES_FILTER_DATE(state, value){
+        state.filters.occurrences.date = value
     },
     UPDATE_MATCHING(state, matching) {
         state.matching = matching
     },
     UPDATE_INIT_MC_DATE_FILTER(state, dates) {
-        state.filters.material_citations.date = dates
-        state.user_selection.material_citations.facets.date = dates
+        state.filters.occurrences.date = dates
+        state.user_selection.occurrences.facets.date = dates
+    },
+    UPDATE_URLS_PARAMETERS(state, params) {
+        state.urls_parameters = params
     },
   },
   actions: {
@@ -133,23 +169,29 @@ export default new Vuex.Store({
         context.commit('UPDATE_INSTITUTION_SELECTION_KEY', value.key)
         context.commit('UPDATE_INSTITUTION_SELECTION_NAME', value.name)
     },
-    updateMaterialCitationSelection(context, value) {
-        context.commit('UPDATE_MATERIAL_CITATION_SELECTION', value)
+    updateFormatSelection(context, value) {
+        context.commit('UPDATE_FORMAT_SELECTION', value)
     },
-    updateMaterialCitations(context, value) {
-        context.commit('UPDATE_MATERIAL_CITATIONS', value)
+    updateOccurrencesSelection(context, value) {
+        context.commit('UPDATE_OCCURRENCES_SELECTION', value)
     },
-    updateMaterialCitationsSort(context, value) {
-        context.commit('UPDATE_MATERIAL_CITATIONS_SORT', value)
+    updateOccurrences(context, value) {
+        context.commit('UPDATE_OCCURRENCES', value)
     },
-    updateMaterialCitationsFacet(context, value) {
-        context.commit('UPDATE_MATERIAL_CITATIONS_FACET', value)
+    updateOccurrencesSort(context, value) {
+        context.commit('UPDATE_OCCURRENCES_SORT', value)
+    },
+    updateOccurrencesFacet(context, value) {
+        context.commit('UPDATE_OCCURRENCES_FACET', value)
     },
     updateMatching(context, value) {
        context.commit('UPDATE_MATCHING', value)
     },
     updateInitMcDateFilter(context, value){
        context.commit('UPDATE_INIT_MC_DATE_FILTER', value)
+    },
+    updateUrlsParameters(context, value){
+        context.commit('UPDATE_URLS_PARAMETERS', value)
     }
   },
   modules: {
