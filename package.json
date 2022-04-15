@@ -15,7 +15,7 @@
     "core-js": "^3.6.5",
     "jw-vue-pagination": "^1.0.3",
     "v-autocomplete": "^1.8.2",
-    "vue": "^2.6.14",
+    "vue": "^3.2.33",
     "vue-plain-pagination": "^0.3.0",
     "vue-router": "^3.2.0",
     "vue-select": "^3.16.0",
