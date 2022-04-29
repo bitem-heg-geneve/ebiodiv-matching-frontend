@@ -58,9 +58,7 @@
                 </template>
             </table>
 
-            <div class="left-container">
-                <a @click="addLine">+ Add another {{ get_curation_name.toLowerCase() }}</a>
-            </div>
+
 
         <div>
 
