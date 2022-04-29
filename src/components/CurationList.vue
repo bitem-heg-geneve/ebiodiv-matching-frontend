@@ -232,7 +232,7 @@ import EmptyElement from '@/components/EmptyElement.vue'
         save(){
                var saved_data = []
                    for (var i=0; i<this.change_list.length; i++){
-                     if (/^\d+$/.test(this.change_list[i)){
+                     if (/^\d+$/.test(this.change_list[i])){
                         var element = {
                           "occurrenceKey1": this.occurrences_selection.key,
                           "occurrenceKey2": this.change_list[i],
