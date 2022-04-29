@@ -3,57 +3,70 @@
     <div class="component-container" :style="cssVars">
 
         <div class="separator">
-            <h2><span>{{ get_curation_name }}s for the {{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection[get_occurrence_json].key }}</span></h2>
+            <h2><span>{{ get_curation_name }}s for the {{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</span></h2>
         </div>
-
-        <div class="abstract-container">
-
-            <PanelMoreLess :visible_length="1" :items_length="2" message_more="Show details" message_less="Hide details" >
-
-                <template slot="default-list">
-                    <p>{{ occurrences_selection[get_occurrence_json].verbatimLabel }}</p>
-                </template>
-
-                <template slot="extra-list">
-
-                    <table>
-                        <tr>
-                            <template v-for="char in curation_characteristics">
-                                <th v-if="char.value" :key="char.short+'mc-th'">{{ char.name }}</th>
-                            </template>
-                        </tr>
-                        <tr>
-                            <template v-for="char in curation_characteristics">
-                                <td v-if="char.value" :key="char.short+'mc_td'">{{ occurrences_selection[get_occurrence_json][char.short] }}</td>
-                            </template>
-                        </tr>
-                    </table>
-
-                </template>
-
-            </PanelMoreLess>
-
-        </div>
-
-        <div>
-
-            <p>
-                {{ processed_curation.length }} specimen<span v-if="processed_curation.length > 1">s</span>
-            </p>
+        <p>{{ occurrences_selection.verbatimLabel }}</p>
 
             <table>
 
                 <tr>
                     <th>Key</th>
-                    <th v-for="char in curation_characteristics" :key="char.short+'sp-th'" class="clickable-th" @click="sortBy(char.short)">{{ char.name }}</th>
-                    <th>Yes</th>
-                    <th>No</th>
-                    <th>Expand</th>
+                    <th v-for="char in curation_characteristics" :key="char.score+'sp-th'">{{ char.name }}</th>
+                    <th colspan="3"></th>
+                </tr>
+                <tr class="reference-entity">
+                    <td><a :href="'https://www.gbif.org/occurrence/'+occurrences_selection.key" target="_blank">{{ occurrences_selection.key}}</a></td>
+                    <template v-for="char in curation_characteristics">
+                        <td v-if="char.value" :key="char.score+'mc_td'">{{ display_content(occurrences_selection, char.value) }}</td>
+                    </template>
+                    <td colspan="3"></td>
                 </tr>
 
-            <CurationElement @clicked="storeStatus" v-for="curation in processed_curation" :key="curation.key" :curation="curation" :status="getStatus(curation.key)"/>
+                <tr>
+                    <td colspan="16"><br/><br/>{{ processed_curation.length }} {{ get_curation_name.toLowerCase() }}<span v-if="processed_curation.length > 1">s</span> to curate</td>
+                </tr>
 
+                <tr v-if="processed_curation.length > 0">
+                    <th>Key</th>
+                    <th v-for="char in curation_characteristics" :key="char.score+'sp-th'" class="clickable-th" @click="sortBy(char.score)">{{ char.name }}</th>
+                    <th>Yes</th>
+                    <th>No</th>
+                    <th>Save</th>
+                </tr>
+
+                <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" save="Save"/>
+
+                <tr v-if="finished_curation.length > 0">
+                    <td colspan="16">
+                        <br/><br/>
+                        <img v-show="!show_edit" src="../assets/images/icon_plus.png" alt="[+]" @click="show_edit = !show_edit" class="mini"/>
+                        <img v-show="show_edit" src="../assets/images/icon_minus.png" alt="[-]" @click="show_edit = !show_edit" class="mini"/>
+                        {{ finished_curation.length }} {{ get_curation_name.toLowerCase() }}<span v-if="finished_curation.length > 1">s</span> already curated
+                    </td>
+                </tr>
+
+                <tr v-if="show_edit && finished_curation.length > 0">
+                    <th>Key</th>
+                    <th v-for="char in curation_characteristics" :key="char.score+'sp-th'" class="clickable-th">{{ char.name }}</th>
+                    <th>Yes</th>
+                    <th>No</th>
+                    <th>Edit</th>
+                </tr>
+
+                <template v-if="show_edit && finished_curation.length > 0">
+                    <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_curation" :key="curation.object.key" :curation="curation" save="Edit"/>
+                </template>
             </table>
+
+            <div class="left-container">
+                <a @click="addLine">+ Add another {{ get_curation_name.toLowerCase() }}</a>
+            </div>
+
+        <div>
+
+
+
+
 
             <div class="button-container">
                 <button class="secondary" @click="back()">Back to list</button>
@@ -70,29 +83,27 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import axios from 'axios';
-import PanelMoreLess from '@/components/PanelMoreLess.vue'
 import CurationElement from '@/components/CurationElement.vue'
 
     export default {
       name: 'CurationList',
       components: {
-        PanelMoreLess,
-        CurationElement
+        CurationElement,
       },
       data() {
         return {
-            status_list_saved: null,
-            status_list: null,
-            saved: null,
+            empty_elements: [],
+            change_list: [],
+            change_dict: {},
             sort: {
-                by: '$mean',
+                by: '$global',
                 asc: false
             },
-            to_disable: true
+            show_edit: false
         };
       },
       computed: {
-        ...mapState(['urls', 'theme_color', 'occurrences_selection', 'matching', 'curation_characteristics', 'format_selection', 'fields']),
+        ...mapState(['urls', 'theme_color', 'institution_selection', 'datasets_selection', 'occurrences_selection', 'matching', 'curation_characteristics', 'format_selection', 'fields']),
         cssVars () {
                 return{
                     '--color': this.theme_color.main,
@@ -102,84 +113,88 @@ import CurationElement from '@/components/CurationElement.vue'
         get_occurrence_name(){
             return this.fields[this.format_selection].format_occurrence.name
         },
-        get_occurrence_json(){
-            return this.fields[this.format_selection].format_occurrence.json
-        },
         get_curation_name(){
             return this.fields[this.format_selection].format_curation.name
         },
-        get_curation_json(){
-            return this.fields[this.format_selection].format_curation.json
-        },
         processed_curation () {
-            var filtered_curation = Object.keys(this.occurrences_selection[this.get_curation_json]).map(key => this.occurrences_selection[this.get_curation_json][key]);
+            var filtered_curation = this.occurrences_selection.relations
 
             if (this.sort.asc){
-                filtered_curation.sort((a, b) => ('$score' in a ? parseFloat(a.$score[this.sort.by]): 0) - ('$score' in b ? parseFloat(b.$score[this.sort.by]): 0));
+                filtered_curation.sort((a, b) => ('scores' in a  && a.scores[this.sort.by] != null ? parseFloat(a.scores[this.sort.by]): -1) - ('scores' in b  && b.scores[this.sort.by] != null ? parseFloat(b.scores[this.sort.by]): -1));
             }
             else {
-                filtered_curation.sort((a, b) => ('$score' in b ? parseFloat(b.$score[this.sort.by]): 0) - ('$score' in a ? parseFloat(a.$score[this.sort.by]): 0));
+                filtered_curation.sort((a, b) => ('scores' in b  && b.scores[this.sort.by] != null ? parseFloat(b.scores[this.sort.by]): -1) - ('scores' in a && a.scores[this.sort.by] != null ? parseFloat(a.scores[this.sort.by]): -1));
             }
-            return filtered_curation;
-        },
-        saved_string(){
-            var curation_saved = {}
-            var done = true
-            Object.entries(this.status_list).forEach(entry => {
-                var [key, value] = entry;
-                if (value != ""){
-                    curation_saved[key] = {"match": (value.toLowerCase() === 'true'),"comment": ""}
-                }
-                else {
-                    done = false
-                }
-            });
 
-            if(Object.entries(this.status_list).length != Object.entries(this.occurrences_selection[this.get_curation_json]).length){
-                done = false;
+           filtered_curation = filtered_curation.filter(element => element.matching.match == null);
+           return filtered_curation;
+        },
+        finished_curation () {
+            var filtered_curation = this.occurrences_selection.relations
+
+           filtered_curation = filtered_curation.filter(element => element.matching.match != null);
+           return filtered_curation;
+        },
+        to_disable(){
+            if (Object.keys(this.change_list).length > 0){
+                return false
             }
-            return {"done": done,"specimens": curation_saved}
+            else{
+                return true
+            }
         },
-
-
       },
       methods:{
-        ...mapActions(['updateOccurrencesSelection', 'updateMatching']),
-            loadStatus(){
-                if (this.matching != null){
-                     for (let i=0; i<this.matching.length; i++){
-                        if (this.matching[i].key == this.occurrences_selection[this.get_occurrence_json].key){
-                            this.status_list_saved = this.matching[i].specimens_status
-                        }
+        ...mapActions(['updateOccurrencesSelection', 'updateMatching', 'updateStep']),
+        display_content (object, values){
+            var content = ""
+
+            for (let i=0; i<values.length; i++){
+                if (values[i] in object){
+                    if (content.length > 0){
+                        content += "/"
                     }
+                    content += object[values[i]]
                 }
-                this.status_list = JSON.parse(JSON.stringify(this.status_list_saved))
-            },
-            getStatus(key){
-                if (this.status_list_saved == null){
-                    this.loadStatus()
-                }
-                var status = "unknown"
-                if (this.status_list_saved != null){
-                   if (key in this.status_list_saved){
-                        if (this.status_list_saved[key] == "true"){
-                            return "yes"
-                        }
-                        else {
-                            return "no"
-                        }
+            }
+            return content
+        },
+        toggle(){
+            this.show_edit = !this.show_edit
+        },
+        removeElement(element){
+            const index = this.change_list.indexOf(element.key);
+            if (index > -1) {
+                this.change_list.splice(index, 1);
+            }
+        },
+        addElement(element){
+            if (!this.change_list.includes(element.key)){
+                this.change_list.push(element.key)
+            }
+            this.change_dict[element.key] = element.value
+        },
+        save(){
+               var saved_data = []
+               for (var i=0; i<this.change_list.length; i++){
+                    var element = {
+                      "occurrenceKey1": this.occurrences_selection.key,
+                      "occurrenceKey2": this.change_list[i],
+                      "match": this.change_dict[this.change_list[i]],
+                      "comment": "testGUI-all"
                     }
-                }
-                return status;
-            },
-            save(){
-               var saved_data = this.saved_string
-               axios.post(this.urls.material_citations_status+this.occurrences_selection[this.get_occurrence_json].key, saved_data)
+                    saved_data.push(element)
+               }
+               axios.post(this.urls.matching, saved_data)
                     .then(response => {
-                        if('status' in response.data && response.data.status == "ok"){
-                            this.updateMatching(null)
-                            this.status_list_saved = JSON.parse(JSON.stringify(this.status_list))
-                            this.updateDisable()
+                        if(response.status == 200){
+                            for (var i=0; i<this.occurrences_selection.relations.length; i++){
+                              if (this.change_list.includes(this.occurrences_selection.relations[i].object.key)){
+                                this.occurrences_selection.relations[i].matching.match = this.change_dict[this.occurrences_selection.relations[i].object.key]
+                              }
+                            }
+                            this.change_list = []
+                            this.change_dict = {}
                         }
                     })
                     .catch(error => {
@@ -187,16 +202,16 @@ import CurationElement from '@/components/CurationElement.vue'
                     });
             },
             back(){
-               if (JSON.stringify(this.status_list_saved) != JSON.stringify(this.status_list)){
+               if (this.change_list.length > 0){
                     if (confirm('Are you sure you want to leaving without saving?')) {
                         this.updateOccurrencesSelection(null)
-                        this.$router.push({ name: 'HomePage', hash: '#occurrences', query: this.$route.query}).catch(()=>{});
+                        this.$emit('clicked')
                     }
                 }
                 else {
                     this.updateOccurrencesSelection(null)
-                    this.$router.push({ name: 'HomePage', hash: '#occurrences', query: this.$route.query}).catch(()=>{});
-                }
+                    this.$emit('clicked')
+             }
            },
            sortBy(name){
                 if (name == this.sort.by){
@@ -207,24 +222,13 @@ import CurationElement from '@/components/CurationElement.vue'
                     this.sort.asc = false
                 }
            },
-           storeStatus (value) {
-            if (value.status != "unknown"){
-               this.status_list[value.id] = value.status
-            }
-            else {
-                delete this.status_list[value.id]
-            }
-            this.updateDisable()
-            },
-            updateDisable(){
-                 if (JSON.stringify(this.status_list_saved) == JSON.stringify(this.status_list)){
-                    this.to_disable = true;
-                }
-                else {
-                    this.to_disable = false;
-                }
-            }
+           addLine(){
+                var object = {}
+                object.object = {}
+                object.object.key = ""
 
+                this.empty_elements.push(object)
+           }
       },
     }
 
@@ -249,12 +253,20 @@ import CurationElement from '@/components/CurationElement.vue'
         text-align: right;
     }
 
+    .left-container {
+        text-align: left;
+    }
+
     table {
           margin-bottom: 20px;
           border-collapse: collapse;
           width: 100%;
-          font-size: 0.8em;
-          background-color: #fff
+          font-size: 1em;
+          background-color: #fff;
+    }
+
+    tr{
+    overflow-y: auto;
     }
 
     td, th {
@@ -274,18 +286,11 @@ import CurationElement from '@/components/CurationElement.vue'
        background-color: var(--color);
     }
 
-    .cell-color-good {
-        background-color: #D7F2D6;
+    .reference-entity th{
+        background-color: #fff;
+        color: #000;
     }
-    .cell-color-medium {
-        background-color: #FBECD7;
-    }
-    .cell-color-bad {
-        background-color: #F0D3D4;
-    }
-    .cell-color-na {
 
-    }
 
     .expanded {
         background-color: #eee;
@@ -340,6 +345,8 @@ import CurationElement from '@/components/CurationElement.vue'
 
     .mini {
         width: 15px;
+        padding-bottom: 4px;
     }
+
 
 </style>

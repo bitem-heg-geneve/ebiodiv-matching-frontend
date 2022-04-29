@@ -1,8 +1,18 @@
 <template>
     <div  class="banner" :style="cssVars">
 
-        <h1>{{ title }}</h1>
-        <p><i>{{ subtitle }}</i></p>
+    <div class="row">
+
+        <div class="col-1">
+            <img src="../assets/images/logo_ebiodiv_small.png" class="medium-img"/>
+        </div>
+
+        <div class="col-11">
+            <h1>{{ title }}</h1>
+            <p><i>{{ subtitle }}</i></p>
+        </div>
+
+        </div>
 
     </div>
 
@@ -44,13 +54,25 @@ import { mapState } from 'vuex'
     .banner{
         background: conic-gradient(at 0% 30%, var(--color-secondary) 10%, var(--color-main) 30%, var(--color-secondary) 50%);
         color: #FFFFFF;
-        padding: 20px 10px 10px 10px;
+        padding: 10px 20px 10px 20px;
         height: 150px;
         margin-bottom: 10px;
+
+
+    }
+
+    .row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     p {
         font-size: 1.2em;
+    }
+
+    .medium-img {
+        height: 120px;
     }
 
 </style>

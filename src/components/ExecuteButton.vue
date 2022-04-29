@@ -1,7 +1,8 @@
 <template>
 
   <span :style="cssVars">
-       <button class="button" v-on="$listeners">
+
+       <button class="button" v-on="$listeners" :disabled=disabled>
            <span>{{ button_text }}</span>
        </button>
 
@@ -18,7 +19,11 @@ export default {
   props: {
     button_text: {
         type: String,
-        default: "Search"
+        default: "Search",
+    },
+    disabled: {
+        type: Boolean,
+        default: false,
     },
   },
   computed: {
@@ -73,6 +78,12 @@ export default {
     .button:hover span:after {
       opacity: 1;
       right: 0;
+    }
+
+    .button:disabled,
+    .button[disabled]{
+      background-color: #cccccc;
+      color: #666666;
     }
 
 </style>

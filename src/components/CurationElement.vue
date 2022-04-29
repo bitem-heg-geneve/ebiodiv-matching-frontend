@@ -3,61 +3,20 @@
     <tbody>
 
         <tr >
-            <td>{{ curation.key }}</td>
-            <template v-if="hasScore(curation)">
-                <td v-for="char in curation_characteristics" :key="char.short+'sp-td'" :class="cellColor(curation.$score[char.short])" :title="curation[char.short]+'\n'+occurrences_selection[get_occurrence_json][char.short]">
-                    {{ normalizeValue(curation.$score[char.short]) }}
-                </td>
-            </template>
-            <template v-else>
-                <td v-for="char in curation_characteristics" :key="char.short+'sp-td'" :title="curation[char.short]+'\n'+occurrences_selection[get_occurrence_json][char.short]">
-                    unknown
+            <td><a :href="'https://www.gbif.org/occurrence/'+curation.object.key" target="_blank">{{ curation.object.key }}</a></td>
+            <template>
+                <td v-for="char in curation_characteristics" :key="char.score+'sp-td'" :class="cellColor(curation.scores[char.score])">
+                    {{ display_content(curation.object, char.value) }}
                 </td>
             </template>
             <td>
-                <input type="checkbox" :checked="is_yes_selected" @click="storeValidation('yes')"/>
+                <input type="checkbox" :checked="is_yes_selected" @click="changeSelection($event, 'yes')"/>
             </td>
             <td>
-                <input type="checkbox" :checked="is_no_selected" @click="storeValidation('no')"/>
+                <input type="checkbox" :checked="is_no_selected" @click="changeSelection($event, 'no')"/>
             </td>
             <td>
-                <button @click="toggle()" class="button-table">
-                    <img v-if="!expanded" src="../assets/images/icon_expand.png"  class="mini"/>
-                    <img v-if="expanded" src="../assets/images/icon_reduce.png"  class="mini"/>
-                </button>
-            </td>
-        </tr>
-
-        <tr class="expanded" v-if="expanded">
-            <td colspan="19">
-                <table>
-
-                    <tr>
-                        <th></th>
-                        <th>{{ get_occurrence_name }}</th>
-                        <th>{{ get_curation_name }}</th>
-                    </tr>
-
-                    <template v-for="char in curation_characteristics">
-                        <tr v-if="char.value" :key="char.short+'sp-td-exp'">
-                            <td>{{ char.name }}</td>
-                            <template v-if="hasScore(curation)">
-                                <td :class="cellColor(curation.$score[char.short])">{{ occurrences_selection[get_occurrence_json][char.short] }}</td>
-                                <td :class="cellColor(curation.$score[char.short])">{{ curation[char.short] }}</td>
-                            </template>
-                            <template v-else>
-                                <td>{{ occurrences_selection[get_occurrence_json][char.short] }}</td>
-                                <td>{{ curation[char.short] }}</td>
-                            </template>
-                        </tr>
-                    </template>
-                    <tr>
-                        <td>GBIF</td>
-                        <td><a :href="'https://www.gbif.org/occurrence/'+occurrences_selection[get_occurrence_json]['key']" target="_blank">See in GBIF</a></td>
-                        <td><a :href="'https://www.gbif.org/occurrence/'+curation['key']" target="_blank">See in GBIF</a></td>
-                    </tr>
-
-                </table>
+                <button :disabled="to_disable" @click="saveSelection()">{{ save }}</button>
             </td>
         </tr>
 
@@ -68,6 +27,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import axios from 'axios';
 
     export default {
       name: 'CurationElement',
@@ -78,20 +38,19 @@ import { mapState } from 'vuex'
             type: Object,
             required: true
         },
-        status: {
+        save: {
             type: String,
-            required: true
-        },
+            default: "Save"
+        }
       },
       data() {
         return {
-            expanded: false,
-            checked_yes: null,
-            checked_no: null
+            status: null,
+            saved_status: null,
         };
       },
       computed: {
-        ...mapState(['theme_color', 'occurrences_selection', 'matching', 'curation_characteristics', 'fields', 'format_selection']),
+        ...mapState(['theme_color', 'urls', 'curation_characteristics', 'fields', 'format_selection', 'occurrences_selection']),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
@@ -100,14 +59,17 @@ import { mapState } from 'vuex'
         get_occurrence_name(){
             return this.fields[this.format_selection].format_occurrence.name
         },
-        get_occurrence_json(){
-            return this.fields[this.format_selection].format_occurrence.json
-        },
         get_curation_name(){
             return this.fields[this.format_selection].format_curation.name
         },
+        selected_value(){
+            if (this.curation.matching.match == null){
+                return false
+            }
+            return true
+        },
         is_yes_selected(){
-           if (this.checked_yes == true){
+            if (this.status == "yes"){
                 return true
             }
             else {
@@ -115,13 +77,26 @@ import { mapState } from 'vuex'
             }
         },
         is_no_selected(){
-            if (this.checked_no == true){
+            if (this.status == "no"){
                 return true
             }
             else {
                 return false
             }
         },
+        to_disable(){
+            if (this.curation.matching.match == true && this.is_yes_selected == true){
+                return true
+            }
+            if (this.curation.matching.match == false && this.is_no_selected == true){
+                return true
+            }
+            if (this.curation.matching.match == null && this.is_yes_selected == false && this.is_no_selected == false){
+                return true
+            }
+            return false
+
+        }
       },
       methods:{
         normalizeValue(value){
@@ -130,65 +105,150 @@ import { mapState } from 'vuex'
                 }
                 return value
            },
-        toggle (){
-            this.expanded = !this.expanded
+        is_selected(value){
+            if (this.status == null){
+                if (this.curation.matching.match == null){
+                    this.status = "unknown"
+                }
+                else if (this.curation.matching.match == true){
+                    this.status = "yes"
+                }
+                else if (this.curation.matching.match == false){
+                    this.status = "no"
+                }
+            }
+            if (this.status == value){
+                return true
+            }
+            else {
+                return false
+            }
         },
         cellColor(value){
                 var class_name = "cell-color-na"
                 if (value == null){
                     class_name = "cell-color-na"
                 }
+                else if (value >= 1.0){
+                    class_name = "cell-color-1"
+                }
+                else if (value >= 0.9){
+                    class_name = "cell-color-2"
+                }
                 else if (value >= 0.8){
-                    class_name = "cell-color-good"
+                    class_name = "cell-color-3"
+                }
+                else if (value >= 0.7){
+                    class_name = "cell-color-4"
+                }
+                else if (value >= 0.6){
+                    class_name = "cell-color-5"
                 }
                 else if (value >= 0.5){
-                    class_name = "cell-color-medium"
+                    class_name = "cell-color-6"
+                }
+                else if (value >= 0.4){
+                    class_name = "cell-color-7"
+                }
+                else if (value >= 0.3){
+                    class_name = "cell-color-8"
+                }
+                else if (value >= 0.2){
+                    class_name = "cell-color-9"
+                }
+                else if (value >= 0.1){
+                    class_name = "cell-color-10"
                 }
                 else if (value >= 0.0){
-                    class_name = "cell-color-bad"
+                    class_name = "cell-color-11"
                 }
                 return class_name
         },
-        hasScore(curation){
-                if ("$score" in curation){
-                    return true;
+        display_content (object, values){
+            var content = ""
+            for (let i=0; i<values.length; i++){
+                if (values[i] in object){
+                    if (content.length > 0){
+                        content += "/"
+                    }
+                    content += object[values[i]]
                 }
-                else {
-                    return false;
-                }
-        },
-        storeValidation(choice){
-            if (choice == "yes"){
-                this.checked_yes = !this.checked_yes
-                if (this.checked_yes){
-                    this.checked_no = false
+            }
 
+            return content
+        },
+        changeSelection(event, choice){
+          if (choice == "yes"){
+            if (event.target.checked == true){
+                this.status = "yes"
+            }
+            if (event.target.checked == false){
+                this.status = "unknown"
+            }
+          }
+          else if (choice == "no"){
+             if (event.target.checked == true){
+                this.status = "no"
+             }
+             if (event.target.checked == false){
+                this.status = "unknown"
+             }
+          }
+          var match = null
+            if (this.status == "yes"){
+                match = true
+            }
+            if (this.status == "no"){
+                match = false
+            }
+          if (this.status != this.saved_status){
+            this.$emit("addOne", {'key': this.curation.object.key, 'value': match})
+          }
+          else{
+             this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
+          }
+        },
+        saveSelection(){
+            var match = null
+            if (this.status == "yes"){
+                match = true
+            }
+            if (this.status == "no"){
+                match = false
+            }
+            var data_to_save = {
+                  "occurrenceKey1": this.occurrences_selection.key,
+                  "occurrenceKey2": this.curation.object.key,
+                  "match": match,
+                  "comment": "testGUI"
                 }
-            }
-            else if (choice == "no"){
-                this.checked_no = !this.checked_no
-                if (this.checked_no){
-                    this.checked_yes = false
-                }
-            }
-            var status = "unknown"
-            if (this.checked_yes){
-                status = "true"
-            }
-            else if (this.checked_no){
-                status = "false"
-            }
-            this.$emit('clicked', {"id": this.curation.key, "status": status})
+               axios.post(this.urls.matching, data_to_save)
+                    .then(response => {
+                        if(response.status == 200){
+                            this.curation.matching.match = match
+                            this.saved_status = this.status
+                            this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
+                        }
+                    })
+                    .catch(error => {
+                        alert ("Failed to save"+error )
+                    });
         }
       },
-      mounted: function () {
-            if (this.status == "yes"){
-                this.checked_yes = true
+      beforeMount(){
+        if (this.status == null){
+                if (this.curation.matching.match == null){
+                    this.status = "unknown"
+                }
+                else if (this.curation.matching.match == true){
+                    this.status = "yes"
+                }
+                else if (this.curation.matching.match == false){
+                    this.status = "no"
+                }
             }
-            else if (this.status == "no"){
-                this.checked_no = true
-            }
-      }
+            this.saved_status = this.status
+        }
     }
 
 </script>
@@ -213,17 +273,53 @@ import { mapState } from 'vuex'
        background-color: var(--color);
     }
 
-    .cell-color-good {
-        background-color: #D7F2D6;
+    .cell-color-1 {
+        background-color: #7ABC8190;
+        color: #000;
     }
-    .cell-color-medium {
-        background-color: #FBECD7;
+    .cell-color-2 {
+        background-color: #91C58390;
+        color: #000;
     }
-    .cell-color-bad {
-        background-color: #F0D3D4;
+    .cell-color-3 {
+        background-color: #ABCF8790;
+        color: #000;
+    }
+    .cell-color-4 {
+        background-color: #C5D88A90;
+        color: #000;
+    }
+    .cell-color-5 {
+        background-color: #E0E28E80;
+        color: #000;
+    }
+    .cell-color-6 {
+        background-color: #FBEB9280;
+        color: #000;
+    }
+    .cell-color-7 {
+        background-color: #F6D48B80;
+        color: #000;
+    }
+    .cell-color-8 {
+        background-color: #F2BB8480;
+        color: #000;
+    }
+    .cell-color-9 {
+        background-color: #EDA27C80;
+        color: #000;
+    }
+    .cell-color-10 {
+        background-color: #EA897680;
+        color: #000;
+    }
+    .cell-color-11 {
+        background-color: #E6726F80;
+        color: #000;
     }
     .cell-color-na {
         background-color: #eee;
+        color: #000;
     }
 
     .expanded {
@@ -261,6 +357,28 @@ import { mapState } from 'vuex'
 
     .mini {
         width: 15px;
+    }
+
+      button {
+      display: inline-block;
+      border-radius: 10px;
+      background-color: var(--color);
+      border: none;
+      color: #FFFFFF;
+      text-align: center;
+      padding: 5px 10px;
+      cursor: pointer;
+      margin: 0px 5px;
+    }
+
+    button:hover {
+      background-color: var(--color-secondary);
+    }
+
+    button:disabled,
+    button[disabled]{
+      background-color: #cccccc;
+      color: #666666;
     }
 
 </style>

@@ -7,25 +7,14 @@
         <div class="details">
 
             <label>Select your institution: </label>
-            <v-select class="select" :options="institutions.list" @input="clearMC()" v-model="institution_selection.name"></v-select>
+            <v-select class="select" :options="institutions.list" @input="storeInstitution()" v-model="institution_selection.name"></v-select>
             <br/><br/>
 
-            <div v-if="institution_found">
-                <p>
-                    <label>Description: </label>{{ institution_description }}
-                </p>
-                <p>
-                    <label>Homepage: </label><a :href="institution_homepage" target="_blank">{{ institution_homepage }}</a>
-                </p>
-                <p>
-                    <label>Address: </label><br/><span v-html="institution_address"></span>
-                </p>
+            <div >
+                <DatasetsList @searchOccurrences="searchOccurrences" v-if="institution_found"/>
             </div>
 
         </div>
-
-        <ExecuteButton v-if="institution_selection.name" @click="displayOccurrences('matcit_specimen')" button_text="See material citations"/>
-        <ExecuteButton v-if="institution_selection.name" @click="displayOccurrences('specimen_matcit')" button_text="See specimens"/>
 
     </div>
 
@@ -34,7 +23,7 @@
 
 <script>
 import axios from 'axios';
-import ExecuteButton from '@/components/ExecuteButton.vue'
+import DatasetsList from '@/components/DatasetsList.vue'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css';
 import { mapState, mapActions } from 'vuex'
@@ -42,11 +31,11 @@ import { mapState, mapActions } from 'vuex'
     export default {
       name: 'InstitutionChoice',
       components: {
-        ExecuteButton,
+        DatasetsList,
         vSelect
       },
       computed: {
-        ...mapState(['urls', 'institutions', 'institution_selection', 'format_selection', 'urls_parameters']),
+        ...mapState(['urls', 'institutions', 'institution_selection', 'urls_parameters', 'format_selection']),
         institution_found(){
             if (this.institution_selection.name in this.institutions.info_dict){
                 return true
@@ -55,96 +44,47 @@ import { mapState, mapActions } from 'vuex'
                 return false
             }
         },
-        institution_description() {
-            if ('description' in this.institutions.info_dict[this.institution_selection.name]){
-                return(this.institutions.info_dict[this.institution_selection.name].description)
-            }
-            else {
-                return "no description available"
-            }
-        },
-        institution_homepage() {
-            if ('homepage' in this.institutions.info_dict[this.institution_selection.name]){
-                return(this.institutions.info_dict[this.institution_selection.name].homepage)
-            }
-            else {
-                return "no homepage available"
-            }
-        },
-        institution_address() {
-            if ('address' in this.institutions.info_dict[this.institution_selection.name]){
-                var address =  ""
-                if ('address' in this.institutions.info_dict[this.institution_selection.name].address){
-                    address += this.institutions.info_dict[this.institution_selection.name].address.address+"<br/>";
-                }
-                if ('city' in this.institutions.info_dict[this.institution_selection.name].address){
-                    address += this.institutions.info_dict[this.institution_selection.name].address.city+"<br/>";
-                }
-                if ('province' in this.institutions.info_dict[this.institution_selection.name].address){
-                    address += this.institutions.info_dict[this.institution_selection.name].address.province+"<br/>";
-                }
-                if ('country' in this.institutions.info_dict[this.institution_selection.name].address){
-                    address += this.institutions.info_dict[this.institution_selection.name].address.country+"<br/>";
-                }
-                return(address)
-            }
-            else {
-                return "no address available"
-            }
-        }
       },
       methods:{
-        ...mapActions(['updateInstitutions', 'updateInstitutionSelection', 'updateFormatSelection']),
+        ...mapActions(['updateInstitutions', 'updateInstitutionSelection', 'updateDatasetsSelection', 'updateStep']),
         async queryInstitutionsAPI () {
             try {
                 var institutions_list = []
                 var institutions_info = {}
-                var institutions_keys = {}
                 const response = await axios.get(this.urls.institutions)
                 for (var key in response.data){
                     var name = response.data[key].name
-                    if ('additionalNames' in response.data[key]){
-                         if (response.data[key]['additionalNames'].length > 0){
-                            name += " ("+ response.data[key]['additionalNames'].join(', ')+")"
-                        }
-                    }
-                    // If name is dupplicated
-                    while (name in institutions_keys){
-                        name += " 2"
-                    }
                     institutions_list.push(name)
-                    institutions_keys[name] = key
                     institutions_info[name] = response.data[key]
                 }
                 institutions_list = [...new Set(institutions_list)];
                 institutions_list.sort();
-                this.updateInstitutions({'list': institutions_list, 'keys': institutions_keys, 'info': institutions_info})
+                this.updateInstitutions({'list': institutions_list, 'info': institutions_info})
                 if(this.urls_parameters.institution != null){
-                    for (const [key, value] of Object.entries(this.institutions.keys_dict)){
-                        if (value == this.urls_parameters.institution){
-                            this.updateInstitutionSelection({'key': value, 'name': key})
+                    for (const [name, info] of Object.entries(this.institutions.info_dict)){
+                        if (info['key'] == this.urls_parameters.institution){
+                            this.institution_selection.name = name
+                            this.storeInstitution()
+                            break;
                         }
                     }
                 }
-
-                if (this.format_selection != null && (this.institution_selection.name != null || this.institution_selection.name != "")){
-                    this.displayOccurrences(this.format_selection)
-                }
-
             } catch (e) {
                 alert ("failed to load institutions")
             }
         },
-        clearMC(){
-            this.updateInstitutionSelection({'key': null, 'name': this.institution_selection.name})
+        storeInstitution(){
+           //this.updateDatasetsSelection([])
+           this.updateStep(1)
+           if(this.institution_selection.name in this.institutions.info_dict){
+                this.updateInstitutionSelection({'key': this.institutions.info_dict[this.institution_selection.name]['key'], 'name': this.institution_selection.name})
+            }
+            else {
+                this.updateInstitutionSelection({'key': null, 'name': null})
+            }
         },
-        displayOccurrences(format){
-            this.updateFormatSelection(format)
-            this.updateInstitutionSelection({'key': this.institutions.keys_dict[this.institution_selection.name], 'name': this.institution_selection.name})
-            this.scrollToOccurrences(format);
-        },
-        scrollToOccurrences(format){
-            this.$router.push({ name: 'HomePage', hash: '#occurrences', query: { institution: this.institution_selection.key, format: format }}).catch(()=>{});
+        searchOccurrences(format){
+            this.$emit('searchOccurrences', format, false)
         }
       },
       mounted(){
@@ -156,6 +96,10 @@ import { mapState, mapActions } from 'vuex'
 
 
 <style scoped lang="scss">
+
+    .button-container {
+        margin-top: 20px;
+    }
 
     .details {
         text-align: justify;

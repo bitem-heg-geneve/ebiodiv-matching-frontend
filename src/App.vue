@@ -3,13 +3,13 @@
     <div id="app" :style="cssVars">
 
       <div id="nav">
-        <router-link to="/">Home</router-link> |
-        <router-link to="/about">About</router-link>
+
       </div>
 
       <router-view/>
 
       <div class="logo">
+        <img src="./assets/images/logo_ebiodiv.png"/>
         <img src="./assets/images/logo_gbif.png"/>
         <img src="./assets/images/logo_plazi.png"/>
         <img src="./assets/images/logo_sib.png"/>

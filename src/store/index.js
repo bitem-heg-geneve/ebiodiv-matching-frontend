@@ -9,50 +9,51 @@ export default new Vuex.Store({
         main: "#70AD47",
         secondary: "#008F00",
     },
+    step: 1,
     urls: {
-        institutions: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/browse/institutions",
-        occurrences: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/data/",
+        institutions: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/institutionList",
+        datasets: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/datasets",
+        occurrences: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/occurrences",
+        matching: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/matching",
         material_citations_status: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/materialcitation/",
         institution_status: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/data/",
     },
     urls_parameters: {
         institution: null,
         format: null,
-        occurrence: null
+        occurrence: null,
+        datasets: [],
     },
     institutions: {
         list: [],
-        keys_dict: {},
         info_dict: {}
     },
     institution_selection: {
         key: null,
         name: null,
     },
+    datasets: [],
+    datasets_selection: [],
     occurrences: [],
     occurrences_selection: null,
-    format_selection: "matcit_specimen",
+    format_selection: null,
     matching: null,
     fields: {
         matcit_specimen: {
             format_occurrence: {
                 name: "Material citation",
-                json: "materialCitationOccurrence",
             },
             format_curation: {
                 name: "Specimen",
-                json: "institutionOccurrences",
             }
         },
         specimen_matcit: {
             format_occurrence: {
                 name: "Specimen",
-                json: "institutionOccurrence",
 
             },
             format_curation: {
                 name: "Material citation",
-                json: "materialCitationOccurrences",
             }
         }
     },
@@ -60,6 +61,7 @@ export default new Vuex.Store({
         occurrences: {
              facets: {
                 status: [],
+                datasetName: [],
                 collectionCode: [],
                 kingdom: [],
                 phylum: [],
@@ -83,6 +85,7 @@ export default new Vuex.Store({
             sort: ['ID', 'scientific name', 'date', 'matching number'],
             facets: [
                 {title: 'Date', short: 'date', multi: false},
+                {title: 'Dataset', short: 'datasetName', multi: true},
                 {title: 'Curation status', short: 'status', multi: true},
                 {title: 'Collection code', short: 'collectionCode', multi: true},
                 {title: 'Kingdom', short: 'kingdom', multi: true},
@@ -97,41 +100,41 @@ export default new Vuex.Store({
         }
     },
     curation_characteristics: [
-        {name: 'Score', short: '$mean', value: false},
-        {name: 'Family', short: 'family', value: true},
-        {name: 'Genus', short: 'genus', value: true},
-        {name: 'Specific epithet', short: 'specificEpithet', value: true},
-        {name: 'Latitude', short: 'decimalLatitude', value: true},
-        {name: 'Longitude', short: 'decimalLongitude', value: true},
-        {name: 'Elevation', short: 'elevation', value: true},
-        {name: 'Locality', short: 'locality', value: true},
-        {name: 'Country', short: 'country', value: true},
-        {name: 'Month', short: 'month', value: true},
-        {name: 'Year', short: 'year', value: true},
-        {name: 'Coll code', short: 'collectionCode', value: true},
-        {name: 'Catalog nb', short: 'catalogNumber', value: true},
-        {name: 'Individual nb', short: 'individualCount',  value: true},
-        {name: 'Collector (recorded by)', short: 'recordedBy', value: true},
+        {name: 'Family', score: 'family', value: ['family']},
+        {name: 'Genus', score: 'genus', value: ['genus']},
+        {name: 'Specific epithet', score: 'specificEpithet', value: ['specificEpithet']},
+        {name: 'Latitude/Longitude', score: 'decimalLatitude', value: ['decimalLatitude', 'decimalLongitude']},
+        {name: 'Elevation', score: 'elevation', value: ['elevation', 'depth']},
+        {name: 'Locality', score: 'locality', value: ['locality']},
+        {name: 'Country', score: 'country', value: ['country']},
+        {name: 'Date', score: 'year', value: ['day', 'month', 'year']},
+        {name: 'Coll code', score: 'collectionCode', value: ['collectionCode']},
+        {name: 'Catalog nb', score: 'catalogNumber', value: ['catalogNumber']},
+        {name: 'Individual nb', score: 'individualCount',  value: ['individualCount']},
+        {name: 'Collector (recorded by)', score: 'recordedBy', value: ['recordedBy']},
     ]
   },
   mutations: {
     UPDATE_INSTITUTIONS_LIST(state, institution_list) {
         state.institutions.list = institution_list
     },
-    UPDATE_INSTITUTIONS_KEYS(state, institution_keys) {
-        state.institutions.keys_dict = institution_keys
-    },
     UPDATE_INSTITUTIONS_INFO(state, institution_info) {
         state.institutions.info_dict = institution_info
     },
     UPDATE_INSTITUTION_SELECTION_KEY(state, institution_key) {
         state.institution_selection.key = institution_key
-    },
+   },
     UPDATE_INSTITUTION_SELECTION_NAME(state, institution_name) {
         state.institution_selection.name = institution_name
     },
     UPDATE_FORMAT_SELECTION(state, modality) {
         state.format_selection = modality
+    },
+    UPDATE_DATASETS(state, datasets) {
+        state.datasets = datasets
+    },
+    UPDATE_DATASETS_SELECTION(state, datasets_selection) {
+        state.datasets_selection = datasets_selection
     },
     UPDATE_OCCURRENCES(state, occurrences) {
         state.occurrences = occurrences
@@ -158,17 +161,19 @@ export default new Vuex.Store({
     UPDATE_URLS_PARAMETERS(state, params) {
         state.urls_parameters = params
     },
+    UPDATE_STEP(state, value) {
+        state.step = value
+    },
   },
   actions: {
     updateInstitutions(context, value) {
         context.commit('UPDATE_INSTITUTIONS_LIST', value.list)
-        context.commit('UPDATE_INSTITUTIONS_KEYS', value.keys)
         context.commit('UPDATE_INSTITUTIONS_INFO', value.info)
     },
     updateInstitutionSelection(context, value) {
         context.commit('UPDATE_INSTITUTION_SELECTION_KEY', value.key)
         context.commit('UPDATE_INSTITUTION_SELECTION_NAME', value.name)
-    },
+   },
     updateFormatSelection(context, value) {
         context.commit('UPDATE_FORMAT_SELECTION', value)
     },
@@ -177,6 +182,12 @@ export default new Vuex.Store({
     },
     updateOccurrences(context, value) {
         context.commit('UPDATE_OCCURRENCES', value)
+    },
+    updateDatasetsSelection(context, value) {
+        context.commit('UPDATE_DATASETS_SELECTION', value)
+    },
+    updateDatasets(context, value) {
+        context.commit('UPDATE_DATASETS', value)
     },
     updateOccurrencesSort(context, value) {
         context.commit('UPDATE_OCCURRENCES_SORT', value)
@@ -192,7 +203,10 @@ export default new Vuex.Store({
     },
     updateUrlsParameters(context, value){
         context.commit('UPDATE_URLS_PARAMETERS', value)
-    }
+    },
+    updateStep(context, value){
+        context.commit('UPDATE_STEP', value)
+    },
   },
   modules: {
   }
