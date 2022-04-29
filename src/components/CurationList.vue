@@ -231,15 +231,17 @@ import EmptyElement from '@/components/EmptyElement.vue'
         },
         save(){
                var saved_data = []
-               for (var i=0; i<this.change_list.length; i++){
-                    var element = {
-                      "occurrenceKey1": this.occurrences_selection.key,
-                      "occurrenceKey2": this.change_list[i],
-                      "match": this.change_dict[this.change_list[i]],
-                      "comment": "testGUI-all"
-                    }
-                    saved_data.push(element)
-               }
+                   for (var i=0; i<this.change_list.length; i++){
+                     if (/^\d+$/.test(this.change_list[i)){
+                        var element = {
+                          "occurrenceKey1": this.occurrences_selection.key,
+                          "occurrenceKey2": this.change_list[i],
+                          "match": this.change_dict[this.change_list[i]],
+                          "comment": "testGUI-all"
+                        }
+                        saved_data.push(element)
+                      }
+                   }
                axios.post(this.urls.matching, saved_data)
                     .then(response => {
                         if(response.status == 200){
