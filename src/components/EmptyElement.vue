@@ -14,7 +14,7 @@
                 </span>
                 <span class="warning" v-if="warning"><br/>{{ warning }}</span>
             </td>
-            <td  class="cell-color-na"></td>
+            <td  class="cell-color-na">manual</td>
             <template>
                 <td v-for="char in curation_characteristics" class="cell-color-na" :key="char.score+'sp-td-em'">
                     {{ display_content(curation.object, char.value) }}
@@ -38,7 +38,7 @@
         </tr>
 
         <tr class="expanded" v-if="expanded">
-            <td>manual</td>
+            <td></td>
             <td colspan="14" class="cell-color-na">
                 {{ curation.object.verbatimLabel }}
             </td>
