@@ -95,17 +95,17 @@
             <div class="left-container">
                 <h3>Color legend</h3>
                 <table class="legend-table">
-                    <tr><td><div class="color-box cell-color-1"></div></td><td>Association score = 1</td></tr>
-                    <tr><td><div class="color-box cell-color-2"></div></td><td>Association score >= 0.9</td></tr>
-                    <tr><td><div class="color-box cell-color-3"></div></td><td>Association score >= 0.8</td></tr>
-                    <tr><td><div class="color-box cell-color-4"></div></td><td>Association score >= 0.7</td></tr>
-                    <tr><td><div class="color-box cell-color-5"></div></td><td>Association score >= 0.6</td></tr>
-                    <tr><td><div class="color-box cell-color-6"></div></td><td>Association score >= 0.5</td></tr>
-                    <tr><td><div class="color-box cell-color-7"></div></td><td>Association score >= 0.4</td></tr>
-                    <tr><td><div class="color-box cell-color-8"></div></td><td>Association score >= 0.3</td></tr>
-                    <tr><td><div class="color-box cell-color-9"></div></td><td>Association score >= 0.2</td></tr>
-                    <tr><td><div class="color-box cell-color-10"></div></td><td>Association score >= 0.1</td></tr>
-                    <tr><td><div class="color-box cell-color-11"></div></td><td>Association score >= 0.0</td></tr>
+                    <tr><td><div class="color-box cell-color-1"></div></td><td>Matching score = 1</td></tr>
+                    <tr><td><div class="color-box cell-color-2"></div></td><td>Matching score >= 0.9</td></tr>
+                    <tr><td><div class="color-box cell-color-3"></div></td><td>Matching score >= 0.8</td></tr>
+                    <tr><td><div class="color-box cell-color-4"></div></td><td>Matching score >= 0.7</td></tr>
+                    <tr><td><div class="color-box cell-color-5"></div></td><td>Matching score >= 0.6</td></tr>
+                    <tr><td><div class="color-box cell-color-6"></div></td><td>Matching score >= 0.5</td></tr>
+                    <tr><td><div class="color-box cell-color-7"></div></td><td>Matching score >= 0.4</td></tr>
+                    <tr><td><div class="color-box cell-color-8"></div></td><td>Matching score >= 0.3</td></tr>
+                    <tr><td><div class="color-box cell-color-9"></div></td><td>Matching score >= 0.2</td></tr>
+                    <tr><td><div class="color-box cell-color-10"></div></td><td>Matching score >= 0.1</td></tr>
+                    <tr><td><div class="color-box cell-color-11"></div></td><td>Matching score >= 0.0</td></tr>
                 </table>
             </div>
 
