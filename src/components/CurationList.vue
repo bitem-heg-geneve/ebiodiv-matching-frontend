@@ -80,12 +80,7 @@
             </table>
 
 
-
         <div>
-
-
-
-
 
             <div class="button-container">
                 <button class="secondary" @click="back()">Back to list</button>
