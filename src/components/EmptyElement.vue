@@ -38,7 +38,7 @@
         </tr>
 
         <tr class="expanded" v-if="expanded">
-            <td></td>
+            <td>manual</td>
             <td colspan="14" class="cell-color-na">
                 {{ curation.object.verbatimLabel }}
             </td>
