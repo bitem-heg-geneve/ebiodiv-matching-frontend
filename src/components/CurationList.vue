@@ -1,7 +1,7 @@
 <template>
 
     <div class="component-container" :style="cssVars">
-{{ change_list }}
+
         <div class="separator">
             <h2><span>{{ get_curation_name }}s associated with the {{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</span></h2>
         </div>
