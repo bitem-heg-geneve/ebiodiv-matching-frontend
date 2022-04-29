@@ -245,9 +245,14 @@ import EmptyElement from '@/components/EmptyElement.vue'
                axios.post(this.urls.matching, saved_data)
                     .then(response => {
                         if(response.status == 200){
-                            for (var i=0; i<this.occurrences_selection.relations.length; i++){
+                            for (let i=0; i<this.occurrences_selection.relations.length; i++){
                               if (this.change_list.includes(this.occurrences_selection.relations[i].object.key)){
                                 this.occurrences_selection.relations[i].matching.match = this.change_dict[this.occurrences_selection.relations[i].object.key]
+                              }
+                            }
+                            for (let i=0; i<this.empty_elements.length; i++){
+                              if (this.change_list.includes(this.empty_elements[i].empty_key)){
+                                this.empty_elements[i].matching.match = this.change_dict[this.empty_elements[i].empty_key]
                               }
                             }
                             this.change_list = []
@@ -287,7 +292,7 @@ import EmptyElement from '@/components/EmptyElement.vue'
                 object.matching = {}
                 object.matching.match = null
                 this.empty_elements.push(object)
-                this.addElement({'key': object.empty_key, 'value': null})
+                this.addElement({'key': object.empty_key, 'value': true})
            }
       },
     }
