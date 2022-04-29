@@ -3,21 +3,31 @@
     <tbody>
 
         <tr >
-            <td><a :href="'https://www.gbif.org/occurrence/'+curation.object.key" target="_blank">{{ curation.object.key }}</a></td>
-            <td :class="cellColor(curation.scores.$global)">{{ curation.scores.$global }}</td>
+            <td>
+                <div v-if="save=='Save'">
+                    <input  v-model="curation.object.key" @blur="loadKey()"/>
+                    <a v-if="empty_link" :href="empty_link" target="_blank"> <img src="../assets/images/icon_link.png"  class="mini"/></a>
+                </div>
+                <span v-if="save!='Save'">
+                    <a v-if="empty_link" :href="empty_link" target="_blank">{{ curation.object.key }}</a>
+                    <span v-else>{{ curation.object.key }}</span>
+                </span>
+                <span class="warning" v-if="warning"><br/>{{ warning }}</span>
+            </td>
+            <td  class="cell-color-na"></td>
             <template>
-                <td v-for="char in curation_characteristics" :key="char.score+'sp-td'" :class="cellColor(curation.scores[char.score])">
+                <td v-for="char in curation_characteristics" class="cell-color-na" :key="char.score+'sp-td-em'">
                     {{ display_content(curation.object, char.value) }}
                 </td>
             </template>
             <td>
-                <input type="checkbox" :checked="is_yes_selected" @click="changeSelection($event, 'yes')"/>
+                <input v-if="show_button" type="checkbox" :checked="is_yes_selected" @click="changeSelection($event, 'yes')"/>
             </td>
             <td>
-                <input type="checkbox" :checked="is_no_selected" @click="changeSelection($event, 'no')"/>
+                <input v-if="show_button" type="checkbox" :checked="is_no_selected" @click="changeSelection($event, 'no')"/>
             </td>
             <td>
-                <button :disabled="to_disable" @click="saveSelection()">{{ save }}</button>
+                <button v-if="show_button" :disabled="to_disable" @click="saveSelection()">{{ save }}</button>
             </td>
             <td>
                 <button @click="expanded = !expanded" class="button-table" v-if="curation.object.verbatimLabel">
@@ -27,13 +37,14 @@
             </td>
         </tr>
 
-    <tr class="expanded" v-if="expanded">
+        <tr class="expanded" v-if="expanded">
             <td></td>
             <td colspan="14" class="cell-color-na">
                 {{ curation.object.verbatimLabel }}
             </td>
-            <td colspan="4"></td>
+             <td colspan="4"></td>
         </tr>
+
     </tbody>
 
 </template>
@@ -59,6 +70,8 @@ import axios from 'axios';
       },
       data() {
         return {
+            warning: null,
+            key: "",
             status: null,
             saved_status: null,
             expanded: false,
@@ -99,18 +112,28 @@ import axios from 'axios';
                 return false
             }
         },
-        to_disable(){
-            if (this.curation.matching.match == true && this.is_yes_selected == true){
-                return true
-            }
-            if (this.curation.matching.match == false && this.is_no_selected == true){
-                return true
-            }
-            if (this.curation.matching.match == null && this.is_yes_selected == false && this.is_no_selected == false){
+        show_button(){
+
+            if (this.warning == null && this.curation.object.key != ""){
                 return true
             }
             return false
 
+        },
+        empty_link(){
+            if (/^http/.test(this.curation.object.key)){
+                return this.curation.object.key
+            }
+            else if (/^\d+$/.test(this.curation.object.key)){
+                return "https://www.gbif.org/occurrence/"+this.curation.object.key
+            }
+            return null
+        },
+        to_disable(){
+            if (this.saved_status == this.status){
+                return true;
+            }
+            return false
         }
       },
       methods:{
@@ -138,46 +161,6 @@ import axios from 'axios';
             else {
                 return false
             }
-        },
-        cellColor(value){
-                var class_name = "cell-color-na"
-                if (value == null){
-                    class_name = "cell-color-na"
-                }
-                else if (value >= 1.0){
-                    class_name = "cell-color-1"
-                }
-                else if (value >= 0.9){
-                    class_name = "cell-color-2"
-                }
-                else if (value >= 0.8){
-                    class_name = "cell-color-3"
-                }
-                else if (value >= 0.7){
-                    class_name = "cell-color-4"
-                }
-                else if (value >= 0.6){
-                    class_name = "cell-color-5"
-                }
-                else if (value >= 0.5){
-                    class_name = "cell-color-6"
-                }
-                else if (value >= 0.4){
-                    class_name = "cell-color-7"
-                }
-                else if (value >= 0.3){
-                    class_name = "cell-color-8"
-                }
-                else if (value >= 0.2){
-                    class_name = "cell-color-9"
-                }
-                else if (value >= 0.1){
-                    class_name = "cell-color-10"
-                }
-                else if (value >= 0.0){
-                    class_name = "cell-color-11"
-                }
-                return class_name
         },
         display_content (object, values){
             var content = ""
@@ -224,6 +207,7 @@ import axios from 'axios';
           }
         },
         saveSelection(){
+            alert("Manual entry is a beta version: your data will not be saved permanently")
             var match = null
             if (this.status == "yes"){
                 match = true
@@ -231,26 +215,65 @@ import axios from 'axios';
             if (this.status == "no"){
                 match = false
             }
-            var data_to_save = {
-                  "occurrenceKey1": this.occurrences_selection.key,
-                  "occurrenceKey2": this.curation.object.key,
-                  "match": match,
-                  "comment": "testGUI"
-                }
-               axios.post(this.urls.matching, data_to_save)
-                    .then(response => {
-                        if(response.status == 200){
-                            this.curation.matching.match = match
-                            this.saved_status = this.status
-                            this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
-                        }
-                    })
-                    .catch(error => {
-                        alert ("Failed to save"+error )
-                    });
+            if (/^\d+$/.test(this.curation.object.key)){
+                var data_to_save = {
+                      "occurrenceKey1": this.occurrences_selection.key,
+                      "occurrenceKey2": this.curation.object.key,
+                      "match": match,
+                      "comment": "testempty"
+                    }
+                   axios.post(this.urls.matching, data_to_save)
+                        .then(response => {
+                            if(response.status == 200){
+                                this.curation.matching.match = match
+                                this.saved_status = this.status
+                                this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
+                            }
+                        })
+                        .catch(error => {
+                            alert ("Failed to save"+error )
+                        });
+             }
+             else{
+                    this.curation.matching.match = match
+                    this.saved_status = this.status
+                    this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
+             }
         },
-        toggle(){
-            this.expanded = !this.expanded
+        loadKey(){
+            this.warning = null
+            for (var i=0; i<this.occurrences_selection.relations.length; i++){
+                if (this.curation.object.key == this.occurrences_selection.relations[i].object.key){
+                    this.warning = "already in suggested "+this.get_curation_name.toLowerCase()+"s";
+                    break;
+                }
+            }
+            if (this.curation.object.key != "" && /^\d+$/.test(this.curation.object.key)){
+               this.loadGBIF()
+            }
+            else {
+                this.curation.object = {'key': this.curation.object.key}
+            }
+            this.status = "yes"
+        },
+        loadGBIF(){
+           var url = this.urls.gbif+this.curation.object.key
+                axios
+                      .get(url)
+                      .then(response => {
+                        if (response.status == 200){
+                            if ('key' in response.data){
+                                this.curation.object = response.data
+                            }
+                        }
+                        else  {
+                            this.curation.object = {'key': this.curation.object.key}
+                        }
+                      })
+                      .catch(error => {
+                        this.curation.object = {'key': this.curation.object.key, 'error': error}
+                        this.warning = "unknown GBIF key"
+                    });
         }
       },
       beforeMount(){
@@ -291,59 +314,9 @@ import axios from 'axios';
        background-color: var(--color);
     }
 
-    .cell-color-1 {
-        background-color: #7ABC8190;
-        color: #000;
-    }
-    .cell-color-2 {
-        background-color: #91C58390;
-        color: #000;
-    }
-    .cell-color-3 {
-        background-color: #ABCF8790;
-        color: #000;
-    }
-    .cell-color-4 {
-        background-color: #C5D88A90;
-        color: #000;
-    }
-    .cell-color-5 {
-        background-color: #E0E28E80;
-        color: #000;
-    }
-    .cell-color-6 {
-        background-color: #FBEB9280;
-        color: #000;
-    }
-    .cell-color-7 {
-        background-color: #F6D48B80;
-        color: #000;
-    }
-    .cell-color-8 {
-        background-color: #F2BB8480;
-        color: #000;
-    }
-    .cell-color-9 {
-        background-color: #EDA27C80;
-        color: #000;
-    }
-    .cell-color-10 {
-        background-color: #EA897680;
-        color: #000;
-    }
-    .cell-color-11 {
-        background-color: #E6726F80;
-        color: #000;
-    }
-    .cell-color-na {
-        background-color: #eee;
-        color: #000;
-    }
-
     .expanded tr {
         background-color: #fff;
     }
-
     .expanded td {
         padding: 20px;
         text-align: left;
@@ -392,6 +365,20 @@ import axios from 'axios';
     button[disabled]{
       background-color: #cccccc;
       color: #666666;
+    }
+
+    .warning {
+        color: red;
+    }
+
+    input{
+        text-align: center;
+        width: 80%;
+        margin: 0px 5px 0px 0px;
+    }
+    .cell-color-na {
+        background-color: #eee;
+        color: #000;
     }
 
 </style>

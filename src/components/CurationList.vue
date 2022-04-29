@@ -54,13 +54,21 @@
                 </tr>
 
                 <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" save="Save"/>
+                <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_empty_elements" :key="curation.empty_key" :curation="curation" save="Save"/>
+                <tr class="empty-line">
+                    <td colspan="18">
+                        <div class="left-container">
+                            <a @click="addLine">+ Add another {{ get_curation_name.toLowerCase() }}</a>
+                        </div>
+                    </td>
+                </tr>
 
                 <tr v-if="finished_curation.length > 0 || finished_empty_elements.length > 0" class="empty-line">
                     <td colspan="18">
                         <br/><br/>
                         <img v-show="!show_edit" src="../assets/images/icon_plus.png" alt="[+]" @click="show_edit = !show_edit" class="mini"/>
                         <img v-show="show_edit" src="../assets/images/icon_minus.png" alt="[-]" @click="show_edit = !show_edit" class="mini"/>
-                        {{ finished_curation.length }} {{ get_curation_name.toLowerCase() }}<span v-if="finished_curation.length > 1">s</span> already curated
+                        {{ finished_curation.length+finished_empty_elements.length }} {{ get_curation_name.toLowerCase() }}<span v-if="(finished_curation.length+finished_empty_elements.length) > 1">s</span> already curated
                     </td>
                 </tr>
 
@@ -77,8 +85,11 @@
                 <template v-if="show_edit && finished_curation.length > 0">
                     <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_curation" :key="curation.object.key" :curation="curation" save="Edit"/>
                 </template>
-
+                <template v-if="show_edit && finished_empty_elements.length > 0">
+                    <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_empty_elements" :key="curation.empty_key" :curation="curation" save="Edit"/>
+                </template>
             </table>
+
 
 
         <div>
@@ -116,11 +127,13 @@
 import { mapState, mapActions } from 'vuex'
 import axios from 'axios';
 import CurationElement from '@/components/CurationElement.vue'
+import EmptyElement from '@/components/EmptyElement.vue'
 
     export default {
       name: 'CurationList',
       components: {
         CurationElement,
+        EmptyElement,
       },
       data() {
         return {
@@ -267,7 +280,8 @@ import CurationElement from '@/components/CurationElement.vue'
            addLine(){
                 var object = {}
                 object.object = {}
-                object.object.key = "emptykey_"+this.empty_elements.length
+                object.object.key = ""
+                object.empty_key = "emptykey_"+this.empty_elements.length
                 object.matching = {}
                 object.matching.match = null
                 this.empty_elements.push(object)
