@@ -200,10 +200,10 @@ import axios from 'axios';
                 match = false
             }
           if (this.status != this.saved_status){
-            this.$emit("addOne", {'key': this.curation.object.key, 'value': match})
+            this.$emit("addOne", {'key': this.curation.empty_key, 'value': match})
           }
           else{
-             this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
+             this.$emit("removeOne", {'key': this.curation.empty_key, 'value': match})
           }
         },
         saveSelection(){
@@ -227,7 +227,7 @@ import axios from 'axios';
                             if(response.status == 200){
                                 this.curation.matching.match = match
                                 this.saved_status = this.status
-                                this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
+                                this.$emit("removeOne", {'key': this.curation.empty_key, 'value': match})
                             }
                         })
                         .catch(error => {
@@ -237,7 +237,7 @@ import axios from 'axios';
              else{
                     this.curation.matching.match = match
                     this.saved_status = this.status
-                    this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
+                    this.$emit("removeOne", {'key': this.curation.empty_key, 'value': match})
              }
         },
         loadKey(){
