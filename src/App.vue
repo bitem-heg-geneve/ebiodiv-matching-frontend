@@ -8,17 +8,45 @@
 
       <router-view/>
 
-      <div class="logo">
-        <img src="./assets/images/logo_ebiodiv.png"/>
-        <img src="./assets/images/logo_gbif.png"/>
-        <img src="./assets/images/logo_plazi.png"/>
-        <img src="./assets/images/logo_tb.png"/>
-        <img src="./assets/images/logo_bicikl.png"/>
-        <img src="./assets/images/logo_sib.png"/>
-        <img src="./assets/images/logo_heg.png"/>
-        <img src="./assets/images/logo_hesso.jpg"/>
-        <img src="./assets/images/logo_sibils.png"/>
+      <div class="logo row">
+          <div class="col-1">
+                <img src="./assets/images/logo_ebiodiv.png"/>
+          </div>
+            <div class="col-1">
+                <img src="./assets/images/logo_gbif.png"/>
+          </div>
+          <div class="col-1">
+                <img src="./assets/images/logo_plazi.png"/>
+          </div>
+          <div class="col-1">
+                <img src="./assets/images/logo_tb.png"/>
+          </div>
+          <div class="col-1">
+                <img src="./assets/images/logo_bicikl.png"/>
+          </div>
+          <div class="col-1">
+                <img src="./assets/images/logo_unibern.png"/>
+          </div>
+          <div class="col-1">
+                <img src="./assets/images/logo_nmbe.png"/>
+          </div>
+          <div class="col-1">
+                <img src="./assets/images/logo_swissuni.png"/>
+          </div>
+          <div class="col-1">
+                <img src="./assets/images/logo_sib.png"/>
+          </div>
+          <div class="col-1">
+                <img src="./assets/images/logo_heg.png"/>
+          </div>
+          <div class="col-1">
+                <img src="./assets/images/logo_hesso.jpg"/>
+          </div>
+          <div class="col-1">
+                <img src="./assets/images/logo_sibils.png"/>
+          </div>
       </div>
+
 
     </div>
 
@@ -137,10 +165,13 @@ import { mapState } from 'vuex'
         margin-top: 50px;
         border-top: 1px solid var(--color-main);
         border-bottom: 1px solid var(--color-main);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 5px 50px;
       }
       .logo img {
-        height: 80px;
-        padding: 20px;
+        width: 90%
       }
 
       .separator h2 {

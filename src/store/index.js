@@ -15,8 +15,7 @@ export default new Vuex.Store({
         datasets: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/datasets",
         occurrences: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/occurrences",
         matching: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/matching",
-        material_citations_status: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/materialcitation/",
-        institution_status: "https://candy.text-analytics.ch/ebiodiv/matching/api/v1/matching/data/",
+        gbif: "https://api.gbif.org/v1/occurrence/",
     },
     urls_parameters: {
         institution: null,
@@ -72,6 +71,7 @@ export default new Vuex.Store({
                 family: [],
                 genus: [],
                 species: [],
+                typeStatus: [],
                 date: [0, 2022],
             },
             sort: 'ID',
@@ -92,6 +92,7 @@ export default new Vuex.Store({
                 {title: 'Country', short: 'country', multi: true},
                 {title: 'Collection code', short: 'collectionCode', multi: true},
                 {title: 'Collector', short: 'recordedBy', multi: true},
+                {title: 'Type', short: 'typeStatus', multi: true},
                 {title: 'Kingdom', short: 'kingdom', multi: true},
                 {title: 'Phylum', short: 'phylum', multi: true},
                 {title: 'Class', short: 'class', multi: true},
@@ -116,6 +117,7 @@ export default new Vuex.Store({
         {name: 'Catalog nb', score: 'catalogNumber', value: ['catalogNumber']},
         {name: 'Individual nb', score: 'individualCount',  value: ['individualCount']},
         {name: 'Collector (recorded by)', score: 'recordedBy', value: ['recordedBy']},
+        {name: 'Type', score: 'typeStatus', value: ['typeStatus']},
     ]
   },
   mutations: {

@@ -5,6 +5,7 @@
         <td><a :href="'https://www.gbif.org/occurrence/'+occurrence['key']" target="_blank">{{ occurrence.key }}</a></td>
         <td>{{ occurrence.scientificName }}</td>
         <td v-if="get_occurrence_name=='Material citation'">{{ occurrence.verbatimLabel }}</td>
+        <td>{{ occurrence.typeStatus }}</td>
         <td>{{ occurrence.year }}</td>
         <td>{{ Object.entries(occurrence.relations).length }}</td>
         <td><img :src="require('../assets/images/icon_status_'+occurrence.status+'.png')" class="small"/></td>

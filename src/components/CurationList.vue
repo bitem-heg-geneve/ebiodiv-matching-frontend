@@ -55,7 +55,7 @@
 
                 <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" save="Save"/>
 
-                <tr v-if="finished_curation.length > 0" class="empty-line">
+                <tr v-if="finished_curation.length > 0 || finished_empty_elements.length > 0" class="empty-line">
                     <td colspan="18">
                         <br/><br/>
                         <img v-show="!show_edit" src="../assets/images/icon_plus.png" alt="[+]" @click="show_edit = !show_edit" class="mini"/>
@@ -64,7 +64,7 @@
                     </td>
                 </tr>
 
-                <tr v-if="show_edit && finished_curation.length > 0">
+                <tr v-if="show_edit && (finished_curation.length > 0 || finished_empty_elements.length > 0)">
                     <th>Key</th>
                     <th>Score</th>
                     <th v-for="char in curation_characteristics" :key="char.score+'sp-th'" class="clickable-th">{{ char.name }}</th>
@@ -77,6 +77,7 @@
                 <template v-if="show_edit && finished_curation.length > 0">
                     <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_curation" :key="curation.object.key" :curation="curation" save="Edit"/>
                 </template>
+
             </table>
 
 
@@ -167,6 +168,18 @@ import CurationElement from '@/components/CurationElement.vue'
            filtered_curation = filtered_curation.filter(element => element.matching.match != null);
            return filtered_curation;
         },
+        processed_empty_elements () {
+            var filtered_empty = this.empty_elements
+
+           filtered_empty = filtered_empty.filter(element => element.matching.match == null);
+           return filtered_empty;
+        },
+        finished_empty_elements () {
+            var filtered_empty = this.empty_elements
+
+           filtered_empty = filtered_empty.filter(element => element.matching.match != null);
+           return filtered_empty;
+        },
         to_disable(){
             if (Object.keys(this.change_list).length > 0){
                 return false
@@ -254,8 +267,9 @@ import CurationElement from '@/components/CurationElement.vue'
            addLine(){
                 var object = {}
                 object.object = {}
-                object.object.key = ""
-
+                object.object.key = "emptykey_"+this.empty_elements.length
+                object.matching = {}
+                object.matching.match = null
                 this.empty_elements.push(object)
            }
       },

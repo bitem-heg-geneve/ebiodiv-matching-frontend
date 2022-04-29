@@ -32,7 +32,8 @@
                                  <tr>
                                      <th style="width:5%">{{ get_occurrence_name }} ID</th>
                                      <th style="width:20%">Scientific name</th>
-                                     <th v-if="get_occurrence_name=='Material citation'" style="width:55%">Verbatim label</th>
+                                     <th v-if="get_occurrence_name=='Material citation'" style="width:50%">Verbatim label</th>
+                                     <th style="width:5%">Type</th>
                                      <th style="width:5%">Date</th>
                                      <th style="width:5%">{{ get_curation_name }} nb</th>
                                      <th style="width:5%">Status</th>
