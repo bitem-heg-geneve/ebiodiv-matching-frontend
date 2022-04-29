@@ -12,6 +12,7 @@
         <img src="./assets/images/logo_ebiodiv.png"/>
         <img src="./assets/images/logo_gbif.png"/>
         <img src="./assets/images/logo_plazi.png"/>
+        <img src="./assets/images/logo_tb.png"/>
         <img src="./assets/images/logo_sib.png"/>
         <img src="./assets/images/logo_heg.png"/>
         <img src="./assets/images/logo_hesso.jpg"/>

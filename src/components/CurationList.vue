@@ -3,41 +3,60 @@
     <div class="component-container" :style="cssVars">
 
         <div class="separator">
-            <h2><span>{{ get_curation_name }}s for the {{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</span></h2>
+            <h2><span>{{ get_curation_name }}s associated with the {{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</span></h2>
         </div>
         <p>{{ occurrences_selection.verbatimLabel }}</p>
 
             <table>
 
+                <tr class="empty-line">
+                    <td colspan="18"><br/><br/>{{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</td>
+                </tr>
                 <tr>
                     <th>Key</th>
+                    <th></th>
                     <th v-for="char in curation_characteristics" :key="char.score+'sp-th'">{{ char.name }}</th>
                     <th colspan="3"></th>
+                    <th></th>
                 </tr>
                 <tr class="reference-entity">
                     <td><a :href="'https://www.gbif.org/occurrence/'+occurrences_selection.key" target="_blank">{{ occurrences_selection.key}}</a></td>
+                    <td></td>
                     <template v-for="char in curation_characteristics">
                         <td v-if="char.value" :key="char.score+'mc_td'">{{ display_content(occurrences_selection, char.value) }}</td>
                     </template>
                     <td colspan="3"></td>
+                    <td>
+                        <button @click="expanded = !expanded" class="button-table" v-if="occurrences_selection.verbatimLabel">
+                            <img v-if="!expanded" src="../assets/images/icon_expand.png"  class="mini"/>
+                            <img v-if="expanded" src="../assets/images/icon_reduce.png"  class="mini"/>
+                        </button>
+                    </td>
+                </tr>
+                <tr class="expanded" v-if="expanded">
+                    <td colspan="18">
+                        {{ occurrences_selection.verbatimLabel }}
+                    </td>
                 </tr>
 
-                <tr>
-                    <td colspan="16"><br/><br/>{{ processed_curation.length }} {{ get_curation_name.toLowerCase() }}<span v-if="processed_curation.length > 1">s</span> to curate</td>
+                <tr class="empty-line">
+                    <td colspan="18"><br/><br/>{{ processed_curation.length }} suggested {{ get_curation_name.toLowerCase() }}<span v-if="processed_curation.length > 1">s</span> to curate</td>
                 </tr>
 
                 <tr v-if="processed_curation.length > 0">
                     <th>Key</th>
+                    <th @click="sortBy('$global')">Score</th>
                     <th v-for="char in curation_characteristics" :key="char.score+'sp-th'" class="clickable-th" @click="sortBy(char.score)">{{ char.name }}</th>
                     <th>Yes</th>
                     <th>No</th>
                     <th>Save</th>
+                    <th></th>
                 </tr>
 
                 <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" save="Save"/>
 
-                <tr v-if="finished_curation.length > 0">
-                    <td colspan="16">
+                <tr v-if="finished_curation.length > 0" class="empty-line">
+                    <td colspan="18">
                         <br/><br/>
                         <img v-show="!show_edit" src="../assets/images/icon_plus.png" alt="[+]" @click="show_edit = !show_edit" class="mini"/>
                         <img v-show="show_edit" src="../assets/images/icon_minus.png" alt="[-]" @click="show_edit = !show_edit" class="mini"/>
@@ -47,10 +66,12 @@
 
                 <tr v-if="show_edit && finished_curation.length > 0">
                     <th>Key</th>
+                    <th>Score</th>
                     <th v-for="char in curation_characteristics" :key="char.score+'sp-th'" class="clickable-th">{{ char.name }}</th>
                     <th>Yes</th>
                     <th>No</th>
                     <th>Edit</th>
+                    <th></th>
                 </tr>
 
                 <template v-if="show_edit && finished_curation.length > 0">
@@ -69,6 +90,23 @@
             <div class="button-container">
                 <button class="secondary" @click="back()">Back to list</button>
                 <button :disabled="to_disable" @click="save()">Save</button>
+            </div>
+
+            <div class="left-container">
+                <h3>Color legend</h3>
+                <table class="legend-table">
+                    <tr><td><div class="color-box cell-color-1"></div></td><td>Association score = 1</td></tr>
+                    <tr><td><div class="color-box cell-color-2"></div></td><td>Association score >= 0.9</td></tr>
+                    <tr><td><div class="color-box cell-color-3"></div></td><td>Association score >= 0.8</td></tr>
+                    <tr><td><div class="color-box cell-color-4"></div></td><td>Association score >= 0.7</td></tr>
+                    <tr><td><div class="color-box cell-color-5"></div></td><td>Association score >= 0.6</td></tr>
+                    <tr><td><div class="color-box cell-color-6"></div></td><td>Association score >= 0.5</td></tr>
+                    <tr><td><div class="color-box cell-color-7"></div></td><td>Association score >= 0.4</td></tr>
+                    <tr><td><div class="color-box cell-color-8"></div></td><td>Association score >= 0.3</td></tr>
+                    <tr><td><div class="color-box cell-color-9"></div></td><td>Association score >= 0.2</td></tr>
+                    <tr><td><div class="color-box cell-color-10"></div></td><td>Association score >= 0.1</td></tr>
+                    <tr><td><div class="color-box cell-color-11"></div></td><td>Association score >= 0.0</td></tr>
+                </table>
             </div>
 
         </div>
@@ -97,7 +135,8 @@ import CurationElement from '@/components/CurationElement.vue'
                 by: '$global',
                 asc: false
             },
-            show_edit: false
+            show_edit: false,
+            expanded: false
         };
       },
       computed: {
@@ -156,9 +195,6 @@ import CurationElement from '@/components/CurationElement.vue'
                 }
             }
             return content
-        },
-        toggle(){
-            this.show_edit = !this.show_edit
         },
         removeElement(element){
             const index = this.change_list.indexOf(element.key);
@@ -346,5 +382,84 @@ import CurationElement from '@/components/CurationElement.vue'
         padding-bottom: 4px;
     }
 
+    .empty-line td, .empty-line th {
+         border: 0px solid #ddd;
+    }
+
+    .cell-color-1 {
+        background-color: #7ABC8190;
+        color: #000;
+    }
+    .cell-color-2 {
+        background-color: #91C58390;
+        color: #000;
+    }
+    .cell-color-3 {
+        background-color: #ABCF8790;
+        color: #000;
+    }
+    .cell-color-4 {
+        background-color: #C5D88A90;
+        color: #000;
+    }
+    .cell-color-5 {
+        background-color: #E0E28E80;
+        color: #000;
+    }
+    .cell-color-6 {
+        background-color: #FBEB9280;
+        color: #000;
+    }
+    .cell-color-7 {
+        background-color: #F6D48B80;
+        color: #000;
+    }
+    .cell-color-8 {
+        background-color: #F2BB8480;
+        color: #000;
+    }
+    .cell-color-9 {
+        background-color: #EDA27C80;
+        color: #000;
+    }
+    .cell-color-10 {
+        background-color: #EA897680;
+        color: #000;
+    }
+    .cell-color-11 {
+        background-color: #E6726F80;
+        color: #000;
+    }
+    .cell-color-na {
+        background-color: #eee;
+        color: #000;
+    }
+
+    .color-box {
+        width: 15px;
+        height: 15px;
+    }
+
+    .legend-table{
+        width: 200px;
+    }
+
+    .legend-table td {
+        border: 0px solid #000;
+        text-align: left;
+    }
+
+    .expanded {
+        background-color: #fff;
+    }
+
+    .expanded tr {
+        background-color: #fff;
+    }
+
+    .expanded td {
+        padding: 20px;
+        text-align: left;
+    }
 
 </style>

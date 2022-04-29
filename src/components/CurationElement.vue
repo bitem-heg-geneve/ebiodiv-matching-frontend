@@ -4,6 +4,7 @@
 
         <tr >
             <td><a :href="'https://www.gbif.org/occurrence/'+curation.object.key" target="_blank">{{ curation.object.key }}</a></td>
+            <td :class="cellColor(curation.scores.$global)">{{ curation.scores.$global }}</td>
             <template>
                 <td v-for="char in curation_characteristics" :key="char.score+'sp-td'" :class="cellColor(curation.scores[char.score])">
                     {{ display_content(curation.object, char.value) }}
@@ -18,8 +19,19 @@
             <td>
                 <button :disabled="to_disable" @click="saveSelection()">{{ save }}</button>
             </td>
+            <td>
+                <button @click="expanded = !expanded" class="button-table" v-if="curation.object.verbatimLabel">
+                    <img v-if="!expanded" src="../assets/images/icon_expand.png"  class="mini"/>
+                    <img v-if="expanded" src="../assets/images/icon_reduce.png"  class="mini"/>
+                </button>
+            </td>
         </tr>
 
+    <tr class="expanded" v-if="expanded">
+            <td colspan="18">
+                {{ curation.object.verbatimLabel }}
+            </td>
+        </tr>
     </tbody>
 
 </template>
@@ -47,6 +59,7 @@ import axios from 'axios';
         return {
             status: null,
             saved_status: null,
+            expanded: false,
         };
       },
       computed: {
@@ -233,6 +246,9 @@ import axios from 'axios';
                     .catch(error => {
                         alert ("Failed to save"+error )
                     });
+        },
+        toggle(){
+            this.expanded = !this.expanded
         }
       },
       beforeMount(){
@@ -330,10 +346,9 @@ import axios from 'axios';
         background-color: #fff;
     }
 
-    .expanded table {
-        width: 70%;
-        margin: 20px auto;
-        font-size: 1em;
+    .expanded td {
+        padding: 20px;
+        text-align: left;
     }
 
     .secondary {
