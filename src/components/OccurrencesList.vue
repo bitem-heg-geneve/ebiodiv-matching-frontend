@@ -1,7 +1,6 @@
 <template>
 
     <div class="component-container" :style="cssVars">
-
         <div>
 
             <div class="separator">
@@ -32,8 +31,9 @@
                                  <tr>
                                      <th style="width:5%">{{ get_occurrence_name }} ID</th>
                                      <th style="width:20%">Scientific name</th>
-                                     <th v-if="get_occurrence_name=='Material citation'" style="width:50%">Verbatim label</th>
+                                     <th v-if="get_occurrence_name=='Material citation'" style="width:45%">Verbatim label</th>
                                      <th style="width:5%">Type</th>
+                                     <th style="width:5%">Record</th>
                                      <th style="width:5%">Date</th>
                                      <th style="width:5%">{{ get_curation_name }} nb</th>
                                      <th style="width:5%">Status</th>
@@ -215,7 +215,7 @@ import shared from '@/components/shared.js'
                                     if(occ[index].key == this.urls_parameters.occurrence){
                                         this.updateOccurrencesSelection(occ[index])
                                         this.updateStep(3)
-                                        this.$router.push({ name: 'HomePage', query: { institutionKey: this.institution_selection.key, datasetKeys: this.datasets_selection, format: this.format_selection, occurrenceKey: this.urls_parameters.occurrence}}).catch(()=>{});
+                                        this.$router.push({ name: 'HomePage', query: { institutionKey: this.institution_selection.key, datasetKeys: this.datasets_selection.join(','), format: this.format_selection, occurrenceKey: this.urls_parameters.occurrence}}).catch(()=>{});
                                     }
                                 }
                             }
@@ -242,14 +242,17 @@ import shared from '@/components/shared.js'
                 }
                 if (relatedKey != null){
                     let relatedObject = {}
-                    relatedObject['matching'] = relation.matching
+                    // temp decision reload
+                    var matching = {}
+                    matching['match'] = relation.decision
+                    relatedObject['matching'] = matching
                     relatedObject['scores'] = relation.scores
                     relatedObject['object'] = json.occurrences[relatedKey]
                     relatedObject['object']['key'] = relatedKey
-                    if (relation.matching.match != null){
+                    if (relatedObject['matching'].match !=  null){
                         done.push(relatedKey)
                     }
-                    if (relation.matching.match == null){
+                    else {
                         not_done.push(relatedKey)
                     }
                     relations.push(relatedObject)

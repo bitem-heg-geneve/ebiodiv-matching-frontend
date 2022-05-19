@@ -15,9 +15,14 @@
                 <span class="warning" v-if="warning"><br/>{{ warning }}</span>
             </td>
             <td  class="cell-color-na">manual</td>
-            <template>
+            <template v-if="in_progress == false">
                 <td v-for="char in curation_characteristics" class="cell-color-na" :key="char.score+'sp-td-em'">
                     {{ display_content(curation.object, char.value) }}
+                </td>
+            </template>
+            <template v-else>
+                <td v-for="char in curation_characteristics" class="cell-color-na" :key="char.score+'sp-td-em'">
+                    <PulseLoader  :color="theme_color.main" size="5px"/>
                 </td>
             </template>
             <td>
@@ -39,7 +44,7 @@
 
         <tr class="expanded" v-if="expanded">
             <td></td>
-            <td colspan="14" class="cell-color-na">
+            <td :colspan="curation_characteristics.length+1" class="cell-color-na">
                 {{ curation.object.verbatimLabel }}
             </td>
              <td colspan="4"></td>
@@ -53,10 +58,12 @@
 <script>
 import { mapState } from 'vuex'
 import axios from 'axios';
+var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 
     export default {
       name: 'CurationElement',
       components: {
+              PulseLoader
       },
       props: {
         curation: {
@@ -75,6 +82,7 @@ import axios from 'axios';
             status: null,
             saved_status: null,
             expanded: false,
+            in_progress: false
         };
       },
       computed: {
@@ -89,12 +97,6 @@ import axios from 'axios';
         },
         get_curation_name(){
             return this.fields[this.format_selection].format_curation.name
-        },
-        selected_value(){
-            if (this.curation.matching.match == null){
-                return false
-            }
-            return true
         },
         is_yes_selected(){
             if (this.status == "yes"){
@@ -143,25 +145,6 @@ import axios from 'axios';
                 }
                 return value
            },
-        is_selected(value){
-            if (this.status == null){
-                if (this.curation.matching.match == null){
-                    this.status = "unknown"
-                }
-                else if (this.curation.matching.match == true){
-                    this.status = "yes"
-                }
-                else if (this.curation.matching.match == false){
-                    this.status = "no"
-                }
-            }
-            if (this.status == value){
-                return true
-            }
-            else {
-                return false
-            }
-        },
         display_content (object, values){
             var content = ""
             for (let i=0; i<values.length; i++){
@@ -207,7 +190,6 @@ import axios from 'axios';
           }
         },
         saveSelection(){
-            alert("Manual entry is a beta version: your data will not be saved permanently")
             var match = null
             if (this.status == "yes"){
                 match = true
@@ -218,13 +200,16 @@ import axios from 'axios';
             if (/^\d+$/.test(this.curation.object.key)){
                 var data_to_save = {
                       "occurrenceKey1": this.occurrences_selection.key,
-                      "occurrenceKey2": this.curation.object.key,
-                      "match": match,
-                      "comment": "testempty"
+                      "occurrenceKey2": parseInt(this.curation.object.key),
+                      "decision": match,
                     }
-                   axios.post(this.urls.matching, data_to_save)
-                        .then(response => {
-                            if(response.status == 200){
+                var saved_json =  {"occurrenceRelations": [data_to_save]}
+                alert(this.urls.matching)
+                alert(JSON.stringify(saved_json))
+               axios.post(this.urls.matching, saved_json)
+                       .then(response => {
+                          if(response.status == 200){
+                          alert(JSON.stringify(response))
                                 this.curation.matching.match = match
                                 this.saved_status = this.status
                                 this.$emit("removeOne", {'key': this.curation.empty_key, 'value': match})
@@ -257,18 +242,25 @@ import axios from 'axios';
             this.status = "yes"
         },
         loadGBIF(){
-           var url = this.urls.gbif+this.curation.object.key
+            this.in_progress = true
+           var url = this.urls.fetch_occurrence+"?occurrenceKeys="+this.curation.object.key+"&fetchMissing=true&scores=false"
                 axios
                       .get(url)
                       .then(response => {
                         if (response.status == 200){
-                            if ('key' in response.data){
-                                this.curation.object = response.data
+                            if ('occurrences' in response.data  && this.curation.object.key in response.data.occurrences){
+                                var key = this.curation.object.key
+                                this.curation.object = response.data.occurrences[this.curation.object.key]
+                                this.curation.object['key'] = key
+                            }
+                            else {
+                                this.curation.object = {'key': this.curation.object.key}
                             }
                         }
                         else  {
                             this.curation.object = {'key': this.curation.object.key}
                         }
+                        this.in_progress = false
                       })
                       .catch(error => {
                         this.curation.object = {'key': this.curation.object.key, 'error': error}
@@ -289,7 +281,7 @@ import axios from 'axios';
                 }
             }
             this.saved_status = this.status
-        }
+        },
     }
 
 </script>

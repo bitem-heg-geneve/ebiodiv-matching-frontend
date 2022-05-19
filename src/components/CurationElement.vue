@@ -29,7 +29,7 @@
 
     <tr class="expanded" v-if="expanded">
             <td></td>
-            <td colspan="14" class="cell-color-na">
+            <td :colspan="curation_characteristics.length+1" class="cell-color-na">
                 {{ curation.object.verbatimLabel }}
             </td>
             <td colspan="4"></td>
@@ -77,12 +77,6 @@ import axios from 'axios';
         get_curation_name(){
             return this.fields[this.format_selection].format_curation.name
         },
-        selected_value(){
-            if (this.curation.matching.match == null){
-                return false
-            }
-            return true
-        },
         is_yes_selected(){
             if (this.status == "yes"){
                 return true
@@ -120,25 +114,6 @@ import axios from 'axios';
                 }
                 return value
            },
-        is_selected(value){
-            if (this.status == null){
-                if (this.curation.matching.match == null){
-                    this.status = "unknown"
-                }
-                else if (this.curation.matching.match == true){
-                    this.status = "yes"
-                }
-                else if (this.curation.matching.match == false){
-                    this.status = "no"
-                }
-            }
-            if (this.status == value){
-                return true
-            }
-            else {
-                return false
-            }
-        },
         cellColor(value){
                 var class_name = "cell-color-na"
                 if (value == null){
@@ -234,14 +209,14 @@ import axios from 'axios';
             var data_to_save = {
                   "occurrenceKey1": this.occurrences_selection.key,
                   "occurrenceKey2": this.curation.object.key,
-                  "match": match,
-                  "comment": "testGUI"
+                  "decision": match,
                 }
-               axios.post(this.urls.matching, data_to_save)
+                var saved_json =  {"occurrenceRelations": [data_to_save]}
+               axios.post(this.urls.matching, saved_json)
                     .then(response => {
                         if(response.status == 200){
                             this.curation.matching.match = match
-                            this.saved_status = this.status
+                           this.saved_status = this.status
                             this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
                         }
                     })

@@ -14,8 +14,8 @@ export default new Vuex.Store({
         institutions: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/institutionList",
         datasets: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/datasets",
         occurrences: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/occurrences",
-        matching: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/matching",
-        gbif: "https://api.gbif.org/v1/occurrence/",
+        matching: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/occurrenceRelations",
+        fetch_occurrence: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/occurrences",
     },
     urls_parameters: {
         institution: null,
@@ -118,6 +118,7 @@ export default new Vuex.Store({
         {name: 'Individual nb', score: 'individualCount',  value: ['individualCount']},
         {name: 'Collector (recorded by)', score: 'recordedBy', value: ['recordedBy']},
         {name: 'Type', score: 'typeStatus', value: ['typeStatus']},
+        {name: 'Record', score: 'basisOfRecord', value: ['basisOfRecord']},
     ]
   },
   mutations: {

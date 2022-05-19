@@ -6,6 +6,7 @@
         <td>{{ occurrence.scientificName }}</td>
         <td v-if="get_occurrence_name=='Material citation'">{{ occurrence.verbatimLabel }}</td>
         <td>{{ occurrence.typeStatus }}</td>
+        <td>{{ occurrence.basisOfRecord }}</td>
         <td>{{ occurrence.year }}</td>
         <td>{{ Object.entries(occurrence.relations).length }}</td>
         <td><img :src="require('../assets/images/icon_status_'+occurrence.status+'.png')" class="small"/></td>
@@ -59,7 +60,7 @@ import { mapState, mapActions } from 'vuex'
         displaySpecimen(){
             this.updateOccurrencesSelection(this.occurrence)
             this.updateStep(3)
-            this.$router.push({ name: 'HomePage', query: { institutionKey: this.institution_selection.key, datasetKeys: this.datasets_selection, format: this.format_selection, occurrenceKey: this.occurrence.key}}).catch(()=>{});
+            this.$router.push({ name: 'HomePage', query: { institutionKey: this.institution_selection.key, datasetKeys: this.datasets_selection.join(','), format: this.format_selection, occurrenceKey: this.occurrence.key}}).catch(()=>{});
        },
       },
     }

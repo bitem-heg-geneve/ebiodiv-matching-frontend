@@ -10,7 +10,7 @@
             <table>
 
                 <tr class="empty-line">
-                    <td colspan="18"><br/><br/>{{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</td>
+                    <td :colspan="curation_characteristics.length+4"><br/><br/>{{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</td>
                 </tr>
                 <tr>
                     <th>Key</th>
@@ -34,9 +34,11 @@
                     </td>
                 </tr>
                 <tr class="expanded" v-if="expanded">
-                    <td colspan="18">
+                    <td></td>
+                    <td :colspan="curation_characteristics.length+1">
                         {{ occurrences_selection.verbatimLabel }}
                     </td>
+                    <td colspan="4"></td>
                 </tr>
 
                 <tr class="empty-line">
@@ -56,7 +58,7 @@
                 <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" save="Save"/>
                 <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_empty_elements" :key="curation.empty_key" :curation="curation" save="Save"/>
                 <tr class="empty-line">
-                    <td colspan="18">
+                    <td :colspan="curation_characteristics.length+4">
                         <div class="left-container">
                             <a @click="addLine">+ Add another {{ get_curation_name.toLowerCase() }}</a>
                         </div>
@@ -64,7 +66,7 @@
                 </tr>
 
                 <tr v-if="finished_curation.length > 0 || finished_empty_elements.length > 0" class="empty-line">
-                    <td colspan="18">
+                    <td :colspan="curation_characteristics.length+4">
                         <br/><br/>
                         <img v-show="!show_edit" src="../assets/images/icon_plus.png" alt="[+]" @click="show_edit = !show_edit" class="mini"/>
                         <img v-show="show_edit" src="../assets/images/icon_minus.png" alt="[-]" @click="show_edit = !show_edit" class="mini"/>
@@ -218,16 +220,16 @@ import EmptyElement from '@/components/EmptyElement.vue'
             return content
         },
         removeElement(element){
-            const index = this.change_list.indexOf(element.key);
-            if (index > -1) {
-                this.change_list.splice(index, 1);
-            }
+                const index = this.change_list.indexOf(element.key);
+                if (index > -1) {
+                    this.change_list.splice(index, 1);
+                }
         },
         addElement(element){
-            if (!this.change_list.includes(element.key)){
-                this.change_list.push(element.key)
-            }
-            this.change_dict[element.key] = element.value
+                if (!this.change_list.includes(element.key)){
+                    this.change_list.push(element.key)
+                }
+                this.change_dict[element.key] = element.value
         },
         save(){
                var saved_data = []
@@ -236,13 +238,13 @@ import EmptyElement from '@/components/EmptyElement.vue'
                         var element = {
                           "occurrenceKey1": this.occurrences_selection.key,
                           "occurrenceKey2": this.change_list[i],
-                          "match": this.change_dict[this.change_list[i]],
-                          "comment": "testGUI-all"
+                          "decision": this.change_dict[this.change_list[i]],
                         }
                         saved_data.push(element)
                       }
                    }
-               axios.post(this.urls.matching, saved_data)
+               var saved_json =  {"occurrenceRelations": saved_data}
+               axios.post(this.urls.matching, saved_json)
                     .then(response => {
                         if(response.status == 200){
                             for (let i=0; i<this.occurrences_selection.relations.length; i++){
