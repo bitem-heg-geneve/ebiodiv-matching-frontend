@@ -11,11 +11,11 @@ export default new Vuex.Store({
     },
     step: 1,
     urls: {
-        institutions: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/institutionList",
-        datasets: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/datasets",
-        occurrences: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/occurrences",
-        matching: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/occurrenceRelations",
-        fetch_occurrence: "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/occurrences",
+        institutions: process.env.VUE_APP_BACKEND_URL + "/institutionList",
+        datasets: process.env.VUE_APP_BACKEND_URL + "/datasets",
+        occurrences: process.env.VUE_APP_BACKEND_URL + "/occurrences",
+        matching: process.env.VUE_APP_BACKEND_URL + "/occurrenceRelations",
+        fetch_occurrence: process.env.VUE_APP_BACKEND_URL + "/occurrences",
     },
     urls_parameters: {
         institution: null,
