@@ -173,7 +173,7 @@ import shared from '@/components/shared.js'
             if (this.institution_selection.key){
               this.in_progress = true
               this.updateOccurrences([])
-                var url = this.urls.occurrences+"?scores=true&institutionKey="+this.institution_selection.key+"&datasetKey="+this.datasets_selection.join("+")
+                var url = this.urls.occurrences+"?institutionKey="+this.institution_selection.key+"&datasetKey="+this.datasets_selection.join("+")
                 axios
                       .get(url)
                       .then(response => {
@@ -221,6 +221,7 @@ import shared from '@/components/shared.js'
                             }
                       })
                       .catch(error => {
+                        console.log(error)
                         alert ("failed to load occurrences for "+this.institution_selection.name+": "+error )
                       })
 
@@ -246,7 +247,6 @@ import shared from '@/components/shared.js'
                     var matching = {}
                     matching['match'] = relation.decision
                     relatedObject['matching'] = matching
-                    relatedObject['scores'] = relation.scores
                     relatedObject['object'] = json.occurrences[relatedKey]
                     relatedObject['object']['key'] = relatedKey
                     if (relatedObject['matching'].match !=  null){

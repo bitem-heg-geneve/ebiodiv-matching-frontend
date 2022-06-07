@@ -4,9 +4,9 @@
 
         <tr >
             <td><a :href="'https://www.gbif.org/occurrence/'+curation.object.key" target="_blank">{{ curation.object.key }}</a></td>
-            <td :class="cellColor(curation.scores.$global)">{{ curation.scores.$global }}</td>
+            <td :class="cellColor(scores.$global)">{{ scores.$global }}</td>
             <template>
-                <td v-for="char in curation_characteristics" :key="char.score+'sp-td'" :class="cellColor(curation.scores[char.score])">
+                <td v-for="char in curation_characteristics" :key="char.score+'sp-td'" :class="cellColor(scores[char.score])">
                     {{ display_content(curation.object, char.value) }}
                 </td>
             </template>
@@ -49,6 +49,10 @@ import axios from 'axios';
       },
       props: {
         curation: {
+            type: Object,
+            required: true
+        },
+        scores: {
             type: Object,
             required: true
         },

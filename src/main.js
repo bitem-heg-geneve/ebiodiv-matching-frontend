@@ -19,3 +19,7 @@ new Vue({
   store,
   render: h => h(App)
 }).$mount('#app')
+
+// Add the singleton $scoring to all Vue components ( https://v2.vuejs.org/v2/cookbook/adding-instance-properties.html )
+import Scoring from '@/services/scoring.js'
+Vue.prototype.$scoring = Scoring;

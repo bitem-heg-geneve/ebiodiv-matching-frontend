@@ -55,7 +55,7 @@
                     <th></th>
                 </tr>
 
-                <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" save="Save"/>
+                <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" :scores="get_scores(occurrences_selection, curation.object)" save="Save"/>
                 <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_empty_elements" :key="curation.empty_key" :curation="curation" save="Save"/>
                 <tr class="empty-line">
                     <td :colspan="curation_characteristics.length+4">
@@ -85,7 +85,7 @@
                 </tr>
 
                 <template v-if="show_edit && finished_curation.length > 0">
-                    <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_curation" :key="curation.object.key" :curation="curation" save="Edit"/>
+                    <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_curation" :key="curation.object.key" :curation="curation" :scores="get_scores(occurrences_selection, curation.object)" save="Edit"/>
                 </template>
                 <template v-if="show_edit && finished_empty_elements.length > 0">
                     <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_empty_elements" :key="curation.empty_key" :curation="curation" save="Edit"/>
@@ -167,11 +167,17 @@ import EmptyElement from '@/components/EmptyElement.vue'
         processed_curation () {
             var filtered_curation = this.occurrences_selection.relations
 
+            const get_relation_scores = (relation) => {
+                const scores = this.$scoring.get_scores(this.occurrences_selection, relation.object);
+                const score_value = scores[this.sort.by];
+                return score_value != null ? parseFloat(score_value): -1
+            }
+
             if (this.sort.asc){
-                filtered_curation.sort((a, b) => ('scores' in a  && a.scores[this.sort.by] != null ? parseFloat(a.scores[this.sort.by]): -1) - ('scores' in b  && b.scores[this.sort.by] != null ? parseFloat(b.scores[this.sort.by]): -1));
+                filtered_curation.sort((a, b) => get_relation_scores(a) - get_relation_scores(b));
             }
             else {
-                filtered_curation.sort((a, b) => ('scores' in b  && b.scores[this.sort.by] != null ? parseFloat(b.scores[this.sort.by]): -1) - ('scores' in a && a.scores[this.sort.by] != null ? parseFloat(a.scores[this.sort.by]): -1));
+                filtered_curation.sort((a, b) => get_relation_scores(b) - get_relation_scores(a));
             }
 
            filtered_curation = filtered_curation.filter(element => element.matching.match == null);
@@ -206,6 +212,14 @@ import EmptyElement from '@/components/EmptyElement.vue'
       },
       methods:{
         ...mapActions(['updateOccurrencesSelection', 'updateMatching', 'updateStep']),
+        get_scores(occurrence1, occurrence2) {
+            if (occurrence1 == null || occurrence2 == null) {
+                return {
+                    '$global': null
+                };
+            }
+            return this.$scoring.get_scores(occurrence1, occurrence2);
+        },
         display_content (object, values){
             var content = ""
 
