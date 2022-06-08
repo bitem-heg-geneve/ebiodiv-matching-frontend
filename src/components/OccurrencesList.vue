@@ -177,35 +177,7 @@ import shared from '@/components/shared.js'
                 axios
                       .get(url)
                       .then(response => {
-                            var occ = []
-                            var keys = []
-                            if (this.format_selection == "specimen_matcit"){
-                                for (let index in response.data.subjectOccurrenceKeys){
-                                    let key = response.data.subjectOccurrenceKeys[index]
-                                    let object = response.data.occurrences[key]
-                                    object['key'] = key
-                                    object = this.processRelations(object, response.data)
-                                    occ.push(object)
-                                    keys.push(key)
-                                }
-                            }
-                            else {
-                               var specimens = {}
-                               for (let index in response.data.subjectOccurrenceKeys){
-                                    let key = response.data.subjectOccurrenceKeys[index]
-                                    specimens[key] = ""
-                               }
-                               for (let key in response.data.occurrences){
-                                    if (!(key in specimens)) {
-                                        let object = response.data.occurrences[key]
-                                        object['key'] = key
-                                        object = this.processRelations(object, response.data)
-                                        occ.push(object)
-                                        keys.push(key)
-                                    }
-                                }
-                            }
-                            this.current_page = 1
+                            var occ = this.processOccurrences(response.data);
                             occ = this.processFacets(occ)
                             this.updateOccurrences(occ)
                             this.in_progress = false
@@ -227,48 +199,69 @@ import shared from '@/components/shared.js'
 
             }
         },
-        processRelations(object, json){
-            var key = object['key']
-            var relations = []
-            var not_done = []
-            var done = []
-            for (let index in json.occurrenceRelations){
-                var relation = json.occurrenceRelations[index]
-                let relatedKey = null
-                if (relation.occurrenceKey1 == key){
-                    relatedKey = relation.occurrenceKey2
+        processOccurrences(json) {
+            const subjectOccs = {}
+            const subjectStatus = {}
+            const subjectOccurrenceKeysSet = new Set(json.subjectOccurrenceKeys)
+            for (const relation of json.occurrenceRelations){
+                // guess occurrenceKey1 is the subjectKey
+                let subjectKey = relation.occurrenceKey1;
+                let relatedKey = relation.occurrenceKey2;
+                // swap subjectKey and relatedKey if the guess is wrong
+                if (
+                       ((this.format_selection === "specimen_matcit") && (!subjectOccurrenceKeysSet.has(subjectKey)))
+                    || ((this.format_selection === "matcit_specimen") && (subjectOccurrenceKeysSet.has(subjectKey)))
+                ) {
+                    [subjectKey, relatedKey] = [relatedKey, subjectKey];
                 }
-                if (relation.occurrenceKey2 == key){
-                    relatedKey = relation.occurrenceKey1
-                }
-                if (relatedKey != null){
-                    let relatedObject = {}
-                    // temp decision reload
-                    var matching = {}
-                    matching['match'] = relation.decision
-                    relatedObject['matching'] = matching
-                    relatedObject['object'] = json.occurrences[relatedKey]
-                    relatedObject['object']['key'] = relatedKey
-                    if (relatedObject['matching'].match !=  null){
-                        done.push(relatedKey)
+                // now subjectKey and relatedKey are set:
+                // * subjectKey is a material citation if format_selection === "matcit_specimen"
+                // * subjectKey is a specimen if format_selection === "specimen_matcit"
+
+                // add the subject occurrence if not already the case
+                if (subjectOccs[subjectKey] == null) {
+                    subjectOccs[subjectKey] = json.occurrences[subjectKey];
+                    subjectOccs[subjectKey].key = subjectKey;
+                    subjectOccs[subjectKey].relations = []
+                    subjectStatus[subjectKey] = {
+                        done: [],
+                        not_done: [],
                     }
-                    else {
-                        not_done.push(relatedKey)
+                }
+
+                // add the related occurrence
+                const new_relation = {
+                    object: json.occurrences[relatedKey],
+                    matching: {
+                        match: relation.decision,
                     }
-                    relations.push(relatedObject)
+                };
+                new_relation.object.key = relatedKey;
+                subjectOccs[subjectKey].relations.push(new_relation);
+
+                // update subjectStatus: add the related occurrence either to done or not_done 
+                if (new_relation.matching.match != null){
+                    subjectStatus[subjectKey].done.push(relatedKey)
+                }
+                else {
+                    subjectStatus[subjectKey].not_done.push(relatedKey)
                 }
             }
-            object['relations'] = relations
-            if (not_done.length == relations.length){
-                object['status'] = "not-done"
+            /* update status for the subject occurrences */
+            for(const [occKey, occStatus] of Object.entries(subjectStatus)) {
+                const relationsLength = subjectOccs[occKey].relations.length;
+                if (occStatus.not_done.length == relationsLength){
+                    subjectOccs[occKey].status = "not-done"
+                }
+                else if (occStatus.done.length == relationsLength){
+                    subjectOccs[occKey].status = "finished"
+                }
+                else {
+                    subjectOccs[occKey].status = "partial"
+                }
             }
-            else if (done.length == relations.length){
-                object['status'] = "finished"
-            }
-            else {
-                object['status'] = "partial"
-            }
-            return object
+            /* */
+            return Object.values(subjectOccs);
         },
         showAll(){
             this.per_page= this.processed_occurrences.length;
