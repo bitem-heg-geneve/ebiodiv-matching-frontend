@@ -1,6 +1,6 @@
 <template>
 
-    <div class="component-container" :style="cssVars">
+    <div class="component-container" :style="cssVars" v-if="step == 2">
         <div>
 
             <div class="separator">
@@ -89,6 +89,7 @@ import shared from '@/components/shared.js'
       },
       data() {
         return {
+            occurrences: [],
             status: [],
             in_progress: false,
             current_page: 1,
@@ -111,7 +112,7 @@ import shared from '@/components/shared.js'
         };
       },
       computed: {
-        ...mapState(['urls', 'institution_selection', 'datasets_selection', 'format_selection', 'occurrences', 'matching', 'user_selection', 'filters', 'fields', 'format_selection', 'urls_parameters', 'step', 'theme_color']),
+        ...mapState(['urls', 'institution_selection', 'datasets_selection', 'format_selection', 'matching', 'user_selection', 'filters', 'fields', 'format_selection', 'urls_parameters', 'step', 'theme_color']),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
@@ -171,15 +172,15 @@ import shared from '@/components/shared.js'
         ...mapActions(['updateOccurrences', 'updateMatching', 'updateOccurrencesFacet', 'updateOccurrencesSort','updateOccurrencesSelection', 'updateInitMcDateFilter', 'updateStep']),
         searchOccurrencesAPI (reload) {
             if (this.institution_selection.key){
-              this.in_progress = true
-              this.updateOccurrences([])
+                this.in_progress = true
+                this.occurrences = []
                 var url = this.urls.occurrences+"?institutionKey="+this.institution_selection.key+"&datasetKey="+this.datasets_selection.join("+")
                 axios
                       .get(url)
                       .then(response => {
                             var occ = this.processOccurrences(response.data);
                             occ = this.processFacets(occ)
-                            this.updateOccurrences(occ)
+                            this.occurrences = occ;
                             this.in_progress = false
                             this.goToTop()
                             if(!reload && this.urls_parameters.occurrence != null){

@@ -36,7 +36,7 @@ import { mapState, mapActions } from 'vuex'
         };
       },
       computed: {
-        ...mapState(['urls', 'occurrences', 'matching', 'user_selection', 'filters', 'fields', 'format_selection', 'institution_selection', 'datasets_selection', 'theme_color']),
+        ...mapState(['fields', 'format_selection', 'institution_selection', 'datasets_selection', 'theme_color']),
         cssVars () {
             return{
                 '--color': this.theme_color.main,

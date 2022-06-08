@@ -133,6 +133,7 @@
       data (){
         return {
             visible_facets: true,
+            facets: {},
         };
       },
       computed: {
@@ -146,13 +147,13 @@
             return (this.collection_name+"_sort-group")
         },
         facets_multi_with_status() {
+            const cache = {}
             return (facet_element) => {
-                var facet_name = facet_element.short
-                var checked_names = []
-                // Get the list of what the user selected
-                for (var i = 0; i < this.user_selection.facets[facet_name].length; i++ ) {
-                    checked_names.push(this.user_selection.facets[facet_name][i])
+                const facet_name = facet_element.short
+                if (cache[facet_name] != null) {
+                    return cache[facet_name];
                 }
+
                 // Get filtered documents list (but not for the selected facet)
                 var filtered_docs = this.documents
                 var selection = {}
@@ -165,37 +166,39 @@
                 filtered_docs = filtered_docs.filter(shared.filterThis.bind(this, settings))
                 // Get all facets for the filtered documents set
                 var data = []
-                for (var j = 0; j < filtered_docs.length; j++ ) {
-                    for (var p=0; p<filtered_docs[j].processed_facets[facet_name].length; p++){
-                        data.push(filtered_docs[j].processed_facets[facet_name][p])
+                for (const doc of filtered_docs) {
+                    for(const value of doc.processed_facets[facet_name]) {
+                        data.push(value);
                     }
                 }
                 // Create the facet lists based on the facets of the set + what is selected
-                var results = this.createFacetList(data, checked_names)
+                var results = this.createFacetList(data, this.user_selection.facets[facet_name])
+                cache[facet_name] = results;
                 return results
             }
         },
         facets_with_status() {
+            const cache = {}
             return (facet_element) => {
                 var facet_name = facet_element.short
-                var checked_names = []
-                // Get the list of what the user selected
-                for (var i = 0; i < this.user_selection.facets[facet_name].length; i++ ) {
-                    checked_names.push(this.user_selection.facets[facet_name][i])
+                if (cache[facet_name] != null) {
+                    return cache[facet_name];
                 }
+
                 // Get filtered documents list
                 var filtered_docs = this.documents
                 var settings = {'user_selection': this.user_selection.facets, 'filters': this.filters.facets}
                 filtered_docs = filtered_docs.filter(shared.filterThis.bind(this, settings))
                 // Get all facets for the filtered documents set
                 var data = []
-                for (var j = 0; j < filtered_docs.length; j++ ) {
-                    for (var p=0; p<filtered_docs[j].processed_facets[facet_name].length; p++){
-                        data.push(filtered_docs[j].processed_facets[facet_name][p])
+                for (const doc of filtered_docs) {
+                    for(const value of doc.processed_facets[facet_name]) {
+                        data.push(value);
                     }
                 }
                 // Create the facet lists based on the facets of the set + what is selected
-                var results = this.createFacetList(data, checked_names)
+                var results = this.createFacetList(data, this.user_selection.facets[facet_name])
+                cache[facet_name] = results;
                 return results
             }
         },
@@ -221,36 +224,20 @@
       },
       methods: {
         createFacetList(data, checkedNames){
-            var allItems = {}
-            var allCount = {}
+            const allItems = {}
+            const checkedNamesSet = new Set(checkedNames)
             // Retrieve all facets
-            for (var j = 0; j < data.length; j++ ) {
-                var item = {}
-                item.name = data[j]
-                if (checkedNames.includes(item.name)) {
-                    item.checked = true
+            for (const name of data) { 
+                allItems[name] = {
+                    name: name,
+                    checked: checkedNamesSet.has(name),
+                    count: 1 + ((name in allItems)?allItems[name].count:0)
                 }
-                else {
-                    item.checked = false
-                }
-                allItems[item.name] = item
-                var count = 1
-                if (item.name in allCount){
-                    count = allCount[item.name] + 1
-                }
-                allCount[item.name] = count
             }
             // Sort facets by number
-            var items = Object.keys(allCount).map(function(key) {return [key, allCount[key]];});
-            items.sort(function(first, second) { return second[1] - first[1];});
-           // Return facets
-           var results = []
-           for (var e=0; e<items.length; e++) {
-               item = allItems[items[e][0]]
-               item.count = allCount[items[e][0]]
-               results.push(item)
-           }
-           return results
+            const items = Object.values(allItems);
+            items.sort((first, second) => second.count - first.count);
+            return items
         },
         changeFacet(facet_element, event){
             var facet_name = facet_element.short
@@ -267,7 +254,7 @@
                   }
                 }
             }
-            this.updateFacet({'facet': facet_name, 'list': filter_list })
+            this.updateFacet(Object.freeze({'facet': facet_name, 'list': filter_list }))
         }
        }
     }

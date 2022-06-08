@@ -81,7 +81,7 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
                 axios
                       .get(url)
                       .then(response => {
-                            this.updateDatasets(response.data)
+                            this.updateDatasets(Object.freeze(response.data))
                             for(var index in response.data){
                                 if(this.urls_parameters.datasets.includes(response.data[index].key)){
                                     this.datasets_selection.push(response.data[index].key)

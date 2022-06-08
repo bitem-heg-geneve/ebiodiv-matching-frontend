@@ -59,7 +59,7 @@ import { mapState, mapActions } from 'vuex'
                 }
                 institutions_list = [...new Set(institutions_list)];
                 institutions_list.sort();
-                this.updateInstitutions({'list': institutions_list, 'info': institutions_info})
+                this.updateInstitutions(Object.freeze({'list': institutions_list, 'info': institutions_info}))
                 if(this.urls_parameters.institution != null){
                     for (const [name, info] of Object.entries(this.institutions.info_dict)){
                         if (info['key'] == this.urls_parameters.institution){
