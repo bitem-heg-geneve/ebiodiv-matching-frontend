@@ -2,10 +2,6 @@
 
     <div id="app" :style="cssVars">
 
-      <div id="nav">
-
-      </div>
-
       <router-view/>
 
       <div class="logo row">
@@ -85,7 +81,7 @@ import { mapState } from 'vuex'
       }
 
       .component-container {
-        width: 90%;
+        width: 100%;
         margin: 0 auto;
       }
 
@@ -162,6 +158,7 @@ import { mapState } from 'vuex'
       }
 
       .logo {
+        width: 100%;
         margin-top: 50px;
         border-top: 1px solid var(--color-main);
         border-bottom: 1px solid var(--color-main);
@@ -196,26 +193,6 @@ import { mapState } from 'vuex'
         .separator {
         margin-bottom: 20px;
         }
-
-    }
-
-
-    #nav {
-
-      padding: 30px;
-
-      a {
-        font-weight: bold;
-        color: #2c3e50;
-        text-decoration: none;
-
-        &.router-link-exact-active {
-          color: var(--color-main);
-        }
-      }
-      a:hover {
-        text-decoration: underline;
-      }
 
     }
 
