@@ -127,7 +127,6 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import axios from 'axios';
 import CurationElement from '@/components/CurationElement.vue'
 import EmptyElement from '@/components/EmptyElement.vue'
 
@@ -258,22 +257,20 @@ import EmptyElement from '@/components/EmptyElement.vue'
                       }
                    }
                var saved_json =  {"occurrenceRelations": saved_data}
-               axios.post(this.urls.matching, saved_json)
-                    .then(response => {
-                        if(response.status == 200){
-                            for (let i=0; i<this.occurrences_selection.relations.length; i++){
-                              if (this.change_list.includes(this.occurrences_selection.relations[i].object.key)){
-                                this.occurrences_selection.relations[i].matching.match = this.change_dict[this.occurrences_selection.relations[i].object.key]
-                              }
+               this.$backend.post_matching(saved_json)
+                    .then(() => {
+                        for (let i=0; i<this.occurrences_selection.relations.length; i++){
+                            if (this.change_list.includes(this.occurrences_selection.relations[i].object.key)){
+                            this.occurrences_selection.relations[i].matching.match = this.change_dict[this.occurrences_selection.relations[i].object.key]
                             }
-                            for (let i=0; i<this.empty_elements.length; i++){
-                              if (this.change_list.includes(this.empty_elements[i].empty_key)){
-                                this.empty_elements[i].matching.match = this.change_dict[this.empty_elements[i].empty_key]
-                              }
-                            }
-                            this.change_list = []
-                            this.change_dict = {}
                         }
+                        for (let i=0; i<this.empty_elements.length; i++){
+                            if (this.change_list.includes(this.empty_elements[i].empty_key)){
+                            this.empty_elements[i].matching.match = this.change_dict[this.empty_elements[i].empty_key]
+                            }
+                        }
+                        this.change_list = []
+                        this.change_dict = {}
                     })
                     .catch(error => {
                         alert ("Failed to save"+error )

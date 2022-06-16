@@ -70,7 +70,6 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import axios from 'axios';
 import vPagination from 'vue-plain-pagination'
 import FacetsComponent from '@/components/FacetsComponent.vue'
 import FiltersSelection from '@/components/FiltersSelection.vue'
@@ -174,9 +173,7 @@ import shared from '@/components/shared.js'
             if (this.institution_selection.key){
                 this.in_progress = true
                 this.occurrences = []
-                var url = this.urls.occurrences+"?institutionKey="+this.institution_selection.key+"&datasetKey="+this.datasets_selection.join("+")
-                axios
-                      .get(url)
+                this.$backend.fetch_occurrences_from_datasets(this.institution_selection.key, this.datasets_selection)
                       .then(response => {
                             var occ = this.processOccurrences(response.data);
                             occ = this.processFacets(occ)

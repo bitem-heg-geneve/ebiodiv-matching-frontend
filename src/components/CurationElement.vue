@@ -41,7 +41,6 @@
 
 <script>
 import { mapState } from 'vuex'
-import axios from 'axios';
 
     export default {
       name: 'CurationElement',
@@ -216,13 +215,11 @@ import axios from 'axios';
                   "decision": match,
                 }
                 var saved_json =  {"occurrenceRelations": [data_to_save]}
-               axios.post(this.urls.matching, saved_json)
-                    .then(response => {
-                        if(response.status == 200){
-                            this.curation.matching.match = match
-                           this.saved_status = this.status
-                            this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
-                        }
+                this.$backend.post_matching(saved_json)
+                    .then(() => {
+                        this.curation.matching.match = match
+                        this.saved_status = this.status
+                        this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
                     })
                     .catch(error => {
                         alert ("Failed to save"+error )

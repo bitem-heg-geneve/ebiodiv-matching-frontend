@@ -1,0 +1,7 @@
+{
+    "institutions": "https://tb.plazi.org/GgServer/gbifOccLinkData/institutionList",
+    "datasets": "https://tb.plazi.org/GgServer/gbifOccLinkData/datasets",
+    "occurrences": "https://tb.plazi.org/GgServer/gbifOccLinkData/occurrences",
+    "matching": "https://candy.text-analytics.ch/ebiodiv/matching/proxy/v2/occurrenceRelations",
+    "fetch_occurrence": "https://tb.plazi.org/GgServer/gbifOccLinkData/occurrences"
+}

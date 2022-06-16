@@ -57,7 +57,6 @@
 
 <script>
 import { mapState } from 'vuex'
-import axios from 'axios';
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 
     export default {
@@ -206,18 +205,16 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
                 var saved_json =  {"occurrenceRelations": [data_to_save]}
                 alert(this.urls.matching)
                 alert(JSON.stringify(saved_json))
-               axios.post(this.urls.matching, saved_json)
-                       .then(response => {
-                          if(response.status == 200){
-                          alert(JSON.stringify(response))
-                                this.curation.matching.match = match
-                                this.saved_status = this.status
-                                this.$emit("removeOne", {'key': this.curation.empty_key, 'value': match})
-                            }
-                        })
-                        .catch(error => {
-                            alert ("Failed to save"+error )
-                        });
+                this.$backend.post_matching(saved_json)
+                    .then(response => {
+                        alert(JSON.stringify(response))
+                        this.curation.matching.match = match
+                        this.saved_status = this.status
+                        this.$emit("removeOne", {'key': this.curation.empty_key, 'value': match})
+                    })
+                    .catch(error => {
+                        alert ("Failed to save"+error )
+                    });
              }
              else{
                     this.curation.matching.match = match
@@ -243,29 +240,22 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
         },
         loadGBIF(){
             this.in_progress = true
-           var url = this.urls.fetch_occurrence+"?occurrenceKeys="+this.curation.object.key+"&fetchMissing=true&scores=false"
-                axios
-                      .get(url)
-                      .then(response => {
-                        if (response.status == 200){
-                            if ('occurrences' in response.data  && this.curation.object.key in response.data.occurrences){
-                                var key = this.curation.object.key
-                                this.curation.object = response.data.occurrences[this.curation.object.key]
-                                this.curation.object['key'] = key
-                            }
-                            else {
-                                this.curation.object = {'key': this.curation.object.key}
-                            }
-                        }
-                        else  {
-                            this.curation.object = {'key': this.curation.object.key}
-                        }
-                        this.in_progress = false
-                      })
-                      .catch(error => {
-                        this.curation.object = {'key': this.curation.object.key, 'error': error}
-                        this.warning = "unknown GBIF key"
-                    });
+            this.$backend.fetch_occurrence(this.curation.object.key, true)
+                .then(response => {
+                    if ('occurrences' in response.data  && this.curation.object.key in response.data.occurrences){
+                        var key = this.curation.object.key
+                        this.curation.object = response.data.occurrences[this.curation.object.key]
+                        this.curation.object['key'] = key
+                    }
+                    else {
+                        this.curation.object = {'key': this.curation.object.key}
+                    }
+                    this.in_progress = false
+                })
+                .catch(error => {
+                    this.curation.object = {'key': this.curation.object.key, 'error': error}
+                    this.warning = "unknown GBIF key"
+                });
         }
       },
       beforeMount(){

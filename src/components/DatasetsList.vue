@@ -45,7 +45,6 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import axios from 'axios';
 import DatasetElement from '@/components/DatasetElement.vue'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 
@@ -63,7 +62,7 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
         };
       },
       computed: {
-        ...mapState(['urls', 'institution_selection', 'datasets', 'datasets_selection', 'urls_parameters', 'theme_color']),
+        ...mapState(['institution_selection', 'datasets', 'datasets_selection', 'urls_parameters', 'theme_color']),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
@@ -77,9 +76,8 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
             if (this.institution_selection.name){
                 this.updateDatasets([])
                 this.updateDatasetsSelection([])
-                var url = this.urls.datasets+"?institutionKey="+this.institution_selection.key
-                axios
-                      .get(url)
+                this.$backend
+                      .fetch_datasets(this.institution_selection.key)
                       .then(response => {
                             this.updateDatasets(Object.freeze(response.data))
                             for(var index in response.data){
