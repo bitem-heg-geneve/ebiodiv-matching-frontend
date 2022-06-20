@@ -97,7 +97,7 @@
         <div>
 
             <div class="button-container">
-                <button class="secondary" @click="back()">Back to list</button>
+                <button v-if="show_back_button" class="secondary" @click="back()">Back to list</button>
                 <button :disabled="to_disable" @click="save()">Save</button>
             </div>
 
@@ -151,6 +151,13 @@ import EmptyElement from '@/components/EmptyElement.vue'
         CurationElement,
         EmptyElement,
       },
+      props: {
+        show_back_button: {
+            type: Boolean,
+            required: false,
+            default: true,
+        },
+      },
       data() {
         return {
             empty_elements: [],
@@ -161,7 +168,7 @@ import EmptyElement from '@/components/EmptyElement.vue'
                 asc: false
             },
             show_edit: false,
-            expanded: false
+            expanded: false,
         };
       },
       computed: {
