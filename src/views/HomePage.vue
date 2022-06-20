@@ -4,11 +4,11 @@
 
     <BannerComponent title="eBioDiv" subtitle="Linking material citations to specimens" />
 
-    <div class="row" id="institutions">
+    <div class="row" id="institutions" v-show="step != 3">
         <InstitutionChoice @searchOccurrences=displayOccurrences />
     </div>
 
-    <div class="button-container">
+    <div class="button-container" v-show="step != 3">
         <ExecuteButton @click="displayOccurrences('specimen_matcit', true)" button_text="See specimens" :disabled="is_disabled"/>
         <ExecuteButton @click="displayOccurrences('matcit_specimen', true)" button_text="See material citations" :disabled="is_disabled" />
     </div>
