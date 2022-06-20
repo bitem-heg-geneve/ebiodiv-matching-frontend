@@ -50,8 +50,8 @@
                                 <v-pagination v-model="current_page" :page-count="page_total" :classes="bootstrapPaginationClasses" :labels="paginationAnchorTexts"></v-pagination>
                             </div>
 
-                            <p v-if="!show_size && processed_occurrences.length > per_page"><a @click="showAll()">Show all {{ get_occurrence_name.toLowerCase() }}s</a></p>
-                            <p v-if="show_size && processed_occurrences.length > per_page_init"><a @click="showSome()">Show {{ per_page_init }} {{ get_occurrence_name.toLowerCase() }}s per page</a></p>
+                            <p v-if="!show_size && processed_occurrences.length > per_page"><a @click="showAll()" class="btn btn-link btn-sm" href="#" role="button">Show all {{ get_occurrence_name.toLowerCase() }}s</a></p>
+                            <p v-if="show_size && processed_occurrences.length > per_page_init"><a @click="showSome()" class="btn btn-link btn-sm" href="#" role="button">Show {{ per_page_init }} {{ get_occurrence_name.toLowerCase() }}s per page</a></p>
 
                         </div>
 

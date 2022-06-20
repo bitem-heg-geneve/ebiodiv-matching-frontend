@@ -21,14 +21,14 @@
                 <div class="row">
 
                     <div class="col-6">
-                        <a v-if="datasets.length > 1" @click="selectAll()">Select all datasets</a>
+                        <a v-if="datasets.length > 1" @click="selectAll()" class="btn btn-link btn-sm" href="#" role="button">Select all datasets</a>
                         <span v-if="datasets.length > 1 && datasets_selection.length > 1"> / </span>
-                        <a v-if="datasets_selection.length > 1" @click="unselectAll()">Unselect all datasets</a>
+                        <a v-if="datasets_selection.length > 1" @click="unselectAll()" class="btn btn-link btn-sm" href="#" role="button">Unselect all datasets</a>
                     </div>
-                    <div class="col-6" style="text-align: right">
-                        <a v-if="datasets.length > 1" @click="expandAll()">Expand all datasets</a>
+                    <div class="col-6 text-end">
+                        <a v-if="datasets.length > 1" @click="expandAll()" class="btn btn-link btn-sm" href="#" role="button">Expand all datasets</a>
                         <span v-if="datasets.length > 1"> / </span>
-                        <a v-if="datasets.length > 1" @click="unexpandAll()">Unexpand all datasets</a>
+                        <a v-if="datasets.length > 1" @click="unexpandAll()" class="btn btn-link btn-sm" href="#" role="button">Unexpand all datasets</a>
                     </div>
 
                 </div>
@@ -164,53 +164,4 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 
 
 <style scoped lang="scss">
-
-    .content {
-        display: flex;
-    }
-
-    .full-container {
-        width: 100%;
-        margin: 0 auto;
-    }
-
-    .facets {
-        float: left;
-        margin-right: 20px;
-    }
-
-    .page-box {
-      display: flex;
-      justify-content: center;
-    }
-
-    table {
-          margin-bottom: 20px;
-          border-collapse: collapse;
-          width: 100%;
-          font-size: 0.8em;
-          background-color: #eee
-    }
-
-    td, th {
-      border-bottom: 1px solid #ddd;
-      padding: 6px;
-      text-align: center;
-    }
-
-    tr:nth-child(even){
-      background-color: #fff;
-    }
-
-    tr:hover {
-      background-color: #ddd;
-    }
-
-    th {
-      padding-top: 6px;
-      padding-bottom: 6px;
-      background-color: var(--color);
-      color: white;
-    }
-
 </style>
