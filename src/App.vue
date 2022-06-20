@@ -1,10 +1,10 @@
 <template>
 
-    <div id="app" :style="cssVars">
+    <div id="app" :style="cssVars" class="d-flex flex-column min-vh-100">
 
       <router-view/>
 
-      <div class="logo row">
+      <div class="logo row mt-auto">
           <div class="col-1">
                 <img src="./assets/images/logo_ebiodiv.png"/>
           </div>
