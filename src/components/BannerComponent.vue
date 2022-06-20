@@ -2,12 +2,10 @@
     <div  class="banner" :style="cssVars">
 
     <div class="row">
-
-        <div class="col-1">
-            <img src="../assets/images/logo_ebiodiv_small.png" class="medium-img"/>
-        </div>
-
-        <div class="col-11">
+        <div class="col-12">
+            <div class="float-start position-absolute">
+                <img src="../assets/images/logo_ebiodiv_small.png" class="medium-img"/>
+            </div>
             <h1>{{ title }}</h1>
             <p><i>{{ subtitle }}</i></p>
         </div>
