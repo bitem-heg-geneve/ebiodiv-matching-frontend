@@ -4,9 +4,9 @@
 
         <tr >
             <td><a :href="'https://www.gbif.org/occurrence/'+curation.object.key" target="_blank">{{ curation.object.key }}</a></td>
-            <td :class="cellColor(curation.scores.$global)">{{ curation.scores.$global }}</td>
+            <td :class="cellColor(scores.$global)">{{ scores.$global }}</td>
             <template>
-                <td v-for="char in curation_characteristics" :key="char.score+'sp-td'" :class="cellColor(curation.scores[char.score])">
+                <td v-for="char in curation_characteristics" :key="char.score+'sp-td'" :class="cellColor(scores[char.score])">
                     {{ display_content(curation.object, char.value) }}
                 </td>
             </template>
@@ -41,7 +41,6 @@
 
 <script>
 import { mapState } from 'vuex'
-import axios from 'axios';
 
     export default {
       name: 'CurationElement',
@@ -49,6 +48,10 @@ import axios from 'axios';
       },
       props: {
         curation: {
+            type: Object,
+            required: true
+        },
+        scores: {
             type: Object,
             required: true
         },
@@ -212,13 +215,11 @@ import axios from 'axios';
                   "decision": match,
                 }
                 var saved_json =  {"occurrenceRelations": [data_to_save]}
-               axios.post(this.urls.matching, saved_json)
-                    .then(response => {
-                        if(response.status == 200){
-                            this.curation.matching.match = match
-                           this.saved_status = this.status
-                            this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
-                        }
+                this.$backend.post_matching(saved_json)
+                    .then(() => {
+                        this.curation.matching.match = match
+                        this.saved_status = this.status
+                        this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
                     })
                     .catch(error => {
                         alert ("Failed to save"+error )

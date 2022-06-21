@@ -33,7 +33,6 @@ export default new Vuex.Store({
     },
     datasets: [],
     datasets_selection: [],
-    occurrences: [],
     occurrences_selection: null,
     format_selection: null,
     matching: null,
@@ -143,9 +142,6 @@ export default new Vuex.Store({
     UPDATE_DATASETS_SELECTION(state, datasets_selection) {
         state.datasets_selection = datasets_selection
     },
-    UPDATE_OCCURRENCES(state, occurrences) {
-        state.occurrences = occurrences
-    },
     UPDATE_OCCURRENCES_SELECTION(state, occurrences_selection) {
         state.occurrences_selection = occurrences_selection
     },
@@ -186,9 +182,6 @@ export default new Vuex.Store({
     },
     updateOccurrencesSelection(context, value) {
         context.commit('UPDATE_OCCURRENCES_SELECTION', value)
-    },
-    updateOccurrences(context, value) {
-        context.commit('UPDATE_OCCURRENCES', value)
     },
     updateDatasetsSelection(context, value) {
         context.commit('UPDATE_DATASETS_SELECTION', value)

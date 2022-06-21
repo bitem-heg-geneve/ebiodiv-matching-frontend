@@ -11,6 +11,11 @@ const routes = [
     component: HomePage
   },
   {
+    path: '/occurrence/:occurrenceKey',
+    name: 'OccurrencePage',
+    component: () => import(/* webpackChunkName: "occurrence" */ '../views/OccurrencePage.vue')
+  },
+  {
     path: '/about',
     name: 'AboutPage',
     // route level code-splitting
@@ -22,7 +27,7 @@ const routes = [
 
 const router = new VueRouter({
   mode: 'history',
-  hash: false,
+  // hash: false,
   base: process.env.BASE_URL,
   routes,
   scrollBehavior(to, from, savedPosition) {

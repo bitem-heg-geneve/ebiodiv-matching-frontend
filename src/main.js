@@ -11,8 +11,16 @@ Vue.use(BootstrapVue);
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
+// services
+import Scoring from '@/services/scoring.js'
+import Backend from '@/services/backend.js'
+
 
 Vue.config.productionTip = false
+
+// Add the singleton $scoring to all Vue components ( https://v2.vuejs.org/v2/cookbook/adding-instance-properties.html )
+Vue.prototype.$scoring = Scoring;
+Vue.prototype.$backend = Backend;
 
 new Vue({
   router,

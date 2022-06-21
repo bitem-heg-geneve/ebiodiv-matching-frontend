@@ -1,6 +1,6 @@
 <template>
 
-    <div class="component-container" :style="cssVars">
+    <div class="component-container" :style="cssVars" v-if="step == 2">
         <div>
 
             <div class="separator">
@@ -50,8 +50,8 @@
                                 <v-pagination v-model="current_page" :page-count="page_total" :classes="bootstrapPaginationClasses" :labels="paginationAnchorTexts"></v-pagination>
                             </div>
 
-                            <p v-if="!show_size && processed_occurrences.length > per_page"><a @click="showAll()">Show all {{ get_occurrence_name.toLowerCase() }}s</a></p>
-                            <p v-if="show_size && processed_occurrences.length > per_page_init"><a @click="showSome()">Show {{ per_page_init }} {{ get_occurrence_name.toLowerCase() }}s per page</a></p>
+                            <p v-if="!show_size && processed_occurrences.length > per_page"><a @click="showAll()" class="btn btn-link btn-sm" href="#" role="button">Show all {{ get_occurrence_name.toLowerCase() }}s</a></p>
+                            <p v-if="show_size && processed_occurrences.length > per_page_init"><a @click="showSome()" class="btn btn-link btn-sm" href="#" role="button">Show {{ per_page_init }} {{ get_occurrence_name.toLowerCase() }}s per page</a></p>
 
                         </div>
 
@@ -70,7 +70,6 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import axios from 'axios';
 import vPagination from 'vue-plain-pagination'
 import FacetsComponent from '@/components/FacetsComponent.vue'
 import FiltersSelection from '@/components/FiltersSelection.vue'
@@ -89,6 +88,7 @@ import shared from '@/components/shared.js'
       },
       data() {
         return {
+            occurrences: [],
             status: [],
             in_progress: false,
             current_page: 1,
@@ -111,7 +111,7 @@ import shared from '@/components/shared.js'
         };
       },
       computed: {
-        ...mapState(['urls', 'institution_selection', 'datasets_selection', 'format_selection', 'occurrences', 'matching', 'user_selection', 'filters', 'fields', 'format_selection', 'urls_parameters', 'step', 'theme_color']),
+        ...mapState(['urls', 'institution_selection', 'datasets_selection', 'format_selection', 'matching', 'user_selection', 'filters', 'fields', 'format_selection', 'urls_parameters', 'step', 'theme_color']),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
@@ -171,43 +171,13 @@ import shared from '@/components/shared.js'
         ...mapActions(['updateOccurrences', 'updateMatching', 'updateOccurrencesFacet', 'updateOccurrencesSort','updateOccurrencesSelection', 'updateInitMcDateFilter', 'updateStep']),
         searchOccurrencesAPI (reload) {
             if (this.institution_selection.key){
-              this.in_progress = true
-              this.updateOccurrences([])
-                var url = this.urls.occurrences+"?scores=true&institutionKey="+this.institution_selection.key+"&datasetKey="+this.datasets_selection.join("+")
-                axios
-                      .get(url)
+                this.in_progress = true
+                this.occurrences = []
+                this.$backend.fetch_occurrences_from_datasets(this.institution_selection.key, this.datasets_selection)
                       .then(response => {
-                            var occ = []
-                            var keys = []
-                            if (this.format_selection == "specimen_matcit"){
-                                for (let index in response.data.subjectOccurrenceKeys){
-                                    let key = response.data.subjectOccurrenceKeys[index]
-                                    let object = response.data.occurrences[key]
-                                    object['key'] = key
-                                    object = this.processRelations(object, response.data)
-                                    occ.push(object)
-                                    keys.push(key)
-                                }
-                            }
-                            else {
-                               var specimens = {}
-                               for (let index in response.data.subjectOccurrenceKeys){
-                                    let key = response.data.subjectOccurrenceKeys[index]
-                                    specimens[key] = ""
-                               }
-                               for (let key in response.data.occurrences){
-                                    if (!(key in specimens)) {
-                                        let object = response.data.occurrences[key]
-                                        object['key'] = key
-                                        object = this.processRelations(object, response.data)
-                                        occ.push(object)
-                                        keys.push(key)
-                                    }
-                                }
-                            }
-                            this.current_page = 1
+                            var occ = this.$backend.processOccurrences(response.data, this.format_selection);
                             occ = this.processFacets(occ)
-                            this.updateOccurrences(occ)
+                            this.occurrences = occ;
                             this.in_progress = false
                             this.goToTop()
                             if(!reload && this.urls_parameters.occurrence != null){
@@ -221,54 +191,11 @@ import shared from '@/components/shared.js'
                             }
                       })
                       .catch(error => {
+                        console.log(error)
                         alert ("failed to load occurrences for "+this.institution_selection.name+": "+error )
                       })
 
             }
-        },
-        processRelations(object, json){
-            var key = object['key']
-            var relations = []
-            var not_done = []
-            var done = []
-            for (let index in json.occurrenceRelations){
-                var relation = json.occurrenceRelations[index]
-                let relatedKey = null
-                if (relation.occurrenceKey1 == key){
-                    relatedKey = relation.occurrenceKey2
-                }
-                if (relation.occurrenceKey2 == key){
-                    relatedKey = relation.occurrenceKey1
-                }
-                if (relatedKey != null){
-                    let relatedObject = {}
-                    // temp decision reload
-                    var matching = {}
-                    matching['match'] = relation.decision
-                    relatedObject['matching'] = matching
-                    relatedObject['scores'] = relation.scores
-                    relatedObject['object'] = json.occurrences[relatedKey]
-                    relatedObject['object']['key'] = relatedKey
-                    if (relatedObject['matching'].match !=  null){
-                        done.push(relatedKey)
-                    }
-                    else {
-                        not_done.push(relatedKey)
-                    }
-                    relations.push(relatedObject)
-                }
-            }
-            object['relations'] = relations
-            if (not_done.length == relations.length){
-                object['status'] = "not-done"
-            }
-            else if (done.length == relations.length){
-                object['status'] = "finished"
-            }
-            else {
-                object['status'] = "partial"
-            }
-            return object
         },
         showAll(){
             this.per_page= this.processed_occurrences.length;

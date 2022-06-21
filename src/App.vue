@@ -1,14 +1,10 @@
 <template>
 
-    <div id="app" :style="cssVars">
-
-      <div id="nav">
-
-      </div>
+    <div id="app" :style="cssVars" class="d-flex flex-column min-vh-100">
 
       <router-view/>
 
-      <div class="logo row">
+      <div class="logo row mt-auto">
           <div class="col-1">
                 <img src="./assets/images/logo_ebiodiv.png"/>
           </div>
@@ -85,7 +81,7 @@ import { mapState } from 'vuex'
       }
 
       .component-container {
-        width: 90%;
+        width: 100%;
         margin: 0 auto;
       }
 
@@ -162,6 +158,7 @@ import { mapState } from 'vuex'
       }
 
       .logo {
+        width: 100%;
         margin-top: 50px;
         border-top: 1px solid var(--color-main);
         border-bottom: 1px solid var(--color-main);
@@ -196,26 +193,6 @@ import { mapState } from 'vuex'
         .separator {
         margin-bottom: 20px;
         }
-
-    }
-
-
-    #nav {
-
-      padding: 30px;
-
-      a {
-        font-weight: bold;
-        color: #2c3e50;
-        text-decoration: none;
-
-        &.router-link-exact-active {
-          color: var(--color-main);
-        }
-      }
-      a:hover {
-        text-decoration: underline;
-      }
 
     }
 

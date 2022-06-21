@@ -55,7 +55,7 @@
                     <th></th>
                 </tr>
 
-                <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" save="Save"/>
+                <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" :scores="get_scores(occurrences_selection, curation.object)" save="Save"/>
                 <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_empty_elements" :key="curation.empty_key" :curation="curation" save="Save"/>
                 <tr class="empty-line">
                     <td :colspan="curation_characteristics.length+4">
@@ -85,7 +85,7 @@
                 </tr>
 
                 <template v-if="show_edit && finished_curation.length > 0">
-                    <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_curation" :key="curation.object.key" :curation="curation" save="Edit"/>
+                    <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_curation" :key="curation.object.key" :curation="curation" :scores="get_scores(occurrences_selection, curation.object)" save="Edit"/>
                 </template>
                 <template v-if="show_edit && finished_empty_elements.length > 0">
                     <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_empty_elements" :key="curation.empty_key" :curation="curation" save="Edit"/>
@@ -97,24 +97,39 @@
         <div>
 
             <div class="button-container">
-                <button class="secondary" @click="back()">Back to list</button>
+                <button v-if="show_back_button" class="secondary" @click="back()">Back to list</button>
                 <button :disabled="to_disable" @click="save()">Save</button>
             </div>
 
             <div class="left-container">
-                <h3>Color legend</h3>
+                <h3>Color legend for the matching score</h3>
                 <table class="legend-table">
-                    <tr><td><div class="color-box cell-color-1"></div></td><td>Matching score = 1</td></tr>
-                    <tr><td><div class="color-box cell-color-2"></div></td><td>Matching score >= 0.9</td></tr>
-                    <tr><td><div class="color-box cell-color-3"></div></td><td>Matching score >= 0.8</td></tr>
-                    <tr><td><div class="color-box cell-color-4"></div></td><td>Matching score >= 0.7</td></tr>
-                    <tr><td><div class="color-box cell-color-5"></div></td><td>Matching score >= 0.6</td></tr>
-                    <tr><td><div class="color-box cell-color-6"></div></td><td>Matching score >= 0.5</td></tr>
-                    <tr><td><div class="color-box cell-color-7"></div></td><td>Matching score >= 0.4</td></tr>
-                    <tr><td><div class="color-box cell-color-8"></div></td><td>Matching score >= 0.3</td></tr>
-                    <tr><td><div class="color-box cell-color-9"></div></td><td>Matching score >= 0.2</td></tr>
-                    <tr><td><div class="color-box cell-color-10"></div></td><td>Matching score >= 0.1</td></tr>
-                    <tr><td><div class="color-box cell-color-11"></div></td><td>Matching score >= 0.0</td></tr>
+                    <tr>
+                        <td><div class="color-box cell-color-1"></div></td>
+                        <td><div class="color-box cell-color-2"></div></td>
+                        <td><div class="color-box cell-color-3"></div></td>
+                        <td><div class="color-box cell-color-4"></div></td>
+                        <td><div class="color-box cell-color-5"></div></td>
+                        <td><div class="color-box cell-color-6"></div></td>
+                        <td><div class="color-box cell-color-7"></div></td>
+                        <td><div class="color-box cell-color-8"></div></td>
+                        <td><div class="color-box cell-color-9"></div></td>
+                        <td><div class="color-box cell-color-10"></div></td>
+                        <td><div class="color-box cell-color-11"></div></td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>0.9</td>
+                        <td>0.8</td>
+                        <td>0.7</td>
+                        <td>0.6</td>
+                        <td>0.5</td>
+                        <td>0.4</td>
+                        <td>0.3</td>
+                        <td>0.2</td>
+                        <td>0.1</td>
+                        <td>0.0</td>
+                    </tr>
                 </table>
             </div>
 
@@ -127,7 +142,6 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import axios from 'axios';
 import CurationElement from '@/components/CurationElement.vue'
 import EmptyElement from '@/components/EmptyElement.vue'
 
@@ -136,6 +150,13 @@ import EmptyElement from '@/components/EmptyElement.vue'
       components: {
         CurationElement,
         EmptyElement,
+      },
+      props: {
+        show_back_button: {
+            type: Boolean,
+            required: false,
+            default: true,
+        },
       },
       data() {
         return {
@@ -147,7 +168,7 @@ import EmptyElement from '@/components/EmptyElement.vue'
                 asc: false
             },
             show_edit: false,
-            expanded: false
+            expanded: false,
         };
       },
       computed: {
@@ -167,11 +188,17 @@ import EmptyElement from '@/components/EmptyElement.vue'
         processed_curation () {
             var filtered_curation = this.occurrences_selection.relations
 
+            const get_relation_scores = (relation) => {
+                const scores = this.$scoring.get_scores(this.occurrences_selection, relation.object);
+                const score_value = scores[this.sort.by];
+                return score_value != null ? parseFloat(score_value): -1
+            }
+
             if (this.sort.asc){
-                filtered_curation.sort((a, b) => ('scores' in a  && a.scores[this.sort.by] != null ? parseFloat(a.scores[this.sort.by]): -1) - ('scores' in b  && b.scores[this.sort.by] != null ? parseFloat(b.scores[this.sort.by]): -1));
+                filtered_curation.sort((a, b) => get_relation_scores(a) - get_relation_scores(b));
             }
             else {
-                filtered_curation.sort((a, b) => ('scores' in b  && b.scores[this.sort.by] != null ? parseFloat(b.scores[this.sort.by]): -1) - ('scores' in a && a.scores[this.sort.by] != null ? parseFloat(a.scores[this.sort.by]): -1));
+                filtered_curation.sort((a, b) => get_relation_scores(b) - get_relation_scores(a));
             }
 
            filtered_curation = filtered_curation.filter(element => element.matching.match == null);
@@ -206,6 +233,14 @@ import EmptyElement from '@/components/EmptyElement.vue'
       },
       methods:{
         ...mapActions(['updateOccurrencesSelection', 'updateMatching', 'updateStep']),
+        get_scores(occurrence1, occurrence2) {
+            if (occurrence1 == null || occurrence2 == null) {
+                return {
+                    '$global': null
+                };
+            }
+            return this.$scoring.get_scores(occurrence1, occurrence2);
+        },
         display_content (object, values){
             var content = ""
 
@@ -244,22 +279,20 @@ import EmptyElement from '@/components/EmptyElement.vue'
                       }
                    }
                var saved_json =  {"occurrenceRelations": saved_data}
-               axios.post(this.urls.matching, saved_json)
-                    .then(response => {
-                        if(response.status == 200){
-                            for (let i=0; i<this.occurrences_selection.relations.length; i++){
-                              if (this.change_list.includes(this.occurrences_selection.relations[i].object.key)){
-                                this.occurrences_selection.relations[i].matching.match = this.change_dict[this.occurrences_selection.relations[i].object.key]
-                              }
+               this.$backend.post_matching(saved_json)
+                    .then(() => {
+                        for (let i=0; i<this.occurrences_selection.relations.length; i++){
+                            if (this.change_list.includes(this.occurrences_selection.relations[i].object.key)){
+                            this.occurrences_selection.relations[i].matching.match = this.change_dict[this.occurrences_selection.relations[i].object.key]
                             }
-                            for (let i=0; i<this.empty_elements.length; i++){
-                              if (this.change_list.includes(this.empty_elements[i].empty_key)){
-                                this.empty_elements[i].matching.match = this.change_dict[this.empty_elements[i].empty_key]
-                              }
-                            }
-                            this.change_list = []
-                            this.change_dict = {}
                         }
+                        for (let i=0; i<this.empty_elements.length; i++){
+                            if (this.change_list.includes(this.empty_elements[i].empty_key)){
+                            this.empty_elements[i].matching.match = this.change_dict[this.empty_elements[i].empty_key]
+                            }
+                        }
+                        this.change_list = []
+                        this.change_dict = {}
                     })
                     .catch(error => {
                         alert ("Failed to save"+error )
@@ -479,7 +512,8 @@ import EmptyElement from '@/components/EmptyElement.vue'
 
     .legend-table td {
         border: 0px solid #000;
-        text-align: left;
+        text-align: center;
+        padding: 0 0.75rem;
     }
 
     .expanded {
