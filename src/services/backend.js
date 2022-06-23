@@ -13,7 +13,7 @@ export default new class Backend {
                 return
             }
             axios
-                .get('/backend.json')
+                .get(process.env.PUBLIC_PATH + '/backend.json')
                 .then((response) => {
                     this.urls = response.data;
                     resolve();
