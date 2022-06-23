@@ -30,7 +30,13 @@
     <tr class="expanded" v-if="expanded">
             <td></td>
             <td :colspan="curation_characteristics.length+1" class="cell-color-na">
-                {{ curation.object.verbatimLabel }}
+                <div class="expanded-box"  v-if="curation.object.verbatimLabel">
+                    {{ curation.object.verbatimLabel }}
+                </div>
+                <div class="expanded-box">
+                    <a :href="curation.object.references" target="_blank">Reference to TreatmentBank</a>
+                </div>
+
             </td>
             <td colspan="4"></td>
         </tr>
@@ -314,6 +320,10 @@ import { mapState } from 'vuex'
     .cell-color-na {
         background-color: #eee;
         color: #000;
+    }
+
+    .expanded-box {
+        margin: 5px 0px 0px 10px
     }
 
     .expanded tr {

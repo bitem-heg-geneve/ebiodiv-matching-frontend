@@ -27,7 +27,7 @@
                     </template>
                     <td colspan="3"></td>
                     <td>
-                        <button @click="expanded = !expanded" class="button-table" v-if="occurrences_selection.verbatimLabel">
+                        <button @click="expanded = !expanded" class="button-table">
                             <img v-if="!expanded" src="../assets/images/icon_expand.png"  class="mini"/>
                             <img v-if="expanded" src="../assets/images/icon_reduce.png"  class="mini"/>
                         </button>
@@ -36,7 +36,12 @@
                 <tr class="expanded" v-if="expanded">
                     <td></td>
                     <td :colspan="curation_characteristics.length+1">
-                        {{ occurrences_selection.verbatimLabel }}
+                        <div class="expanded-box"  v-if="occurrences_selection.verbatimLabel">
+                            {{ occurrences_selection.verbatimLabel }}
+                        </div>
+                        <div class="expanded-box">
+                            <a :href="occurrences_selection.references" target="_blank">Reference to TreatmentBank</a>
+                        </div>
                     </td>
                     <td colspan="4"></td>
                 </tr>
@@ -394,6 +399,10 @@ import EmptyElement from '@/components/EmptyElement.vue'
 
     .expanded {
         background-color: #eee;
+    }
+
+    .expanded-box {
+        margin: 5px 0px 0px 10px
     }
 
     .expanded table {
