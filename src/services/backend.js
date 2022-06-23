@@ -12,7 +12,6 @@ export default new class Backend {
                 resolve();
                 return
             }
-            alert(process.env.BASE_URL)
             axios
                 .get(process.env.BASE_URL + 'backend.json')
                 .then((response) => {
