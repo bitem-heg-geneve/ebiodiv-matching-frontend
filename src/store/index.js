@@ -10,13 +10,6 @@ export default new Vuex.Store({
         secondary: "#008F00",
     },
     step: 1,
-    urls: {
-        institutions: process.env.VUE_APP_BACKEND_URL + "/institutionList",
-        datasets: process.env.VUE_APP_BACKEND_URL + "/datasets",
-        occurrences: process.env.VUE_APP_BACKEND_URL + "/occurrences",
-        matching: process.env.VUE_APP_BACKEND_URL + "/occurrenceRelations",
-        fetch_occurrence: process.env.VUE_APP_BACKEND_URL + "/occurrences",
-    },
     urls_parameters: {
         institution: null,
         format: null,
