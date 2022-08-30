@@ -55,6 +55,12 @@ export default new class Backend {
         return await this.axios_get(url)
     }
 
+    async fetch_occurrences_from_occurrencekeys(occurrencekeys) {
+        await this.fetch_urls()
+        var url = this.urls.occurrences + "?occurrenceKeys=" + occurrencekeys.join("+")
+        return await this.axios_get(url)
+    }
+
     async post_matching(data) {
         await this.fetch_urls()
         return await axios.post(this.urls.matching, data)

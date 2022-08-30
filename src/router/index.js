@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import HomePage from '../views/HomePage.vue'
 
 Vue.use(VueRouter)
 
@@ -8,12 +7,17 @@ const routes = [
   {
     path: '/',
     name: 'HomePage',
-    component: HomePage
+    component: () => import(/* webpackChunkName: "home" */ '../views/HomePage.vue')
   },
   {
     path: '/occurrence/:occurrenceKey',
     name: 'OccurrencePage',
     component: () => import(/* webpackChunkName: "occurrence" */ '../views/OccurrencePage.vue')
+  },
+  {
+    path: '/occurrences',
+    name: 'OccurrenceListPage',
+    component: () => import(/* webpackChunkName: "occurrenceList" */ '../views/OccurrenceListPage.vue')
   },
   {
     path: '/about',
