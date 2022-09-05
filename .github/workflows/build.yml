@@ -10,6 +10,15 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        include:
+          - folder: "dist/prod"
+            branch: "dist"
+            npmrunparam: "build"
+          - folder: "dist/sandbox"
+            branch: "dist-sandbox"
+            npmrunparam: "buildsandbox"
     steps:
     - uses: actions/checkout@v2
       with:
@@ -22,12 +31,12 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Build files
-      run: npm run build
-    - name: Commit built files to the dist branch
+      run: npm run ${{ matrix.npmrunparam }}
+    - name: Commit built files to the ${{ matrix.branch }} branch
       if:  github.ref == 'refs/heads/master'
       uses: s0/git-publish-subdir-action@develop
       env:
         REPO: self
-        BRANCH: dist
-        FOLDER: demo
+        BRANCH: ${{ matrix.branch }}
+        FOLDER: ${{ matrix.folder }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

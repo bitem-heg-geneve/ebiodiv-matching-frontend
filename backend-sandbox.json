@@ -1,0 +1,6 @@
+{
+    "institutions": "https://tb.plazi.org/GbifOccLink/sandbox/institutionList",
+    "datasets": "https://tb.plazi.org/GbifOccLink/sandbox/datasets",
+    "occurrences": "https://tb.plazi.org/GbifOccLink/sandbox/occurrences",
+    "matching": "https://tb.plazi.org/GbifOccLink/sandbox/occurrenceRelations"
+}
