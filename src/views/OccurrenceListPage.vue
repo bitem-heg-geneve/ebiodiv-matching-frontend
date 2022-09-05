@@ -9,7 +9,7 @@
             <ExecuteButton @click="displayOccurrences('matcit_specimen')" button_text="See material citations" :disabled="false" />
         </div>
 
-        <div class="row" id="occurrences" v-show="step == 2">
+        <div class="row" id="occurrences" v-if="step == 2">
             <OccurrencesList ref="occList" />
         </div>
 
@@ -42,11 +42,21 @@ export default {
     },
     methods: {
         ...mapActions(['updateFormatSelection', 'updateStep', 'updateOccurrenceKeys']),
+        setStep2() {
+            this.updateStep(2)
+            /*
+              delay call to searchOccurrencesAPI
+              because OccurrencesList component is not in the DOM tree after this.updateStep(2)
+              because of v-if="step == 2"
+            */
+            setTimeout(function () {
+                this.$refs.occList.searchOccurrencesAPI(true)
+            }.bind(this), 0)
+        },
         displayOccurrences(format) {
             this.updateFormatSelection(format)
-            this.updateStep(2)
-            this.$refs.occList.searchOccurrencesAPI(true)
-            // this.$router.push({ name: 'HomePage', hash: '#occurrences', query: { institutionKey: this.institution_selection.key, datasetKeys: this.datasets_selection.join(','), format: format } }).catch(() => { });
+            this.setStep2()
+            this.$router.push({ name: 'OccurrenceListPage', query: { occurrenceKeys: this.occurrence_keys, format: format } }).catch(() => { });
         },
         reloadOccurrences() {
             this.displayOccurrences(this.format_selection, true)
@@ -58,10 +68,13 @@ export default {
             return;
         }
         const occKeyList = this.$route.query.occurrenceKeys.split(/(\s+)/)
+        let format = 'specimen_matcit'
+        if ('format' in this.$route.query) {
+            format = this.$route.query.format
+        }
         this.updateOccurrenceKeys(occKeyList)
-        this.updateFormatSelection('specimen_matcit')
-        this.updateStep(2)
-        this.$refs.occList.searchOccurrencesAPI(true)
+        this.updateFormatSelection(format)
+        this.setStep2()
     }
 }
 </script>

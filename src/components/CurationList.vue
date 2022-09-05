@@ -304,16 +304,11 @@ import EmptyElement from '@/components/EmptyElement.vue'
                     });
             },
             back(){
-               if (this.change_list.length > 0){
-                    if (confirm('Are you sure you want to leaving without saving?')) {
-                        this.updateOccurrencesSelection(null)
-                        this.$emit('clicked')
-                    }
-                }
-                else {
+                let go_back = this.change_list.length == 0 || confirm('Are you sure you want to leaving without saving?')
+                if (go_back) {
                     this.updateOccurrencesSelection(null)
                     this.$emit('clicked')
-             }
+                }
            },
            sortBy(name){
                 if (name == this.sort.by){

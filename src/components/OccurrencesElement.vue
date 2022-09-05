@@ -60,7 +60,13 @@ import { mapState, mapActions } from 'vuex'
         displaySpecimen(){
             this.updateOccurrencesSelection(this.occurrence)
             this.updateStep(3)
-            this.$router.push({ name: 'HomePage', query: { institutionKey: this.institution_selection.key, datasetKeys: this.datasets_selection.join(','), format: this.format_selection, occurrenceKey: this.occurrence.key}}).catch(()=>{});
+            this.$router.push({
+              name: this.$router.currentRoute.name,
+              query: {
+                ...this.$router.currentRoute.query,
+                occurrenceKey: this.occurrence.key
+              }
+            })
        },
       },
     }
