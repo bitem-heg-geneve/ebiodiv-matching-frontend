@@ -7,7 +7,7 @@ module.exports = {
         plugins: [
             new CopyPlugin({
                 patterns: [
-                    { from: process.env.BACKEND_JSON, to: "backend.json" },
+                    { from: process.env.VUE_APP_BACKEND_JSON, to: "backend.json" },
                 ],
             })
         ]
