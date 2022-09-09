@@ -111,7 +111,11 @@ export default new Vuex.Store({
         {name: 'Collector (recorded by)', score: 'recordedBy', value: ['recordedBy']},
         {name: 'Type', score: 'typeStatus', value: ['typeStatus']},
         {name: 'Record', score: 'basisOfRecord', value: ['basisOfRecord']},
-    ]
+    ],
+    user: {
+        name: "",
+    }
+
   },
   mutations: {
     UPDATE_INSTITUTIONS_LIST(state, institution_list) {
@@ -160,6 +164,9 @@ export default new Vuex.Store({
     UPDATE_STEP(state, value) {
         state.step = value
     },
+    UPDATE_USERNAME(state, value) {
+        state.user.name = value
+    },
   },
   actions: {
     updateInstitutions(context, value) {
@@ -199,6 +206,9 @@ export default new Vuex.Store({
     },
     updateStep(context, value){
         context.commit('UPDATE_STEP', value)
+    },
+    updateUsername(context, value){
+        context.commit('UPDATE_USERNAME', value)
     },
   },
   modules: {

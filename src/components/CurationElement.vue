@@ -46,7 +46,7 @@
 
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
     export default {
       name: 'CurationElement',
@@ -74,7 +74,7 @@ import { mapState } from 'vuex'
         };
       },
       computed: {
-        ...mapState(['theme_color', 'urls', 'curation_characteristics', 'fields', 'format_selection', 'occurrences_selection']),
+        ...mapState(['theme_color', 'urls', 'curation_characteristics', 'fields', 'format_selection', 'occurrences_selection', 'user']),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
@@ -117,6 +117,7 @@ import { mapState } from 'vuex'
         }
       },
       methods:{
+        ...mapActions(['updateUsername']),
         normalizeValue(value){
                 if (value == null){
                     return "NA"
@@ -207,7 +208,16 @@ import { mapState } from 'vuex'
              this.$emit("removeOne", {'key': this.curation.object.key, 'value': match})
           }
         },
+        saveName(){
+            var name=prompt("Please enter your name or ORCID","");
+            if (name != null){
+                this.updateUsername(name)
+            }
+        },           
         saveSelection(){
+            while (this.user.name == ""){
+                this.saveName()
+            }
             var match = null
             if (this.status == "yes"){
                 match = true
@@ -219,6 +229,7 @@ import { mapState } from 'vuex'
                   "occurrenceKey1": this.occurrences_selection.key,
                   "occurrenceKey2": this.curation.object.key,
                   "decision": match,
+                  "username": this.user.name
                 }
                 var saved_json =  {"occurrenceRelations": [data_to_save]}
                 this.$backend.post_matching(saved_json)

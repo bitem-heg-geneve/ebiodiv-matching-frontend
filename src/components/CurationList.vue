@@ -177,7 +177,7 @@ import EmptyElement from '@/components/EmptyElement.vue'
         };
       },
       computed: {
-        ...mapState(['urls', 'theme_color', 'institution_selection', 'datasets_selection', 'occurrences_selection', 'matching', 'curation_characteristics', 'format_selection', 'fields']),
+        ...mapState(['urls', 'theme_color', 'institution_selection', 'datasets_selection', 'occurrences_selection', 'matching', 'curation_characteristics', 'format_selection', 'fields', 'user']),
         cssVars () {
                 return{
                     '--color': this.theme_color.main,
@@ -237,7 +237,7 @@ import EmptyElement from '@/components/EmptyElement.vue'
         },
       },
       methods:{
-        ...mapActions(['updateOccurrencesSelection', 'updateMatching', 'updateStep']),
+        ...mapActions(['updateOccurrencesSelection', 'updateMatching', 'updateStep', 'updateUsername']),
         get_scores(occurrence1, occurrence2) {
             if (occurrence1 == null || occurrence2 == null) {
                 return {
@@ -271,7 +271,16 @@ import EmptyElement from '@/components/EmptyElement.vue'
                 }
                 this.change_dict[element.key] = element.value
         },
+        saveName(){
+            var name=prompt("Please enter your name or ORCID","");
+            if (name != null){
+                this.updateUsername(name)
+            }
+        },
         save(){
+            while (this.user.name == ""){
+                this.saveName()
+            }
                var saved_data = []
                    for (var i=0; i<this.change_list.length; i++){
                      if (/^\d+$/.test(this.change_list[i])){
@@ -279,6 +288,7 @@ import EmptyElement from '@/components/EmptyElement.vue'
                           "occurrenceKey1": this.occurrences_selection.key,
                           "occurrenceKey2": this.change_list[i],
                           "decision": this.change_dict[this.change_list[i]],
+                          "username": this.user.name,
                         }
                         saved_data.push(element)
                       }
