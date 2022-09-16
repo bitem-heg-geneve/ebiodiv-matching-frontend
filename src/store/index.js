@@ -114,7 +114,7 @@ export default new Vuex.Store({
         {name: 'Record', score: 'basisOfRecord', value: ['basisOfRecord']},
     ],
     user: {
-        name: "",
+        name: null,
     }
 
   },

@@ -95,6 +95,7 @@
                 <template v-if="show_edit && finished_empty_elements.length > 0">
                     <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_empty_elements" :key="curation.empty_key" :curation="curation" save="Edit"/>
                 </template>
+                
             </table>
 
 
@@ -273,14 +274,23 @@ import EmptyElement from '@/components/EmptyElement.vue'
         },
         saveName(){
             var name=prompt("Please enter your name or ORCID","");
-            if (name != null){
-                this.updateUsername(name)
-            }
-        },
-        save(){
-            while (this.user.name == ""){
+            if (name == ""){
                 this.saveName()
             }
+            else {
+                if (name == null){
+                    alert("Your work is not saved")
+                }
+                else{
+                    this.updateUsername(name)
+                }
+            }
+        }, 
+        save(){
+            if (this.user.name == null){
+                this.saveName()
+            }
+            if (this.user.name != null){
                var saved_data = []
                    for (var i=0; i<this.change_list.length; i++){
                      if (/^\d+$/.test(this.change_list[i])){
@@ -312,7 +322,8 @@ import EmptyElement from '@/components/EmptyElement.vue'
                     .catch(error => {
                         alert ("Failed to save"+error )
                     });
-            },
+            }
+        },
             back(){
                 let go_back = this.change_list.length == 0 || confirm('Are you sure you want to leaving without saving?')
                 if (go_back) {

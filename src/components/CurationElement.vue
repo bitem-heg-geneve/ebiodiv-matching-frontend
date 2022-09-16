@@ -210,22 +210,32 @@ import { mapState, mapActions } from 'vuex'
         },
         saveName(){
             var name=prompt("Please enter your name or ORCID","");
-            if (name != null){
-                this.updateUsername(name)
-            }
-        },           
-        saveSelection(){
-            while (this.user.name == ""){
+            if (name == ""){
                 this.saveName()
             }
-            var match = null
-            if (this.status == "yes"){
-                match = true
+            else {
+                if (name == null){
+                    alert("Your work is not saved")
+                }
+                else{
+                    this.updateUsername(name)
+                }
             }
-            if (this.status == "no"){
-                match = false
+
+        },           
+        saveSelection(){
+            if (this.user.name == null){
+                this.saveName()
             }
-            var data_to_save = {
+            if (this.user.name != null){
+                var match = null
+                if (this.status == "yes"){
+                    match = true
+                }
+                if (this.status == "no"){
+                    match = false
+                }
+                var data_to_save = {
                   "occurrenceKey1": this.occurrences_selection.key,
                   "occurrenceKey2": this.curation.object.key,
                   "decision": match,
@@ -241,6 +251,7 @@ import { mapState, mapActions } from 'vuex'
                     .catch(error => {
                         alert ("Failed to save"+error )
                     });
+            }
         },
         toggle(){
             this.expanded = !this.expanded
