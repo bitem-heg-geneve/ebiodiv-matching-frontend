@@ -64,6 +64,9 @@ import { mapState, mapActions } from 'vuex'
         save: {
             type: String,
             default: "Save"
+        },
+        status_save_all: {
+
         }
       },
       data() {
@@ -255,6 +258,9 @@ import { mapState, mapActions } from 'vuex'
         },
         toggle(){
             this.expanded = !this.expanded
+        },
+        updateSavedStatus(){
+            alert("test")
         }
       },
       beforeMount(){
@@ -270,7 +276,12 @@ import { mapState, mapActions } from 'vuex'
                 }
             }
             this.saved_status = this.status
-        }
+        },
+        watch: {
+            status_save_all() {
+                this.saved_status = this.status
+            },
+        },
     }
 
 </script>

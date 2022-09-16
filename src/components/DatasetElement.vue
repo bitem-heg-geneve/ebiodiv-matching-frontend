@@ -9,7 +9,7 @@
         <div class="col-10 middle-column">
             <h2>{{ dataset.title }}</h2>
             <div v-if="expanded">
-                <p v-html="dataset.description">}</p>
+                <p v-html="dataset.description"></p>
                 <p><i>{{ dataset.citation.text }}</i></p>
                 <p><a :href="dataset.homepage" target="_blank">{{ dataset.homepage }}</a></p>
             </div>

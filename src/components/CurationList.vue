@@ -60,8 +60,8 @@
                     <th></th>
                 </tr>
 
-                <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" :scores="get_scores(occurrences_selection, curation.object)" save="Save"/>
-                <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_empty_elements" :key="curation.empty_key" :curation="curation" save="Save"/>
+                <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation" :key="curation.object.key" :curation="curation" :scores="get_scores(occurrences_selection, curation.object)" save="Save" :status_save_all="status_save_all" />
+                <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_empty_elements" :key="curation.empty_key" :curation="curation" save="Save" :status_save_all="status_save_all" />
                 <tr class="empty-line">
                     <td :colspan="curation_characteristics.length+4">
                         <div class="left-container">
@@ -90,10 +90,10 @@
                 </tr>
 
                 <template v-if="show_edit && finished_curation.length > 0">
-                    <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_curation" :key="curation.object.key" :curation="curation" :scores="get_scores(occurrences_selection, curation.object)" save="Edit"/>
+                    <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_curation" :key="curation.object.key" :curation="curation" :scores="get_scores(occurrences_selection, curation.object)" save="Edit" :status_save_all="status_save_all" />
                 </template>
                 <template v-if="show_edit && finished_empty_elements.length > 0">
-                    <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_empty_elements" :key="curation.empty_key" :curation="curation" save="Edit"/>
+                    <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_empty_elements" :key="curation.empty_key" :curation="curation" save="Edit" :status_save_all="status_save_all" />
                 </template>
                 
             </table>
@@ -169,6 +169,7 @@ import EmptyElement from '@/components/EmptyElement.vue'
             empty_elements: [],
             change_list: [],
             change_dict: {},
+            status_save_all: 0,
             sort: {
                 by: '$global',
                 asc: false
@@ -318,6 +319,8 @@ import EmptyElement from '@/components/EmptyElement.vue'
                         }
                         this.change_list = []
                         this.change_dict = {}
+                        this.status_save_all += 1
+                    
                     })
                     .catch(error => {
                         alert ("Failed to save"+error )
