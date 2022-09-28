@@ -115,6 +115,8 @@ export default new Vuex.Store({
     ],
     user: {
         name: null,
+        orcid: null,
+        orcidToken: null,
     }
 
   },
@@ -168,8 +170,17 @@ export default new Vuex.Store({
     UPDATE_STEP(state, value) {
         state.step = value
     },
-    UPDATE_USERNAME(state, value) {
-        state.user.name = value
+    UPDATE_USER(state, value) {
+        state.user = value
+        window.sessionStorage.setItem('user', JSON.stringify(value));
+    },
+    initialiseStore(state) {
+        // this mutation is triggered once when the app starts.
+        // see src/main.js
+        const userSession = window.sessionStorage.getItem('user');
+        if (userSession) {
+            state.user = JSON.parse(userSession);
+        }
     },
   },
   actions: {
@@ -214,8 +225,17 @@ export default new Vuex.Store({
     updateStep(context, value){
         context.commit('UPDATE_STEP', value)
     },
-    updateUsername(context, value){
-        context.commit('UPDATE_USERNAME', value)
+    updateUnregisteredUser(context, userName){
+        /* an example of userName is "John Doe" */
+        context.commit('UPDATE_USER', {
+            name: userName,
+            orcid: null,
+            orcidToken: null,
+        });
+    },
+    updateOrcidUser(context, user) {
+        /* an example of user is {name: "John Doe", orcid: "", orcidToken: ""} */
+        context.commit('UPDATE_USER', user)
     },
   },
   modules: {

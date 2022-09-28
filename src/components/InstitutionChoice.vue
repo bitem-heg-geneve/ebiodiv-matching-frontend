@@ -50,7 +50,6 @@ import { mapState, mapActions } from 'vuex'
             try {
                 var institutions_list = []
                 var institutions_info = {}
-                console.log('this.$scoring', this.$scoring)
                 const response = await this.$backend.fetch_institutions()
                 for (var key in response.data){
                     var name = response.data[key].name
