@@ -37,11 +37,11 @@ export default {
         // name = family_name + " " + given_name
         // but deal with the fact that values can be null 
         const name = []
-        if (this.token.data.family_name != null) {
-            name.push(this.token.data.family_name);
-        }
         if (this.token.data.given_name != null) {
             name.push(this.token.data.given_name);
+        }
+        if (this.token.data.family_name != null) {
+            name.push(this.token.data.family_name);
         }
         if (name.length == 0) {
             // should not happen: OrcID account without family name and given name
