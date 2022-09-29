@@ -8,6 +8,7 @@ module.exports = {
             new CopyPlugin({
                 patterns: [
                     { from: process.env.VUE_APP_BACKEND_JSON, to: "backend.json" },
+                    { from: process.env.VUE_APP_ORCID_JSON, to: "orcid.json" },
                 ],
             })
         ]

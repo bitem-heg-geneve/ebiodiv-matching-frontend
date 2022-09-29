@@ -1,27 +1,30 @@
 <template>
-    <div  :class="bannerCssClasses" :style="cssVars">
-
-    <div class="row">
-        <div class="col-12">
-            <div class="float-start position-absolute">
-                <img src="../assets/images/logo_ebiodiv_small.png" class="medium-img"/>
+    <div :class="bannerCssClasses" :style="cssVars">
+        <div class="row">
+            <div class="col-12">
+                <div class="float-start position-absolute">
+                    <img src="../assets/images/logo_ebiodiv_small.png" class="medium-img" />
+                </div>
+                <h1>{{ title }}</h1>
+                <p><i>{{ subtitle }}</i></p>
             </div>
-            <h1>{{ title }}</h1>
-            <p><i>{{ subtitle }}</i></p>
         </div>
-
+        <div class="user-login-container">
+            <UserComponent></UserComponent>
         </div>
-
     </div>
-
 </template>
 
 
 <script>
 import { mapState } from 'vuex'
+import UserComponent from '@/components/UserComponent.vue'
 
     export default {
       name: 'BannerComponent',
+      components: {
+        UserComponent,
+      },
       props: {
         title: {
             type: String,
@@ -61,6 +64,11 @@ import { mapState } from 'vuex'
         margin-bottom: 10px;
     }
 
+    .user-login-container {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+    }
     .banner.productionBackend {
         background: conic-gradient(at 0% 30%, var(--color-secondary) 10%, var(--color-main) 30%, var(--color-secondary) 50%);
     }
