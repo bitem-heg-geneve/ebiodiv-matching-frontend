@@ -66,6 +66,17 @@ export default new class Backend {
         return await axios.post(this.urls.matching, data)
     }
 
+    async post_sib_matching(data) {
+        let sib_backend_url = process.env.VUE_APP_SIB_BACKEND_URL;
+        if (sib_backend_url == null || sib_backend_url == "") {
+            await this.fetch_urls()
+            sib_backend_url = this.urls.sib_backend_url
+        }
+        if (sib_backend_url != null) {
+            return await axios.post(sib_backend_url + "newOcurrenceRelations", data)
+        }
+    }
+
     processOccurrences(json, format_selection) {
         const subjectOccs = {}
         const subjectStatus = {}

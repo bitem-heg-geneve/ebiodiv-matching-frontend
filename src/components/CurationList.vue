@@ -364,51 +364,94 @@ export default {
             object.matching.match = null
             this.empty_elements.push(object)
             this.addElement({ 'key': object.empty_key, 'value': true })
+        },
+        saveToSibBackend(occurrenceIdToSave) {
+            const occurrenceRelations = {};
+            // create occurrenceRelations using the existing decisions and occurrences
+            for (const relation of this.occurrences_selection.relations) {
+                occurrenceRelations[relation.object.key] = {
+                    occurrence: { ... relation.object },  // make a copy of the occurrence so we delete "relations"
+                    decision: relation.matching.match,
+                    is_new_decision: false
+                }
+                delete occurrenceRelations[relation.object.key].occurrence.relations;
+            }
+            // update occurrenceRelations with the new user decisions
+            for (var i = 0; i < occurrenceIdToSave.length; i++) {
+                occurrenceRelations[occurrenceIdToSave[i]].decision = this.change_dict[this.change_list[i]];
+                occurrenceRelations[occurrenceIdToSave[i]].is_new_decision = true;
+            }
+            // create data (to send to the SIB backend)
+            const data = {
+                institutionKey: this.institution_selection.key, 
+                datasetKey: this.datasets_selection[0],
+                user: {
+                    name: this.user.name,
+                    orcid: this.user.orcid,
+                },
+                refOccurrence: { ...this.occurrences_selection },  // make a copy of the occurrence so we delete "relations"
+                relations: Object.values(occurrenceRelations),
+            };
+            delete data.refOccurrence.relations
+            this.$backend.post_sib_matching(data)
+                .then(() => {})
+                .catch(() => {})
+        },
+        saveToPlaziBackend(occurrenceIdToSave) {
+            var saved_data = []
+            for (var i = 0; i < occurrenceIdToSave.length; i++) {
+                var element = {
+                    "occurrenceKey1": this.occurrences_selection.key,
+                    "occurrenceKey2": occurrenceIdToSave[i],
+                    "decision": this.change_dict[this.change_list[i]],
+                    "userName": this.user.name,
+                    "orcid": this.user.orcid,
+                }
+                saved_data.push(element)
+            }
+
+            var saved_json = { "occurrenceRelations": saved_data }
+            this.$backend.post_matching(saved_json)
+                .then(() => {
+                    for (let i = 0; i < this.occurrences_selection.relations.length; i++) {
+                        if (this.change_list.includes(this.occurrences_selection.relations[i].object.key)) {
+                            this.occurrences_selection.relations[i].matching.match = this.change_dict[this.occurrences_selection.relations[i].object.key]
+                        }
+                    }
+                    for (let i = 0; i < this.empty_elements.length; i++) {
+                        if (this.change_list.includes(this.empty_elements[i].empty_key)) {
+                            this.empty_elements[i].matching.match = this.change_dict[this.empty_elements[i].empty_key]
+                        }
+                    }
+                    this.change_list = []
+                    this.change_dict = {}
+                    this.status_save_all += 1
+
+                })
+                .catch(error => {
+                    alert("Failed to save" + error)
+                });
         }
     },
     mounted() {
         this.$emitter.on('logged', () => {
             if (this.pendingSave.length > 0) {
+                // logged event and this.pendingSave is not empty
+                // ==> there are some now occurrence relations to save
                 const occurrenceIdToSave = this.pendingSave.slice();
                 this.pendingSave = [];
 
-                var saved_data = []
-                for (var i = 0; i < occurrenceIdToSave.length; i++) {
-                    var element = {
-                        "occurrenceKey1": this.occurrences_selection.key,
-                        "occurrenceKey2": occurrenceIdToSave[i],
-                        "decision": this.change_dict[this.change_list[i]],
-                        "userName": this.user.name,
-                        "orcid": this.user.orcid,
-                    }
-                    saved_data.push(element)
-                }
+                // save to the SIB backend
+                this.saveToSibBackend(occurrenceIdToSave);
 
-                var saved_json = { "occurrenceRelations": saved_data }
-                this.$backend.post_matching(saved_json)
-                    .then(() => {
-                        for (let i = 0; i < this.occurrences_selection.relations.length; i++) {
-                            if (this.change_list.includes(this.occurrences_selection.relations[i].object.key)) {
-                                this.occurrences_selection.relations[i].matching.match = this.change_dict[this.occurrences_selection.relations[i].object.key]
-                            }
-                        }
-                        for (let i = 0; i < this.empty_elements.length; i++) {
-                            if (this.change_list.includes(this.empty_elements[i].empty_key)) {
-                                this.empty_elements[i].matching.match = this.change_dict[this.empty_elements[i].empty_key]
-                            }
-                        }
-                        this.change_list = []
-                        this.change_dict = {}
-                        this.status_save_all += 1
-
-                    })
-                    .catch(error => {
-                        alert("Failed to save" + error)
-                    });
+                // save on the Plazi backend
+                this.saveToPlaziBackend(occurrenceIdToSave);
             }
         });
         this.$emitter.on('loginAbort', () => {
             if (this.pendingSave) {
+                // logingAbort event and this.pendingSave is not empty
+                // ==> the user clicked on "Save" or "Edit" but cancel the logged in procedure
                 this.pendingSave = [];
                 alert('Your work is not saved');
             }
