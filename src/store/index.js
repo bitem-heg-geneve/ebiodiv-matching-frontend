@@ -225,14 +225,6 @@ export default new Vuex.Store({
     updateStep(context, value){
         context.commit('UPDATE_STEP', value)
     },
-    updateUnregisteredUser(context, userName){
-        /* an example of userName is "John Doe" */
-        context.commit('UPDATE_USER', {
-            name: userName,
-            orcid: null,
-            orcidToken: null,
-        });
-    },
     updateOrcidUser(context, user) {
         /* an example of user is {name: "John Doe", orcid: "", orcidToken: ""} */
         context.commit('UPDATE_USER', user)
