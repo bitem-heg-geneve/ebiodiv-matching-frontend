@@ -5,8 +5,7 @@
             <b-popover target="loginName" triggers="hover" placement="bottomright" :delay="{'show': 50, 'hide': 400}">
                 <b-container>
                     <b-row class="mb-2 mt-2">
-                        <b-col v-if="user.orcid">ORCID <a :href="userOrcidUrl" target="_blank">{{ user.orcid }}</a></b-col>
-                        <b-col v-else>Logged without ORCID</b-col>
+                        <b-col>ORCID <a :href="userOrcidUrl" target="_blank">{{ user.orcid }}</a></b-col>
                     </b-row>
                     <b-row class="mb-2 mt-2">
                         <b-col><b-button variant="outline-danger" size="sm" @click="logout">Log out</b-button></b-col>
@@ -16,21 +15,11 @@
         </template>
         <template v-else>
             <b-button v-b-modal="'loginForm'" size="sm" id="loginName"><b-icon icon="person-fill"></b-icon> Login</b-button>
-            <b-modal id="loginForm" title="Login" :hide-footer="true" @show="onLoginShow" @hide="onLoginHide" >
+            <b-modal id="loginForm" title="Login with your ORCID" :hide-footer="true" @show="onLoginShow" @hide="onLoginHide" >
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
-                        <div class="modal-body">
-                            <h5 class="modal-title">Login with your ORCID</h5>
+                        <div class="modal-body mx-auto">
                             <div><a @click="startOAuth" id="oauthLink" :href="authUrl" class="btn btn-outline-primary" role="button" target="_blank" rel="opener"><img src="orcid_24x24.webp" /> Connect your ORCID</a></div>
-                            <hr />
-                            <h5 class="modal-title">Login without ORCID</h5>
-                            <p>If you want to contribute to ebiodiv.org without a ORCID, you can enter your name</p>
-                            <b-input-group prepend="Name" class="mt-3">
-                                <b-form-input name="userName" id="userName"></b-form-input>
-                                    <b-input-group-append>
-                                    <b-button @click="loginAsAnUnregisteredUser">Login</b-button>
-                                </b-input-group-append>
-                            </b-input-group>
                         </div>
                     </div>
                 </div>
@@ -62,12 +51,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions(['updateUnregisteredUser', 'updateOrcidUser']),
-        loginAsAnUnregisteredUser() {
-            const name = document.getElementById('userName').value;
-            this.updateUnregisteredUser(name);
-            this.$emitter.emit('logged');
-        },
+        ...mapActions(['updateOrcidUser']),
         onLoginShow() {
             this.pendingLogin = true;
         },
