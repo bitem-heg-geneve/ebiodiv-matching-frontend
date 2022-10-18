@@ -101,7 +101,7 @@ export default new Vuex.Store({
         {name: 'Family', score: 'family', value: ['family']},
         {name: 'Genus', score: 'genus', value: ['genus']},
         {name: 'Specific epithet', score: 'specificEpithet', value: ['specificEpithet']},
-        {name: 'Latitude/Longitude', score: 'decimalLatitude', value: ['decimalLatitude', 'decimalLongitude']},
+        {name: 'Coordinates', score: 'decimalLatitude', value: ['decimalLatitude', 'decimalLongitude']},
         {name: 'Elevation', score: 'elevation', value: ['elevation', 'depth']},
         {name: 'Locality', score: 'locality', value: ['locality']},
         {name: 'Country', score: 'country', value: ['country']},

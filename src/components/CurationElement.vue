@@ -7,7 +7,7 @@
             <td :class="cellColor(scores.$global)">{{ scores.$global }}</td>
             <template>
                 <td v-for="char in curation_characteristics" :key="char.score+'sp-td'"
-                    :class="cellColor(scores[char.score])">
+                    :class="'cell_' + char.score + ' ' + cellColor(scores[char.score])">
                     {{ display_content(curation.object, char.value) }}
                 </td>
             </template>
@@ -48,9 +48,13 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import shared_fields from '@/components/shared_fields.js'
 
 export default {
     name: 'CurationElement',
+    mixins: [
+        shared_fields.mixin_fields
+    ],
     components: {
     },
     props: {
@@ -168,19 +172,6 @@ export default {
                 class_name = "cell-color-11"
             }
             return class_name
-        },
-        display_content(object, values) {
-            var content = ""
-            for (let i = 0; i < values.length; i++) {
-                if (values[i] in object) {
-                    if (content.length > 0) {
-                        content += "/"
-                    }
-                    content += object[values[i]]
-                }
-            }
-
-            return content
         },
         changeSelection(event, choice) {
             if (choice == "yes") {

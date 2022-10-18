@@ -26,8 +26,7 @@
                 occurrences_selection.key}}</a></td>
                 <td></td>
                 <template v-for="char in curation_characteristics">
-                    <td v-if="char.value" :key="char.score+'mc_td'">{{ display_content(occurrences_selection,
-                    char.value) }}</td>
+                    <td v-if="char.value" :key="char.score+'mc_td'" :class="'cell_' + char.score">{{ display_content(occurrences_selection, char.value) }}</td>
                 </template>
                 <td colspan="3"></td>
                 <td>
@@ -191,9 +190,13 @@
 import { mapState, mapActions } from 'vuex'
 import CurationElement from '@/components/CurationElement.vue'
 import EmptyElement from '@/components/EmptyElement.vue'
+import shared_fields from '@/components/shared_fields.js'
 
 export default {
     name: 'CurationList',
+    mixins: [
+        shared_fields.mixin_fields // add the display_content method
+    ],
     components: {
         CurationElement,
         EmptyElement,
@@ -289,19 +292,6 @@ export default {
                 };
             }
             return this.$scoring.get_scores(occurrence1, occurrence2);
-        },
-        display_content(object, values) {
-            var content = ""
-
-            for (let i = 0; i < values.length; i++) {
-                if (values[i] in object) {
-                    if (content.length > 0) {
-                        content += "/"
-                    }
-                    content += object[values[i]]
-                }
-            }
-            return content
         },
         removeElement(element) {
             const index = this.change_list.indexOf(element.key);
@@ -461,6 +451,13 @@ export default {
 
 </script>
 
+<style>
+/* referenced by CurationElement too */
+.cell_decimalLatitude,
+.cell_elevation {
+    white-space: nowrap;
+}
+</style>
 
 <style scoped lang="scss">
 .full-container {
