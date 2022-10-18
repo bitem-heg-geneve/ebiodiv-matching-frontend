@@ -2,7 +2,7 @@
 
   <div class="container-fluid">
 
-    <BannerComponent title="eBioDiv" subtitle="Linking material citations to specimens" />
+    <BannerComponent title="eBioDiv Matching Service" subtitle="Linking material citations to specimens" />
 
     <div class="row" id="institutions" v-show="step != 3">
         <InstitutionChoice @searchOccurrences=displayOccurrences />
