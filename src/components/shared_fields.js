@@ -63,8 +63,8 @@ const TYPE_STATUS_LABELS = {
 /* always round the number to one decimal */
 const LATLON_FORMAT = new Intl.NumberFormat("en-US", {
     style: "decimal",
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
 });
 
 export default {
@@ -135,7 +135,7 @@ export default {
                     // the method exist: call it
                     return this[method_name](...values);
                 }
-                // by default: only the first value
+                // by default: concat all the values separated by "/"
                 return values.filter(v => v != null).join("/");
             },
         }

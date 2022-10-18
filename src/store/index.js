@@ -85,7 +85,7 @@ export default new Vuex.Store({
                 {title: 'Country', short: 'country', multi: true},
                 {title: 'Collection code', short: 'collectionCode', multi: true},
                 {title: 'Collector', short: 'recordedBy', multi: true},
-                {title: 'Type', short: 'typeStatus', multi: true},
+                {title: 'Type', short: 'typeStatus', multi: true, labelMethod: "display_value_typeStatus"},
                 {title: 'Kingdom', short: 'kingdom', multi: true},
                 {title: 'Phylum', short: 'phylum', multi: true},
                 {title: 'Class', short: 'class', multi: true},
