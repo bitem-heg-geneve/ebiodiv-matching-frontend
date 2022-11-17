@@ -438,6 +438,9 @@ export default {
 
                 // save on the Plazi backend
                 this.saveToPlaziBackend(occurrenceIdToSave);
+
+                //
+                this.$gtag.event('save');
             }
         });
         this.$emitter.on('loginAbort', () => {

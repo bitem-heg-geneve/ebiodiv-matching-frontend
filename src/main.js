@@ -3,7 +3,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
-// plugins
+// bootstrap-vue
 import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue'
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
@@ -26,6 +26,13 @@ Vue.prototype.$scoring = Scoring;
 Vue.prototype.$backend = Backend;
 Vue.prototype.$orcid = Orcid;
 Vue.prototype.$emitter = mitt();
+
+// vue-gtag
+import VueGtag from "vue-gtag";
+Vue.use(VueGtag, {
+  config: { id: process.env.VUE_APP_GA_ID },
+  bootstrap: false,
+}, router);
 
 new Vue({
   router,

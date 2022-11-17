@@ -43,15 +43,20 @@
       </div>
     </div>
 
-
+    <CookieConsentElement></CookieConsentElement>
+  
   </div>
 
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import CookieConsentElement from '@/components/CookieConsentElement.vue'
 
 export default {
+  components: {
+    CookieConsentElement,
+  },
   computed: {
     ...mapState(['theme_color']),
     cssVars() {
@@ -61,7 +66,6 @@ export default {
     }
   }
 }
-
 </script>
 
 

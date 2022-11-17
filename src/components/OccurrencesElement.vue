@@ -72,6 +72,9 @@ import shared_fields from '@/components/shared_fields.js'
                 occurrenceKey: this.occurrence.key
               }
             })
+            this.$gtag.event('displayOccurrence', {
+              occurrenceKey: this.occurrence.key,
+            });
        },
       },
     }
