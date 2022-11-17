@@ -126,6 +126,15 @@ function get_score_numeric(subject_value, related_value) {
     return 1 - (Math.abs(related_value - subject_value) / abs_max_value)
 }
 
+function get_score_elevation(subject_value, related_value) {
+    if (!subject_value || !related_value) {
+        return null;
+    }
+    const diff = Math.abs(subject_value - related_value);
+    return (6-Math.min(6, Math.log(diff+1)))/6;
+}
+
+
 function get_score_recordedbyids(subject_value, related_value) {
     /*
     If at least one identifier match between subject_value and related_value, then the score is 1 otherwise the score 0
@@ -263,6 +272,7 @@ export default new class Scoring {
         new FieldDescription("country", 1, normalize_str, get_score_string_exact),  // the value is normalized by GBIF, there is no typo
         new FieldDescription("city", 1, normalize_str_or_null, get_score_string_jw),
         new FieldDescription("locality", 0.5, normalize_str_or_null, get_score_string_jw_log),
+        new FieldDescription("elevation", 0.5, normalize_int, get_score_elevation),
         new MultiFieldsDescription(["year", "month", "day"], 1, normalize_yearmonthday, get_score_yearmonthday),
         new MultiFieldsDescription(["decimalLatitude", "decimalLongitude"], 2, normalize_latlon, get_score_latlon),
     ]
