@@ -25,7 +25,7 @@
                         <span v-if="datasets.length > 1 && datasets_selection.length > 1"> / </span>
                         <a v-if="datasets_selection.length > 1" @click="unselectAll()" class="btn btn-link btn-sm" href="#" role="button">Unselect all datasets</a>
                     </div>
-                    <div class="col-6 text-end">
+                    <div class="col-6 text-right">
                         <a v-if="datasets.length > 1" @click="expandAll()" class="btn btn-link btn-sm" href="#" role="button">Expand all datasets</a>
                         <span v-if="datasets.length > 1"> / </span>
                         <a v-if="datasets.length > 1" @click="unexpandAll()" class="btn btn-link btn-sm" href="#" role="button">Unexpand all datasets</a>
