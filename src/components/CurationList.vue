@@ -1,18 +1,13 @@
 <template>
 
     <div class="component-container" :style="cssVars">
-
-        <div class="separator">
-            <h2><span>{{ get_curation_name }}s associated with the {{ get_occurrence_name.toLowerCase() }} {{
-            occurrences_selection.key }}</span></h2>
-        </div>
-        <p>{{ occurrences_selection.verbatimLabel }}</p>
-
         <table>
-
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.length+4"><br /><br />{{ get_occurrence_name.toLowerCase() }} {{
-                occurrences_selection.key }}</td>
+                <td :colspan="curation_characteristics.length+6">
+                    <div class="separator">
+                        <h2><span>{{ get_occurrence_name }} {{ occurrences_selection.key }}</span></h2>
+                    </div>
+                </td>
             </tr>
             <tr>
                 <th>Key</th>
@@ -37,8 +32,7 @@
                 </td>
             </tr>
             <tr class="expanded" v-if="expanded">
-                <td></td>
-                <td :colspan="curation_characteristics.length+1">
+                <td :colspan="curation_characteristics.length+6">
                     <div class="expanded-box" v-if="occurrences_selection.verbatimLabel">
                         {{ occurrences_selection.verbatimLabel }}
                     </div>
@@ -46,14 +40,21 @@
                         <a :href="occurrences_selection.references" target="_blank">Reference to TreatmentBank</a>
                     </div>
                 </td>
-                <td colspan="4"></td>
             </tr>
-
             <tr class="empty-line">
-                <td colspan="18"><br /><br />{{ processed_curation.length }} suggested {{
-                get_curation_name.toLowerCase() }}<span v-if="processed_curation.length > 1">s</span> to curate</td>
+                <td :colspan="curation_characteristics.length+6">
+                    <br /><br />
+                    <div class="separator">
+                        <h2><span>{{ get_curation_name }}s associated with the {{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</span></h2>
+                    </div>
+                    <p>
+                        {{ processed_curation.length }} suggested 
+                        {{ get_curation_name.toLowerCase() }}{{ processed_curation.length > 1?'s':'' }}
+                        to curate
+                    </p>
+                    <p class="notice">Please indicate for each suggested {{ get_curation_name.toLowerCase() }} whether it matches the {{ get_occurrence_name.toLowerCase() }} or not (Yes / No).</p>
+                </td>
             </tr>
-
             <tr v-if="processed_curation.length > 0">
                 <th>Key</th>
                 <th @click="sortBy('$global')">Score</th>
@@ -80,7 +81,7 @@
             </tr>
 
             <tr v-if="finished_curation.length > 0 || finished_empty_elements.length > 0" class="empty-line">
-                <td :colspan="curation_characteristics.length+4">
+                <td :colspan="curation_characteristics.length+6">
                     <br /><br />
                     <img v-show="!show_edit" src="../assets/images/icon_plus.png" alt="[+]"
                         @click="show_edit = !show_edit" class="mini" />
@@ -232,7 +233,8 @@ export default {
             }
         },
         get_occurrence_name() {
-            return this.fields[this.format_selection].format_occurrence.name
+            const zz = this.fields[this.format_selection].format_occurrence.name;
+            return zz.charAt(0).toUpperCase() + zz.slice(1).toLowerCase();
         },
         get_curation_name() {
             return this.fields[this.format_selection].format_curation.name
@@ -478,6 +480,10 @@ export default {
 
 .left-container {
     text-align: left;
+}
+
+.notice {
+    font-size: 1rem;
 }
 
 table {
