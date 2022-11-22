@@ -3,13 +3,17 @@
         <div class="row">
             <div class="col-12">
                 <div class="float-start position-absolute">
-                    <img src="../assets/images/logo_ebiodiv_small.png" class="medium-img" />
+                    <a :href="baseUrl"><img src="../assets/images/logo_ebiodiv_small.png" class="medium-img" /></a>
                 </div>
                 <h1>{{ title }}</h1>
                 <p><i>{{ subtitle }}</i></p>
             </div>
         </div>
         <div class="user-login-container">
+            <b-nav>
+                <!-- <b-nav-item href="#" link-classes="ebiodiv_navbar_link" target="_blank"><b-icon-question-circle></b-icon-question-circle> Help</b-nav-item> -->
+                <b-nav-item href="https://ebiodiv.org/" link-classes="ebiodiv_navbar_link" target="_blank"><b-icon-info-circle></b-icon-info-circle> About</b-nav-item>
+            </b-nav>
             <UserComponent></UserComponent>
         </div>
     </div>
@@ -48,6 +52,13 @@ import UserComponent from '@/components/UserComponent.vue'
                 // return "banner productionBackend";
                 return "banner " + process.env.VUE_APP_BACKEND_JSON.replace(".json", "").replace("backend-", "") + "Backend";
             },
+            baseUrl() {
+                const value = process.env.BASE_URL;
+                if (value == "") {
+                    return "/";
+                }
+                return value;
+            }
         }
     }
 
@@ -68,6 +79,8 @@ import UserComponent from '@/components/UserComponent.vue'
         position: absolute;
         top: 1rem;
         right: 1rem;
+        display: flex;
+        flex-direction: row;
     }
     .banner.productionBackend {
         background: conic-gradient(at 0% 30%, var(--color-secondary) 10%, var(--color-main) 30%, var(--color-secondary) 50%);
@@ -104,6 +117,10 @@ import UserComponent from '@/components/UserComponent.vue'
 
     .medium-img {
         height: 120px;
+    }
+
+    #app .ebiodiv_navbar_link {
+        color: white;
     }
 
 </style>
