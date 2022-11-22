@@ -59,6 +59,10 @@ export default {
             this.updateStep(2)
             this.$refs.occList.searchOccurrencesAPI(reload)
             this.$router.push({ name: 'HomePage', hash: '#occurrences', query: { institutionKey: this.institution_selection.key, datasetKeys: this.datasets_selection.join(','), format: format }}).catch(()=>{});
+            this.$gtag.event('displayOccurrences_' + format, {
+                institutionKey: this.institution_selection.key,
+                datasetKeys: this.datasets_selection.join(','),
+            });
         },
         reloadOccurrences(){
             this.displayOccurrences(this.format_selection, true)

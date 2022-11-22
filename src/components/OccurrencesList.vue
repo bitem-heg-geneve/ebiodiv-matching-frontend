@@ -203,6 +203,7 @@ export default {
                                 if (occ[index].key == this.urls_parameters.occurrence) {
                                     this.updateOccurrencesSelection(occ[index])
                                     this.updateStep(3)
+                                    this.$gtag.event('displayOccurrence');
                                     // this.$router.push({ name: 'HomePage', query: { institutionKey: this.institution_selection.key, datasetKeys: this.datasets_selection.join(','), format: this.format_selection, occurrenceKey: this.urls_parameters.occurrence } }).catch(() => { });
                                 }
                             }
