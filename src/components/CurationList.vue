@@ -336,6 +336,7 @@ export default {
             if (go_back) {
                 this.updateOccurrencesSelection(null)
                 this.$emit('clicked')
+                this.$gtag.event('back');
             }
         },
         sortBy(name) {
