@@ -37,7 +37,11 @@ import shared_fields from '@/components/shared_fields.js'
         page: {
           type: Number,
           required: true
-        }
+        },
+        index: {
+          type: Number,
+          required: true
+        },
       },
       data() {
         return {
@@ -65,11 +69,12 @@ import shared_fields from '@/components/shared_fields.js'
         },
       },
       methods:{
-        ...mapActions(['updateOccurrences', 'updateOccurrencesSelection', 'updateStep', 'updatePage']),
+        ...mapActions(['updateOccurrences', 'updateOccurrencesSelection', 'updateStep', 'updatePage', 'updatePositionDisplay']),
         displaySpecimen(){
             this.updateOccurrencesSelection(this.occurrence)
             this.updateStep(3)
             this.updatePage(this.page)
+            this.updatePositionDisplay("#"+this.page+"_"+this.index)
             this.$router.push({
               name: this.$router.currentRoute.name,
               query: {

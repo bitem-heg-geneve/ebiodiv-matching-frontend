@@ -45,9 +45,9 @@
                                     <th style="width:5%"></th>
                                 </tr>
 
-                                <OccurrencesElement
-                                    v-for="occurrence in processed_occurrences.slice(item_min, item_max)"
-                                    :key="occurrence.gbifID" :occurrence="occurrence" :page="current_page" />
+                                <OccurrencesElement :id="current_page+'_'+index"
+                                    v-for="(occurrence, index) in processed_occurrences.slice(item_min, item_max)"
+                                    :key="occurrence.gbifID" :occurrence="occurrence" :page="current_page" :index="index" />
 
                             </table>
 
@@ -124,7 +124,7 @@ export default {
         };
     },
     computed: {
-        ...mapState(['page_selection', 'institution_selection', 'datasets_selection', 'occurrence_keys', 'format_selection', 'user_selection', 'filters', 'fields', 'format_selection', 'urls_parameters', 'step', 'theme_color']),
+        ...mapState(['page_selection', 'position_display',  'institution_selection', 'datasets_selection', 'occurrence_keys', 'format_selection', 'user_selection', 'filters', 'fields', 'format_selection', 'urls_parameters', 'step', 'theme_color']),
         cssVars() {
             return {
                 '--color': this.theme_color.main,
@@ -199,6 +199,7 @@ export default {
                         this.current_page = this.page_selection
                         this.in_progress = false
                         this.goToTop()
+                        this.$router.push({ name: 'HomePage', hash: this.position_display, query: this.$route.query}).catch(()=>{});
                         if (!reload && this.urls_parameters.occurrence != null) {
                             for (let index in occ) {
                                 if (occ[index].key == this.urls_parameters.occurrence) {

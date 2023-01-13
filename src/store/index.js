@@ -31,6 +31,7 @@ export default new Vuex.Store({
     format_selection: null,
     matching: null,
     page_selection: 1,
+    position_display: "",
     fields: {
         matcit_specimen: {
             format_occurrence: {
@@ -174,6 +175,9 @@ export default new Vuex.Store({
     UPDATE_PAGE(state, value) {
         state.page_selection = value
     },
+    UPDATE_POSITION_DISPLAY(state, value) {
+        state.position_display = value
+    },
     UPDATE_USER(state, value) {
         state.user = value
         window.sessionStorage.setItem('user', JSON.stringify(value));
@@ -231,6 +235,9 @@ export default new Vuex.Store({
     },
     updatePage(context, value){
         context.commit('UPDATE_PAGE', value)
+    },
+    updatePositionDisplay(context, value){
+        context.commit('UPDATE_POSITION_DISPLAY', value)
     },
     updateOrcidUser(context, user) {
         /* an example of user is {name: "John Doe", orcid: "", orcidToken: ""} */
