@@ -34,6 +34,10 @@ import shared_fields from '@/components/shared_fields.js'
             type: Object,
             required: true
         },
+        page: {
+          type: Number,
+          required: true
+        }
       },
       data() {
         return {
@@ -61,10 +65,11 @@ import shared_fields from '@/components/shared_fields.js'
         },
       },
       methods:{
-        ...mapActions(['updateOccurrences', 'updateOccurrencesSelection', 'updateStep']),
+        ...mapActions(['updateOccurrences', 'updateOccurrencesSelection', 'updateStep', 'updatePage']),
         displaySpecimen(){
             this.updateOccurrencesSelection(this.occurrence)
             this.updateStep(3)
+            this.updatePage(this.page)
             this.$router.push({
               name: this.$router.currentRoute.name,
               query: {
