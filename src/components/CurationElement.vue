@@ -6,7 +6,7 @@
             <td><a :href="'https://www.gbif.org/occurrence/'+curation.object.key" target="_blank">{{ curation.object.key }}</a></td>
             <td :class="cellColor(scores.$global)">{{ scores.$global }}</td>
             <template>
-                <td v-for="char in curation_characteristics" :key="char.score+'sp-td'"
+                <td v-for="char in get_characteristics_curation" :key="char.score+'sp-td'"
                     :class="cellColor(scores[char.score])">
                     {{ display_content(curation.object, char.value) }}
                 </td>
@@ -90,6 +90,22 @@ export default {
         },
         get_curation_name() {
             return this.fields[this.format_selection].format_curation.name
+        },
+        get_characteristics_curation(){
+            var characteristics= JSON.parse(JSON.stringify(this.curation_characteristics))
+            if (this.curation.object['basisOfRecord'] == "MATERIAL_CITATION"){
+                for (var c=0; c<characteristics.length; c++){
+                    if (characteristics[c]['name'] == "Institution code"){
+                        characteristics[c]['score'] = 'collectionCode'
+                        characteristics[c]['value'] = ['collectionCode']
+                    }
+                    else if (characteristics[c]['name'] == "Collection code"){
+                        characteristics[c]['score'] = 'institutionCode'
+                        characteristics[c]['value'] = ['institutionCode']
+                    }
+                }
+            }
+            return characteristics
         },
         is_yes_selected() {
             if (this.status == "yes") {

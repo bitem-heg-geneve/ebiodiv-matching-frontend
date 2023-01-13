@@ -16,7 +16,7 @@
             </td>
             <td  class="cell-color-na">manual</td>
             <template v-if="in_progress == false">
-                <td v-for="char in curation_characteristics" class="cell-color-na" :key="char.score+'sp-td-em'">
+                <td v-for="char in get_characteristics_curation" class="cell-color-na" :key="char.score+'sp-td-em'">
                     {{ display_content(curation.object, char.value) }}
                 </td>
             </template>
@@ -96,6 +96,22 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
         },
         get_curation_name(){
             return this.fields[this.format_selection].format_curation.name
+        },
+        get_characteristics_curation(){
+            var characteristics= JSON.parse(JSON.stringify(this.curation_characteristics))
+            if (this.curation.object['basisOfRecord'] == "MATERIAL_CITATION"){
+                for (var c=0; c<characteristics.length; c++){
+                    if (characteristics[c]['name'] == "Institution code"){
+                        characteristics[c]['score'] = 'collectionCode'
+                        characteristics[c]['value'] = ['collectionCode']
+                    }
+                    else if (characteristics[c]['name'] == "Collection code"){
+                        characteristics[c]['score'] = 'institutionCode'
+                        characteristics[c]['value'] = ['institutionCode']
+                    }
+                }
+            }
+            return characteristics
         },
         is_yes_selected(){
             if (this.status == "yes"){

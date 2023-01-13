@@ -264,6 +264,7 @@ export default {
             this.updateInitMcDateFilter([min_date, max_date])
             return occ
         },
+
         goToTop() {
             // this.$router.push({ name: 'HomePage', query: this.$route.query }).catch(() => { });
             // this.$router.push({ name: 'HomePage', hash: '#occurrences', query: this.$route.query }).catch(() => { });

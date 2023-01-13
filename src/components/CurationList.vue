@@ -25,7 +25,7 @@
                 <td><a :href="'https://www.gbif.org/occurrence/'+occurrences_selection.key" target="_blank">{{
                 occurrences_selection.key}}</a></td>
                 <td></td>
-                <template v-for="char in curation_characteristics">
+                <template v-for="char in get_characteristics_occurrence">
                     <td v-if="char.value" :key="char.score+'mc_td'">{{ display_content(occurrences_selection,
                     char.value) }}</td>
                 </template>
@@ -227,6 +227,22 @@ export default {
                 '--color': this.theme_color.main,
                 '--color-secondary': this.theme_color.secondary,
             }
+        },
+        get_characteristics_occurrence(){
+            var characteristics= JSON.parse(JSON.stringify(this.curation_characteristics))
+            if (this.occurrences_selection['basisOfRecord'] == "MATERIAL_CITATION"){
+                for (var c=0; c<characteristics.length; c++){
+                    if (characteristics[c]['name'] == "Institution code"){
+                        characteristics[c]['score'] = 'collectionCode'
+                        characteristics[c]['value'] = ['collectionCode']
+                    }
+                    else if (characteristics[c]['name'] == "Collection code"){
+                        characteristics[c]['score'] = 'institutionCode'
+                        characteristics[c]['value'] = ['institutionCode']
+                    }
+                }
+            }
+            return characteristics
         },
         get_occurrence_name() {
             return this.fields[this.format_selection].format_occurrence.name
