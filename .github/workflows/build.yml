@@ -40,3 +40,19 @@ jobs:
         BRANCH: ${{ matrix.branch }}
         FOLDER: ${{ matrix.folder }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  deploy:
+    name: Deploy on staging
+    runs-on: ubuntu-20.04
+    needs:
+      - build
+    steps:
+      - name: Deploy on staging
+        # CURL options:
+        # -f : GitHub workflow fail if the HTTP status code is not 200
+        # see API on https://candy.hesge.ch/ghupdate/
+        # $GITHUB_REPOSITORY is replaced by the repository name, for example bitem-heg-geneve/ebiodiv-matching-frontend
+        run: |
+          curl -f -X 'POST' "https://candy.hesge.ch/ghupdate/curl/${{ github.repository }}/dist-sandbox" \
+               -H 'accept: application/json' \
+               -H 'Content-Type: application/x-www-form-urlencoded' \
+               -d 'secret_key=${{secrets.SECRET_KEY}}'
