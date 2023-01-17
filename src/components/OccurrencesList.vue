@@ -45,9 +45,9 @@
                                     <th style="width:5%"></th>
                                 </tr>
 
-                                <OccurrencesElement
-                                    v-for="occurrence in processed_occurrences.slice(item_min, item_max)"
-                                    :key="occurrence.gbifID" :occurrence="occurrence" />
+                                <OccurrencesElement :id="current_page+'_'+index"
+                                    v-for="(occurrence, index) in processed_occurrences.slice(item_min, item_max)"
+                                    :key="occurrence.gbifID" :occurrence="occurrence" :page="current_page" :index="index" />
 
                             </table>
 
@@ -101,10 +101,10 @@ export default {
     },
     data() {
         return {
+            current_page: 1,
             occurrences: [],
             status: [],
             in_progress: false,
-            current_page: 1,
             per_page_init: 30,
             per_page: 30,
             show_size: false,
@@ -124,7 +124,7 @@ export default {
         };
     },
     computed: {
-        ...mapState(['institution_selection', 'datasets_selection', 'occurrence_keys', 'format_selection', 'user_selection', 'filters', 'fields', 'format_selection', 'urls_parameters', 'step', 'theme_color']),
+        ...mapState(['page_selection', 'position_display',  'institution_selection', 'datasets_selection', 'occurrence_keys', 'format_selection', 'user_selection', 'filters', 'fields', 'format_selection', 'urls_parameters', 'step', 'theme_color']),
         cssVars() {
             return {
                 '--color': this.theme_color.main,
@@ -181,7 +181,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions(['updateOccurrencesFacet', 'updateOccurrencesSort', 'updateOccurrencesSelection', 'updateInitMcDateFilter', 'updateStep']),
+        ...mapActions(['updateOccurrencesFacet', 'updateOccurrencesSort', 'updateOccurrencesSelection', 'updateInitMcDateFilter', 'updateStep','updatePage']),
         searchOccurrencesAPI(reload) {
             if (this.institution_selection.key || this.occurrence_keys) {
                 this.in_progress = true
@@ -196,8 +196,10 @@ export default {
                         var occ = this.$backend.processOccurrences(response.data, this.format_selection);
                         occ = this.processFacets(occ)
                         this.occurrences = occ;
+                        this.current_page = this.page_selection
                         this.in_progress = false
                         this.goToTop()
+                        this.$router.push({ name: 'HomePage', hash: this.position_display, query: this.$route.query}).catch(()=>{});
                         if (!reload && this.urls_parameters.occurrence != null) {
                             for (let index in occ) {
                                 if (occ[index].key == this.urls_parameters.occurrence) {
