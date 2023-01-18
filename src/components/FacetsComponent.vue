@@ -152,6 +152,8 @@ export default {
         return {
             visible_facets: true,
             facets: {},
+            cache_facets_multi_with_status: {},
+            cache_facets_with_status: {},
         };
     },
     computed: {
@@ -165,11 +167,10 @@ export default {
             return (this.collection_name + "_sort-group")
         },
         facets_multi_with_status() {
-            const cache = {}
             return (facet_element) => {
                 const facet_name = facet_element.short
-                if (cache[facet_name] != null) {
-                    return cache[facet_name];
+                if (this.cache_facets_multi_with_status[facet_name] != null) {
+                    return this.cache_facets_multi_with_status[facet_name];
                 }
 
                 // Get filtered documents list (but not for the selected facet)
@@ -193,17 +194,15 @@ export default {
 
                 // Create the facet lists based on the facets of the set + what is selected
                 var results = this.createFacetList(value_list, this.user_selection.facets[facet_name], labelMethod)
-
-                cache[facet_name] = results;
+                this.cache_facets_multi_with_status[facet_name] = Object.freeze(results);
                 return results
             }
         },
         facets_with_status() {
-            const cache = {}
             return (facet_element) => {
                 var facet_name = facet_element.short
-                if (cache[facet_name] != null) {
-                    return cache[facet_name];
+                if (this.cache_facets_with_status[facet_name] != null) {
+                    return this.cache_facets_with_status[facet_name];
                 }
 
                 // Get filtered documents list
@@ -221,7 +220,7 @@ export default {
 
                 // Create the facet lists based on the facets of the set + what is selected
                 var results = this.createFacetList(value_list, this.user_selection.facets[facet_name], labelMethod)
-                cache[facet_name] = results;
+                this.cache_facets_with_status[facet_name] = results;
                 return results
             }
         },
@@ -281,7 +280,9 @@ export default {
                     }
                 }
             }
-            this.updateFacet(Object.freeze({ 'facet': facet_name, 'list': filter_list }))
+            this.cache_facets_with_status = {}
+            this.cache_facets_multi_with_status = {}
+            this.updateFacet(Object.freeze({'facet': facet_name, 'list': filter_list }))
         }
     }
 }
