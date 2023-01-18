@@ -43,6 +43,7 @@ jobs:
   deploy:
     name: Deploy on staging
     runs-on: ubuntu-20.04
+    if: github.ref == 'refs/heads/master'
     needs:
       - build
     steps:
