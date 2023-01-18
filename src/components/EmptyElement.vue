@@ -16,12 +16,12 @@
             </td>
             <td  class="cell-color-na">manual</td>
             <template v-if="in_progress == false">
-                <td v-for="char in curation_characteristics" class="cell-color-na" :key="char.score+'sp-td-em'">
+                <td v-for="char in get_characteristics_curation" class="cell-color-na" :key="char.score+'sp-td-em'">
                     {{ display_content(curation.object, char.value) }}
                 </td>
             </template>
             <template v-else>
-                <td v-for="char in curation_characteristics" class="cell-color-na" :key="char.score+'sp-td-em'">
+                <td v-for="char in get_characteristics_curation" class="cell-color-na" :key="char.score+'sp-td-em'">
                     <PulseLoader  :color="theme_color.main" size="5px"/>
                 </td>
             </template>
@@ -44,7 +44,7 @@
 
         <tr class="expanded" v-if="expanded">
             <td></td>
-            <td :colspan="curation_characteristics.length+1" class="cell-color-na">
+            <td :colspan="get_curation_characteristics.length+1" class="cell-color-na">
                 {{ curation.object.verbatimLabel }}
             </td>
              <td colspan="4"></td>
@@ -90,6 +90,12 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
             return{
                 '--color': this.theme_color.main,
             }
+        },
+        get_characteristics_curation(){
+            if (this.curation.object && this.curation.object['basisOfRecord'] == "MATERIAL_CITATION"){
+                return this.curation_characteristics.MATERIAL_CITATION;
+            }
+            return this.curation_characteristics.default;
         },
         get_occurrence_name(){
             return this.fields[this.format_selection].format_occurrence.name

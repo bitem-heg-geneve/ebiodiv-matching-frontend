@@ -3,7 +3,7 @@
     <div class="component-container" :style="cssVars">
         <table>
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.length+6">
+                <td :colspan="curation_characteristics.default.length+6">
                     <div class="separator">
                         <h2><span>{{ get_occurrence_name }} {{ occurrences_selection.key }}</span></h2>
                     </div>
@@ -12,7 +12,7 @@
             <tr>
                 <th>Key</th>
                 <th></th>
-                <th v-for="char in curation_characteristics" :key="char.score+'sp-th'">{{ char.name }}</th>
+                <th v-for="char in curation_characteristics.default" :key="char.score+'sp-th'">{{ char.name }}</th>
                 <th colspan="3"></th>
                 <th></th>
             </tr>
@@ -20,7 +20,7 @@
                 <td><a :href="'https://www.gbif.org/occurrence/'+occurrences_selection.key" target="_blank">{{
                 occurrences_selection.key}}</a></td>
                 <td></td>
-                <template v-for="char in curation_characteristics">
+                <template v-for="char in curation_characteristics.default">
                     <td v-if="char.value" :key="char.score+'mc_td'" :class="'cell_' + char.score">{{ display_content(occurrences_selection, char.value) }}</td>
                 </template>
                 <td colspan="3"></td>
@@ -32,7 +32,7 @@
                 </td>
             </tr>
             <tr class="expanded" v-if="expanded">
-                <td :colspan="curation_characteristics.length+6">
+                <td :colspan="curation_characteristics.default.length+6">
                     <div class="expanded-box" v-if="occurrences_selection.verbatimLabel">
                         {{ occurrences_selection.verbatimLabel }}
                     </div>
@@ -42,7 +42,7 @@
                 </td>
             </tr>
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.length+6">
+                <td :colspan="curation_characteristics.default.length+6">
                     <br /><br />
                     <div class="separator">
                         <h2><span>{{ get_curation_name }}s associated with the {{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</span></h2>
@@ -58,7 +58,7 @@
             <tr v-if="processed_curation.length > 0">
                 <th>Key</th>
                 <th @click="sortBy('$global')">Score</th>
-                <th v-for="char in curation_characteristics" :key="char.score+'sp-th'" class="clickable-th"
+                <th v-for="char in curation_characteristics.default" :key="char.score+'sp-th'" class="clickable-th"
                     @click="sortBy(char.score)">{{ char.name }}</th>
                 <th>Yes</th>
                 <th>No</th>
@@ -73,7 +73,7 @@
             <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_empty_elements"
                 :key="curation.empty_key" :curation="curation" save="Save" :status_save_all="status_save_all" />
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.length+4">
+                <td :colspan="curation_characteristics.default.length+4">
                     <div class="left-container">
                         <a @click="addLine">+ Add another {{ get_curation_name.toLowerCase() }}</a>
                     </div>
@@ -81,7 +81,7 @@
             </tr>
 
             <tr v-if="finished_curation.length > 0 || finished_empty_elements.length > 0" class="empty-line">
-                <td :colspan="curation_characteristics.length+6">
+                <td :colspan="curation_characteristics.default.length+6">
                     <br /><br />
                     <img v-show="!show_edit" src="../assets/images/icon_plus.png" alt="[+]"
                         @click="show_edit = !show_edit" class="mini" />
@@ -96,7 +96,7 @@
             <tr v-if="show_edit && (finished_curation.length > 0 || finished_empty_elements.length > 0)">
                 <th>Key</th>
                 <th>Score</th>
-                <th v-for="char in curation_characteristics" :key="char.score+'sp-th'" class="clickable-th">{{ char.name
+                <th v-for="char in curation_characteristics.default" :key="char.score+'sp-th'" class="clickable-th">{{ char.name
                 }}</th>
                 <th>Yes</th>
                 <th>No</th>

@@ -85,6 +85,7 @@ export default new Vuex.Store({
                 {title: 'Dataset', short: 'datasetName', multi: true},
                 {title: 'Curation status', short: 'status', multi: true},
                 {title: 'Country', short: 'country', multi: true},
+                {title: 'Institution code', short: 'institutionCode', multi: true},
                 {title: 'Collection code', short: 'collectionCode', multi: true},
                 {title: 'Collector', short: 'recordedBy', multi: true},
                 {title: 'Type', short: 'typeStatus', multi: true, labelMethod: "display_value_typeStatus"},
@@ -99,22 +100,49 @@ export default new Vuex.Store({
             date: [0, 2022]
         }
     },
-    curation_characteristics: [
-        {name: 'Family', score: 'family', value: ['family']},
-        {name: 'Genus', score: 'genus', value: ['genus']},
-        {name: 'Specific epithet', score: 'specificEpithet', value: ['specificEpithet']},
-        {name: 'Coordinates', score: 'decimalLatitude', value: ['decimalLatitude', 'decimalLongitude']},
-        {name: 'Elevation', score: 'elevation', value: ['elevation', 'depth']},
-        {name: 'Locality', score: 'locality', value: ['locality']},
-        {name: 'Country', score: 'country', value: ['country']},
-        {name: 'Date', score: 'year', value: ['day', 'month', 'year']},
-        {name: 'Coll code', score: 'collectionCode', value: ['collectionCode']},
-        {name: 'Catalog nb', score: 'catalogNumber', value: ['catalogNumber']},
-        {name: 'Individual nb', score: 'individualCount',  value: ['individualCount']},
-        {name: 'Collector (recorded by)', score: 'recordedBy', value: ['recordedBy']},
-        {name: 'Type', score: 'typeStatus', value: ['typeStatus']},
-        {name: 'Record', score: 'basisOfRecord', value: ['basisOfRecord']},
-    ],
+    curation_characteristics: {
+        default: [
+            {name: 'Family', score: 'family', value: ['family']},
+            {name: 'Genus', score: 'genus', value: ['genus']},
+            {name: 'Specific epithet', score: 'specificEpithet', value: ['specificEpithet']},
+            {name: 'Coordinates', score: 'decimalLatitude', value: ['decimalLatitude', 'decimalLongitude']},
+            {name: 'Elevation', score: 'elevation', value: ['elevation', 'depth']},
+            {name: 'Locality', score: 'locality', value: ['locality']},
+            {name: 'Country', score: 'country', value: ['country']},
+            {name: 'Date', score: 'year', value: ['day', 'month', 'year']},
+            {name: 'Institution code', score: 'institutionCode', value: ['institutionCode']},
+            {name: 'Collection code', score: 'collectionCode', value: ['collectionCode']},
+            {name: 'Catalog nb', score: 'catalogNumber', value: ['catalogNumber']},
+            {name: 'Individual nb', score: 'individualCount',  value: ['individualCount']},
+            {name: 'Collector (recorded by)', score: 'recordedBy', value: ['recordedBy']},
+            {name: 'Type', score: 'typeStatus', value: ['typeStatus']},
+            {name: 'Record', score: 'basisOfRecord', value: ['basisOfRecord']},
+        ],
+        MATERIAL_CITATION: [
+            /*
+                collectionsCode and institutionCode are swapped
+                see https://github.com/plazi/eBioDiv/issues/105 :
+                The collection code in TreatmentBank is generally an Institution Code sensu GBIF, DWC
+            */
+            {name: 'Family', score: 'family', value: ['family']},
+            {name: 'Genus', score: 'genus', value: ['genus']},
+            {name: 'Specific epithet', score: 'specificEpithet', value: ['specificEpithet']},
+            {name: 'Coordinates', score: 'decimalLatitude', value: ['decimalLatitude', 'decimalLongitude']},
+            {name: 'Elevation', score: 'elevation', value: ['elevation', 'depth']},
+            {name: 'Locality', score: 'locality', value: ['locality']},
+            {name: 'Country', score: 'country', value: ['country']},
+            {name: 'Date', score: 'year', value: ['day', 'month', 'year']},
+            // "Institution code" uses collectionCode, note that scoring.js must be have a getter for insitutionCode (get_collectionCode)
+            {name: 'Institution code', score: 'institutionCode', value: ['collectionCode']},
+            // "Collection code" uses institutionCode, note that scoring.js must have a getter for collectionCode (get_institutionCode)
+            {name: 'Collection code', score: 'collectionCode', value: ['institutionCode']}, // <-- 
+            {name: 'Catalog nb', score: 'catalogNumber', value: ['catalogNumber']},
+            {name: 'Individual nb', score: 'individualCount',  value: ['individualCount']},
+            {name: 'Collector (recorded by)', score: 'recordedBy', value: ['recordedBy']},
+            {name: 'Type', score: 'typeStatus', value: ['typeStatus']},
+            {name: 'Record', score: 'basisOfRecord', value: ['basisOfRecord']},
+        ],
+    },
     user: {
         name: null,
         orcid: null,
