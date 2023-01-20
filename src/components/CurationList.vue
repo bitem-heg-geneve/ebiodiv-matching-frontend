@@ -20,7 +20,7 @@
                 <td><a :href="'https://www.gbif.org/occurrence/'+occurrences_selection.key" target="_blank">{{
                 occurrences_selection.key}}</a></td>
                 <td></td>
-                <template v-for="char in curation_characteristics.default">
+                <template v-for="char in get_occurrence_curation">
                     <td v-if="char.value" :key="char.score+'mc_td'" :class="'cell_' + char.score">{{ display_content(occurrences_selection, char.value) }}</td>
                 </template>
                 <td colspan="3"></td>
@@ -238,6 +238,12 @@ export default {
         },
         get_curation_name() {
             return this.fields[this.format_selection].format_curation.name
+        },
+        get_occurrence_curation(){
+            if (this.occurrences_selection['basisOfRecord'] == "MATERIAL_CITATION"){
+                return this.curation_characteristics.MATERIAL_CITATION;
+            }
+            return this.curation_characteristics.default;
         },
         processed_curation() {
             var filtered_curation = this.occurrences_selection.relations

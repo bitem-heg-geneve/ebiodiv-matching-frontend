@@ -58,6 +58,7 @@ export default new Vuex.Store({
                 datasetName: [],
                 country: [],
                 collectionCode: [],
+                institutionCode: [],
                 recordedBy: [],
                 kingdom: [],
                 phylum: [],
