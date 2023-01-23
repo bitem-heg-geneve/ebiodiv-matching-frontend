@@ -228,13 +228,19 @@ export default {
             this.show_size = false
         },
         processFacets(occ) {
+            var facets = this.filters.occurrences.facets
+            var facets_names = {}
+            if (this.format_selection == "matcit_specimen"){
+                facets_names["institutionCode"] = "collectionCode"
+                facets_names["collectionCode"] = "institutionCode"
+            }
             var min_date = 2022
             var max_date = 0
             for (var v = 0; v < occ.length; v++) {
                 var document = occ[v]
                 var processed_facets = {}
-                for (var f = 0; f < this.filters.occurrences.facets.length; f++) {
-                    var facet_name = this.filters.occurrences.facets[f].short
+                for (var f = 0; f < facets.length; f++) {
+                    var facet_name = facets[f].short
                     var entities = []
                     // For named entities
                     if (facet_name in document) {
@@ -260,7 +266,12 @@ export default {
                     }
                     // Remove duplicates
                     var entities_unique = [...new Set(entities)];
-                    processed_facets[facet_name] = entities_unique
+                    if (facet_name in facets_names){
+                        processed_facets[facets_names[facet_name]] = entities_unique
+                    }
+                    else {
+                        processed_facets[facet_name] = entities_unique
+                    }
                 }
                 occ[v].processed_facets = processed_facets
             }

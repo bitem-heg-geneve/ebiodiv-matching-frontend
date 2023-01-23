@@ -211,22 +211,64 @@ function get_score_latlon(subject_occ, related_occ) {
     }
 }
 
+function get_collectionCode(occ) {
+    if (occ['basisOfRecord'] == "MATERIAL_CITATION") {
+        return occ['institutionCode'];
+    }
+    return occ['collectionCode'];
+}
+
+function get_institutionCode(occ) {
+    if (occ['basisOfRecord'] == "MATERIAL_CITATION") {
+        return occ['collectionCode'];
+    }
+    return occ['institutionCode'];
+}
+
 class FieldDescription {
 
-    constructor(field_name, weight, normalize_function, get_score_function) {
+    constructor(field_name, weight, normalize_function, get_score_function, get_value=null) {
         this.field_name = field_name;
         this.weight = weight;
         this.normalize_function = normalize_function;
         this.get_score_function = get_score_function;
+        if (get_value === null) {
+            get_value = (occ) => occ[this.field_name];
+        }
+        this.get_value = get_value;
     }
 
+    /**
+     * normalize some fields of occurrence.
+     * @param {Object} occurrence is not changed.
+     * @returns {Object} object with the normalized fields.
+     * 
+     * This allows to swap two fields from an occurrence in the normalized ocurrence without override issue.
+     * 
+     * If the occurrence parameter is updated (as it was in the previous version):
+     * * The normalize method of a first FiedDescription overrides the "collectionCode" field using "institutionCode"
+     * * The normalize method of a second FiedDescription overrides the "institutionCode" field using "collectionCode".
+     *   However "collectionCode" was overrides by the "institutionCode" just before.
+     *   In the end, the "collectionCode" is lost.
+     * 
+     * Usage exemple: 
+     * ```
+     * const occurrence = {key: 42, typeStatus: 'dummy', institutionCode: 'Lipsum', familly: 'Apis'};
+     * const fd = new FieldDescription("typeStatus", 2, normalize_str, get_score_string_exact);
+     * const normalized_fields = fd.normalize(occurrence);
+     * normalized_fields === {typeStatus: 'dummy'} // normalized_fields contains only one value
+     * ```
+     * 
+     * In MultiFieldsDescription, the normalize method returns multiple normalized fields.
+     */
     normalize(occurrence) {
-        occurrence[this.field_name] = this.normalize_function(occurrence[this.field_name]);
-        return occurrence;
+        return {
+            [this.field_name]: this.normalize_function(this.get_value(occurrence))
+        }
     }
 
     get_score(subject_occ, related_occ) {
-        return this.get_score_function(subject_occ[this.field_name], related_occ[this.field_name])
+        return this.get_score_function(this.get_value(subject_occ), this.get_value(related_occ))
     }
 
     get key() {
@@ -239,10 +281,11 @@ class MultiFieldsDescription extends FieldDescription {
     normalize(occurrence) {
         const values = this.field_name.map(fname => occurrence[fname]);
         const normalized_values = this.normalize_function(...values);
+        const output = {}
         for (const i in this.field_name) {
-            occurrence[this.field_name[i]] = normalized_values[i];
+            output[this.field_name[i]] = normalized_values[i];
         }
-        return occurrence;
+        return output;
     }
 
     get_score(subject_occ, related_occ) {
@@ -256,6 +299,12 @@ class MultiFieldsDescription extends FieldDescription {
 
 export default new class Scoring {
 
+    /**
+     * List of field to compute the score between two occurrences.
+     * 
+     * Do note that this must synchronized with store/index.js:
+     * collectionCode and institutionCode might be swapped.
+     */
     static FIELDS = [
         new FieldDescription("typeStatus", 2, normalize_str, get_score_string_exact),
         new FieldDescription("basisOfRecord", 2, normalize_str, get_score_string_exact),
@@ -263,7 +312,8 @@ export default new class Scoring {
         new FieldDescription("recordedBy", 2, normalize_str, get_score_string_jw),
         new FieldDescription("recordNumber", 2, normalize_str, get_score_string_exact),
         new FieldDescription("recordedByIDs", 2, normalize_recordedbyids, get_score_recordedbyids),
-        new FieldDescription("collectionCode", 2, normalize_str_alphanum, get_score_string_exact_or_include),
+        new FieldDescription("collectionCode", 2, normalize_str_alphanum, get_score_string_exact_or_include, get_collectionCode),
+        new FieldDescription("institutionCode", 2, normalize_str_alphanum, get_score_string_exact_or_include, get_institutionCode),
         new FieldDescription("catalogNumber", 2, normalize_str_alphanum, get_score_string_exact_or_include),
         new FieldDescription("individualCount", 1, normalize_int, get_score_numeric),
         new FieldDescription("family", 1, normalize_str, get_score_string_jw),
@@ -308,11 +358,11 @@ export default new class Scoring {
             this.occurrence_cache = {}
         }
         // normalize the occurrence
-        occurrence = deep_copy(occurrence);
+        let normalized_occurrence = deep_copy(occurrence);
         for (const field of Scoring.FIELDS) {
-            occurrence = field.normalize(occurrence);
+            normalized_occurrence = { ...normalized_occurrence, ...field.normalize(occurrence) };
         }
-        this.occurrence_cache[occurrence.key] = occurrence;
+        this.occurrence_cache[occurrence.key] = normalized_occurrence;
         return occurrence;
     }
 
