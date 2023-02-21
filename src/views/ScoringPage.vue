@@ -77,6 +77,7 @@ export default {
   padding-left: 0px;
   margin-right: auto;
   margin-left: auto;
+  max-width: 61rem;
 }
 
 .row {
