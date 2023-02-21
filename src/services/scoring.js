@@ -79,10 +79,6 @@ function get_score_string_jw(subject_value, related_value) {
     return 1 - (new JaroWinkler().distance(subject_value, related_value));
 }
 
-function get_score_string_jw_log(subject_value, related_value) {
-    return get_score_string_jw(subject_value, related_value);
-}
-
 function get_score_string_exact(subject_value, related_value) {
     if (!subject_value || !related_value) {
         return null;
@@ -122,8 +118,10 @@ function get_score_numeric(subject_value, related_value) {
     if (!subject_value || !related_value) {
         return null;
     }
-    const abs_max_value = Math.abs(subject_value, related_value)
-    return 1 - (Math.abs(related_value - subject_value) / abs_max_value)
+    const abs_diff = Math.abs(subject_value - related_value);
+    const log_abs_diff = Math.log(abs_diff + 1);
+    const max_log_abs_diff = Math.min(log_abs_diff, 7);
+    return (7 - max_log_abs_diff) / 7;
 }
 
 function get_score_elevation(subject_value, related_value) {
@@ -308,7 +306,6 @@ export default new class Scoring {
     static FIELDS = [
         new FieldDescription("typeStatus", 2, normalize_str, get_score_string_exact),
         new FieldDescription("basisOfRecord", 2, normalize_str, get_score_string_exact),
-        new FieldDescription("basisOfRecord", 2, normalize_str, get_score_string_exact),
         new FieldDescription("recordedBy", 2, normalize_str, get_score_string_jw),
         new FieldDescription("recordNumber", 2, normalize_str, get_score_string_exact),
         new FieldDescription("recordedByIDs", 2, normalize_recordedbyids, get_score_recordedbyids),
@@ -321,15 +318,57 @@ export default new class Scoring {
         new FieldDescription("specificEpithet", 1, normalize_str, get_score_string_jw),
         new FieldDescription("country", 1, normalize_str, get_score_string_exact),  // the value is normalized by GBIF, there is no typo
         new FieldDescription("city", 1, normalize_str_or_null, get_score_string_jw),
-        new FieldDescription("locality", 0.5, normalize_str_or_null, get_score_string_jw_log),
+        new FieldDescription("locality", 0.5, normalize_str_or_null, get_score_string_jw),
         new FieldDescription("elevation", 0.5, normalize_int, get_score_elevation),
         new MultiFieldsDescription(["year", "month", "day"], 1, normalize_yearmonthday, get_score_yearmonthday),
         new MultiFieldsDescription(["decimalLatitude", "decimalLongitude"], 2, normalize_latlon, get_score_latlon),
     ]
 
+    static F_SCORE_DESC = {
+        get_score_string_exact: "Exact match",
+        get_score_string_jw: `String distance using the <a href="https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance">Jaro-Winkler algorithm</a>`,
+        get_score_recordedbyids: `This field is a list of identifiers. If at least one identifier exists in the two lists, then the score is 1 otherwise, the score is 0`,
+        get_score_string_exact_or_include: "Keep only the alphanumeric characters and then compare the values for either an exact match or substring",
+        get_score_numeric: `Score using log(difference + 1):
+        <ul>
+            <li>the score is 1 when the difference is 0</li>
+            <li>the score is 0.66 when the difference is 10</li>
+            <li>the score is 0.34 when the difference is 100</li>
+            <li>the score is 0.11 when the difference is 500</li>
+        </ul>`,
+        get_score_elevation: `Score according to the difference between the two elevations:
+        <ul>
+            <li>the score is 1 when the elevations are equals</li>
+            <li>the score is 0.88 when there is a 1 meter difference</li>
+            <li>the score is 0.6 when there is a 10 meters difference</li>
+            <li>the score is 0.23 when there is a 100 meters difference</li>
+            <li>the score is 0.04 when there is a 400 meters difference</li>
+        </ul>`,
+        get_score_yearmonthday: `Score according to the number of days between the two dates:
+        <ul>
+            <li>the score is 1 when the dates are equals</li>
+            <li>the score is 0.9 when there is 1 day distance</li>
+            <li>the score is 0.5 when there is 7 days distance</li>
+            <li>the score is 0.22 when there is on 15 days distance</li>
+        </ul>`,
+        get_score_latlon: `Get the <a href="https://en.wikipedia.org/wiki/Haversine_formula">Haversine distance</a>:
+        <ul>
+            <li>the score is 1 when the distance is 0</li>
+            <li>the score is 0.98 when the distance is 2km</li>
+            <li>the score is 0.92 when the distance is 10km</li>
+            <li>the score is 0.89 when the distance is 15km</li>
+            <li>the score is 0.79 when the distance is 30km</li>
+            <li>the score is 0.45 when the distance is 100km</li>
+            <li>the score is 0.21 when the distance is 200km</li>
+            <li>the score is 0.09 when the distance is 300km</li>
+        </ul>`,
+    }
+
     constructor() {
         this.occurrence_cache = {}
         this.score_cache = {}
+        this.FIELDS = Scoring.FIELDS
+        this.F_SCORE_DESC = Scoring.F_SCORE_DESC
     }
 
     get_scores(occurrences1, occurrences2) {
