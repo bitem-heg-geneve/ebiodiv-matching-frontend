@@ -112,13 +112,14 @@ export default new class Backend {
                 object: json.occurrences[relatedKey],
                 matching: {
                     match: relation.decision,
+                    statusCode: relation.statusCode
                 }
             };
             new_relation.object.key = relatedKey;
             subjectOccs[subjectKey].relations.push(new_relation);
 
             // update subjectStatus: add the related occurrence either to done or not_done 
-            if (new_relation.matching.match != null){
+            if (new_relation.matching.match != null || new_relation.matching.statusCode == "UDCB"){
                 subjectStatus[subjectKey].done.push(relatedKey)
             }
             else {

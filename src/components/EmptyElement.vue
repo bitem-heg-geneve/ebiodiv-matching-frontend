@@ -25,11 +25,10 @@
                     <PulseLoader  :color="theme_color.main" size="5px"/>
                 </td>
             </template>
-            <td>
-                <input v-if="show_button" type="checkbox" :checked="is_yes_selected" @click="changeSelection($event, 'yes')"/>
-            </td>
-            <td>
-                <input v-if="show_button" type="checkbox" :checked="is_no_selected" @click="changeSelection($event, 'no')"/>
+            <td class="decision">
+                <input type="checkbox" :checked="is_yes_selected" @click="changeSelection($event, 'yes')" /> Yes <br/>
+                <input type="checkbox" :checked="is_no_selected" @click="changeSelection($event, 'no')" /> No <br/>
+                <input type="checkbox" :checked="is_undecided_selected" @click="changeSelection($event, 'undecided')" /> Undecided
             </td>
             <td>
                 <button v-if="show_button" :disabled="to_disable" @click="saveSelection()">{{ save }}</button>
@@ -56,11 +55,15 @@
 
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
+import shared_fields from '@/components/shared_fields.js'
 
     export default {
       name: 'CurationElement',
+      mixins: [
+        shared_fields.mixin_fields
+    ],
       components: {
               PulseLoader
       },
@@ -81,11 +84,12 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
             status: null,
             saved_status: null,
             expanded: false,
-            in_progress: false
+            in_progress: false,
+            pendingSave: false,
         };
       },
       computed: {
-        ...mapState(['theme_color', 'urls', 'curation_characteristics', 'fields', 'format_selection', 'occurrences_selection']),
+        ...mapState(['theme_color', 'urls', 'curation_characteristics', 'fields', 'format_selection', 'occurrences_selection', 'user']),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
@@ -119,6 +123,14 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
                 return false
             }
         },
+        is_undecided_selected(){
+            if (this.status == "undecided"){
+                return true
+            }
+            else {
+                return false
+            }
+        },
         show_button(){
 
             if (this.warning == null && this.curation.object.key != ""){
@@ -137,13 +149,23 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
             return null
         },
         to_disable(){
-            if (this.saved_status == this.status){
-                return true;
+            if (this.curation.matching.match == true && this.is_yes_selected == true) {
+                return true
+            }
+            if (this.curation.matching.match == false && this.is_no_selected == true) {
+                return true
+            }
+            if ((this.curation.matching.match == null && this.curation.matching.statusCode == "UDCB") && this.is_undecided_selected == true) {
+                return true
+            }
+            if ((this.curation.matching.match == null && this.curation.matching.statusCode == "PNDG") && this.is_yes_selected == false && this.is_no_selected == false && this.is_undecided_selected == false) {
+                return true
             }
             return false
         }
       },
       methods:{
+        ...mapActions(['updateUsername']),
         normalizeValue(value){
                 if (value == null){
                     return "NA"
@@ -164,69 +186,56 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
             return content
         },
         changeSelection(event, choice){
-          if (choice == "yes"){
-            if (event.target.checked == true){
-                this.status = "yes"
+            if (choice == "yes") {
+                if (event.target.checked == true) {
+                    this.status = "yes"
+                }
+                if (event.target.checked == false) {
+                    this.status = "unknown"
+                }
             }
-            if (event.target.checked == false){
-                this.status = "unknown"
+            else if (choice == "no") {
+                if (event.target.checked == true) {
+                    this.status = "no"
+                }
+                if (event.target.checked == false) {
+                    this.status = "unknown"
+                }
             }
-          }
-          else if (choice == "no"){
-             if (event.target.checked == true){
-                this.status = "no"
-             }
-             if (event.target.checked == false){
-                this.status = "unknown"
-             }
-          }
-          var match = null
-            if (this.status == "yes"){
-                match = true
+            else if (choice == "undecided") {
+                if (event.target.checked == true) {
+                    this.status = "undecided"
+                }
+                if (event.target.checked == false) {
+                    this.status = "unknown"
+                }
             }
-            if (this.status == "no"){
-                match = false
+            var match = null
+            if (this.status != null) {
+                match = this.status
             }
-          if (this.status != this.saved_status){
-            this.$emit("addOne", {'key': this.curation.empty_key, 'value': match})
-          }
-          else{
-             this.$emit("removeOne", {'key': this.curation.empty_key, 'value': match})
-          }
+            if (this.status != this.saved_status) {
+                this.$emit("addOne", { 'key': this.curation.object.key, 'value': match })
+            }
+            else {
+                this.$emit("removeOne", { 'key': this.curation.object.key, 'value': match })
+            }
         },
         saveSelection(){
-            var match = null
-            if (this.status == "yes"){
-                match = true
-            }
-            if (this.status == "no"){
-                match = false
-            }
-            if (/^\d+$/.test(this.curation.object.key)){
-                var data_to_save = {
-                      "occurrenceKey1": this.occurrences_selection.key,
-                      "occurrenceKey2": parseInt(this.curation.object.key),
-                      "decision": match,
-                    }
-                var saved_json =  {"occurrenceRelations": [data_to_save]}
-                alert(this.urls.matching)
-                alert(JSON.stringify(saved_json))
-                this.$backend.post_matching(saved_json)
-                    .then(response => {
-                        alert(JSON.stringify(response))
-                        this.curation.matching.match = match
-                        this.saved_status = this.status
-                        this.$emit("removeOne", {'key': this.curation.empty_key, 'value': match})
-                    })
-                    .catch(error => {
-                        alert ("Failed to save"+error )
-                    });
-             }
-             else{
-                    this.curation.matching.match = match
-                    this.saved_status = this.status
-                    this.$emit("removeOne", {'key': this.curation.empty_key, 'value': match})
-             }
+            this.$parent.pendingSave = [ this.curation.object.key ];
+            /*
+                ensureLogin event is going to make sure:
+                1/ the user is logged.
+                2/ to emit the "logged" event even if the user is already logged.
+
+                The CurationList element listens for the "logged" event:
+                The listener saves the occurrence relations referenced by pendingSave.
+
+                The CurationList element listens for the "loginAbort" event:
+                The listener display a message if pendingSave is not empty,
+                so the user aware that it works is not saved.
+             */
+            this.$emitter.emit('ensureLogin');
         },
         loadKey(){
             this.warning = null
@@ -266,15 +275,20 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
       },
       beforeMount(){
         if (this.status == null){
-                if (this.curation.matching.match == null){
+            if (this.curation.matching.match == null) {
+                if (this.curation.matching.statusCode == "PNDG"){
                     this.status = "unknown"
                 }
-                else if (this.curation.matching.match == true){
-                    this.status = "yes"
+                else {
+                    this.status = "undecided"
                 }
-                else if (this.curation.matching.match == false){
-                    this.status = "no"
-                }
+            }
+            else if (this.curation.matching.match == true) {
+                this.status = "yes"
+            }
+            else if (this.curation.matching.match == false) {
+                this.status = "no"
+            }
             }
             this.saved_status = this.status
         },
@@ -359,14 +373,14 @@ var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
         color: red;
     }
 
-    input{
-        text-align: center;
-        width: 80%;
-        margin: 0px 5px 0px 0px;
-    }
+
     .cell-color-na {
         background-color: #eee;
         color: #000;
     }
 
+    .decision {
+        text-align: left;
+        width: 100px;
+    }
 </style>
