@@ -3,7 +3,7 @@
     <div class="component-container" :style="cssVars">
         <table>
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.default.length+6">
+                <td :colspan="curation_characteristics.default.length+5">
                     <div class="separator">
                         <h2><span>{{ get_occurrence_name }} {{ occurrences_selection.key }}</span></h2>
                     </div>
@@ -13,7 +13,7 @@
                 <th>Key</th>
                 <th></th>
                 <th v-for="char in curation_characteristics.default" :key="char.score+'sp-th'">{{ char.name }}</th>
-                <th colspan="3"></th>
+                <th colspan="2"></th>
                 <th></th>
             </tr>
             <tr class="reference-entity">
@@ -23,7 +23,7 @@
                 <template v-for="char in get_occurrence_curation">
                     <td v-if="char.value" :key="char.score+'mc_td'" :class="'cell_' + char.score">{{ display_content(occurrences_selection, char.value) }}</td>
                 </template>
-                <td colspan="3"></td>
+                <td colspan="2"></td>
                 <td>
                     <button @click="expanded = !expanded" class="button-table">
                         <img v-if="!expanded" src="../assets/images/icon_expand.png" class="mini" />
@@ -32,7 +32,7 @@
                 </td>
             </tr>
             <tr class="expanded" v-if="expanded">
-                <td :colspan="curation_characteristics.default.length+6">
+                <td :colspan="curation_characteristics.default.length+5">
                     <div class="expanded-box" v-if="occurrences_selection.verbatimLabel">
                         {{ occurrences_selection.verbatimLabel }}
                     </div>
@@ -42,7 +42,7 @@
                 </td>
             </tr>
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.default.length+6">
+                <td :colspan="curation_characteristics.default.length+5">
                     <br /><br />
                     <div class="separator">
                         <h2><span>{{ get_curation_name }}s associated with the {{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</span></h2>
@@ -60,8 +60,7 @@
                 <th @click="sortBy('$global')">Score</th>
                 <th v-for="char in curation_characteristics.default" :key="char.score+'sp-th'" class="clickable-th"
                     @click="sortBy(char.score)">{{ char.name }}</th>
-                <th>Yes</th>
-                <th>No</th>
+                <th>Decision</th>
                 <th>Save</th>
                 <th></th>
             </tr>
@@ -73,7 +72,7 @@
             <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_empty_elements"
                 :key="curation.empty_key" :curation="curation" save="Save" :status_save_all="status_save_all" />
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.default.length+4">
+                <td :colspan="curation_characteristics.default.length+3">
                     <div class="left-container">
                         <a @click="addLine">+ Add another {{ get_curation_name.toLowerCase() }}</a>
                     </div>
@@ -81,7 +80,7 @@
             </tr>
 
             <tr v-if="finished_curation.length > 0 || finished_empty_elements.length > 0" class="empty-line">
-                <td :colspan="curation_characteristics.default.length+6">
+                <td :colspan="curation_characteristics.default.length+5">
                     <br /><br />
                     <img v-show="!show_edit" src="../assets/images/icon_plus.png" alt="[+]"
                         @click="show_edit = !show_edit" class="mini" />
@@ -98,8 +97,7 @@
                 <th>Score</th>
                 <th v-for="char in curation_characteristics.default" :key="char.score+'sp-th'" class="clickable-th">{{ char.name
                 }}</th>
-                <th>Yes</th>
-                <th>No</th>
+                <th>Decision</th>
                 <th>Edit</th>
                 <th></th>
             </tr>
@@ -261,25 +259,25 @@ export default {
                 filtered_curation.sort((a, b) => get_relation_scores(b) - get_relation_scores(a));
             }
 
-            filtered_curation = filtered_curation.filter(element => element.matching.match == null);
+            filtered_curation = filtered_curation.filter(element => element.matching.statusCode == "PNDG");
             return filtered_curation;
         },
         finished_curation() {
             var filtered_curation = this.occurrences_selection.relations
 
-            filtered_curation = filtered_curation.filter(element => element.matching.match != null);
+            filtered_curation = filtered_curation.filter(element => element.matching.match != null || element.matching.statusCode == "UDCB");
             return filtered_curation;
         },
         processed_empty_elements() {
             var filtered_empty = this.empty_elements
 
-            filtered_empty = filtered_empty.filter(element => element.matching.match == null);
+            filtered_empty = filtered_empty.filter(element => element.matching.statusCode == "PNDG");
             return filtered_empty;
         },
         finished_empty_elements() {
             var filtered_empty = this.empty_elements
 
-            filtered_empty = filtered_empty.filter(element => element.matching.match != null);
+            filtered_empty = filtered_empty.filter(element => element.matching.match != null || element.matching.statusCode == "UDCB");
             return filtered_empty;
         },
         to_disable() {
@@ -361,6 +359,7 @@ export default {
             object.empty_key = "emptykey_" + this.empty_elements.length
             object.matching = {}
             object.matching.match = null
+            object.matching.statusCode = "PNDG"
             this.empty_elements.push(object)
             this.addElement({ 'key': object.empty_key, 'value': true })
         },
@@ -399,15 +398,30 @@ export default {
         saveToPlaziBackend(occurrenceIdToSave) {
             var saved_data = []
             for (var i = 0; i < occurrenceIdToSave.length; i++) {
+                var decision = null
+                var statusCode = "PNDG"
+                if (this.change_dict[this.change_list[i]] == "yes"){
+                    decision = true
+                    statusCode = "DONE"
+                }   
+                if (this.change_dict[this.change_list[i]] == "no"){
+                    decision = false
+                    statusCode = "DONE"
+                }   
+                else if (this.change_dict[this.change_list[i]] == "undecided"){
+                    statusCode = "UDCB"       
+                }
                 var element = {
                     "occurrenceKey1": this.occurrences_selection.key,
                     "occurrenceKey2": occurrenceIdToSave[i],
-                    "decision": this.change_dict[this.change_list[i]],
+                    "decision": decision,
+                    "statusCode": statusCode,
                     "userName": this.user.name,
                     "orcid": this.user.orcid,
                 }
                 saved_data.push(element)
             }
+            alert(JSON.stringify(saved_data))
 
             var saved_json = { "occurrenceRelations": saved_data }
             this.$backend.post_matching(saved_json)

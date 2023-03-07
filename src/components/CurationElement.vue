@@ -11,11 +11,10 @@
                     {{ display_content(curation.object, char.value) }}
                 </td>
             </template>
-            <td>
-                <input type="checkbox" :checked="is_yes_selected" @click="changeSelection($event, 'yes')" />
-            </td>
-            <td>
-                <input type="checkbox" :checked="is_no_selected" @click="changeSelection($event, 'no')" />
+            <td class="decision">
+                <input type="checkbox" :checked="is_yes_selected" @click="changeSelection($event, 'yes')" /> Yes <br/>
+                <input type="checkbox" :checked="is_no_selected" @click="changeSelection($event, 'no')" /> No <br/>
+                <input type="checkbox" :checked="is_undecided_selected" @click="changeSelection($event, 'undecided')" /> Undecided
             </td>
             <td>
                 <button :disabled="to_disable" @click="saveSelection()">{{ save }}</button>
@@ -30,7 +29,7 @@
 
         <tr class="expanded" v-if="expanded">
             <td></td>
-            <td :colspan="curation_characteristics.length+1" class="cell-color-na">
+            <td :colspan="curation_characteristics.default.length+1" class="cell-color-na">
                 <div class="expanded-box" v-if="curation.object.verbatimLabel">
                     {{ curation.object.verbatimLabel }}
                 </div>
@@ -117,6 +116,14 @@ export default {
                 return false
             }
         },
+        is_undecided_selected() {
+            if (this.status == "undecided") {
+                return true
+            }
+            else {
+                return false
+            }
+        },
         to_disable() {
             if (this.curation.matching.match == true && this.is_yes_selected == true) {
                 return true
@@ -124,11 +131,13 @@ export default {
             if (this.curation.matching.match == false && this.is_no_selected == true) {
                 return true
             }
-            if (this.curation.matching.match == null && this.is_yes_selected == false && this.is_no_selected == false) {
+            if ((this.curation.matching.match == null && this.curation.matching.statusCode == "UDCB") && this.is_undecided_selected == true) {
+                return true
+            }
+            if ((this.curation.matching.match == null && this.curation.matching.statusCode == "PNDG") && this.is_yes_selected == false && this.is_no_selected == false && this.is_undecided_selected == false) {
                 return true
             }
             return false
-
         }
     },
     methods: {
@@ -196,12 +205,17 @@ export default {
                     this.status = "unknown"
                 }
             }
-            var match = null
-            if (this.status == "yes") {
-                match = true
+            else if (choice == "undecided") {
+                if (event.target.checked == true) {
+                    this.status = "undecided"
+                }
+                if (event.target.checked == false) {
+                    this.status = "unknown"
+                }
             }
-            if (this.status == "no") {
-                match = false
+            var match = null
+            if (this.status != null) {
+                match = this.status
             }
             if (this.status != this.saved_status) {
                 this.$emit("addOne", { 'key': this.curation.object.key, 'value': match })
@@ -233,7 +247,12 @@ export default {
     beforeMount() {
         if (this.status == null) {
             if (this.curation.matching.match == null) {
-                this.status = "unknown"
+                if (this.curation.matching.statusCode == "PNDG"){
+                    this.status = "unknown"
+                }
+                else {
+                    this.status = "undecided"
+                }
             }
             else if (this.curation.matching.match == true) {
                 this.status = "yes"
@@ -391,4 +410,12 @@ button[disabled] {
     background-color: #cccccc;
     color: #666666;
 }
+
+.decision {
+    text-align: left;
+    width: 120px;
+}
+
+
+
 </style>
