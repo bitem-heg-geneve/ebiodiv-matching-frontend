@@ -94,12 +94,14 @@ import { mapState } from 'vuex'
             else{
                 this.updateFacet({'facet': 'date', 'list': this.filters.date })
             }
+            this.$emit('clearCache')
         },
         removeAllFilters(){
             for (var key in this.user_selection.facets){
                 this.updateFacet({'facet': key, 'list': [] })
             }
             this.updateFacet({'facet': 'date', 'list': this.filters.date })
+            this.$emit('clearCache')
         },
       },
     }

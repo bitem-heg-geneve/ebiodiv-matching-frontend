@@ -147,6 +147,9 @@ export default {
             type: Function,
             required: true
         },
+        clear: {
+            type: Number
+        }
     },
     data() {
         return {
@@ -283,8 +286,12 @@ export default {
             this.cache_facets_with_status = {}
             this.cache_facets_multi_with_status = {}
             this.updateFacet(Object.freeze({'facet': facet_name, 'list': filter_list }))
+        },
+        clearCache(){
+            this.cache_facets_with_status = {}
+            this.cache_facets_multi_with_status = {}            
         }
-    }
+    },
 }
 
 </script>

@@ -18,7 +18,7 @@
 
                 <div class="content">
 
-                    <FacetsComponent class="facets" collection_name="mc" :documents="occurrences"
+                    <FacetsComponent ref="facetsBox" class="facets" collection_name="mc" :documents="occurrences"
                         :filters="filters.occurrences" :user_selection="user_selection.occurrences"
                         :updateFacet="updateOccurrencesFacet" :updateSort="updateOccurrencesSort" />
 
@@ -27,7 +27,8 @@
                         <FiltersSelection :processed_size="processed_occurrences.length"
                             :total_size="occurrences.length" entity_name="occurrence"
                             :user_selection="this.user_selection.occurrences" :filters="this.filters.occurrences"
-                            :updateFacet="this.updateOccurrencesFacet" />
+                            :updateFacet="this.updateOccurrencesFacet"
+                            @clearCache=clearCache  />
 
                         <div v-if="processed_occurrences.length > 0">
 
@@ -178,7 +179,8 @@ export default {
         },
         query_update() {
             return this.institution_selection.key + ";" + this.datasets_selection.join("+") + this.format_selection
-        }
+        },
+
     },
     methods: {
         ...mapActions(['updateOccurrencesFacet', 'updateOccurrencesSort', 'updateOccurrencesSelection', 'updateInitMcDateFilter', 'updateStep','updatePage']),
@@ -281,6 +283,9 @@ export default {
         goToTop() {
             // this.$router.push({ name: 'HomePage', query: this.$route.query }).catch(() => { });
             // this.$router.push({ name: 'HomePage', hash: '#occurrences', query: this.$route.query }).catch(() => { });
+        },
+        clearCache(){
+            this.$refs['facetsBox'].clearCache()
         }
     },
     watch: {
