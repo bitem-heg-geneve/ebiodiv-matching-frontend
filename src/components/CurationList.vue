@@ -245,7 +245,6 @@ export default {
         },
         processed_curation() {
             var filtered_curation = this.occurrences_selection.relations
-
             const get_relation_scores = (relation) => {
                 const scores = this.$scoring.get_scores(this.occurrences_selection, relation.object);
                 const score_value = scores[this.sort.by];
@@ -306,10 +305,12 @@ export default {
             }
         },
         addElement(element) {
-            if (!this.change_list.includes(element.key)) {
+            if (typeof element.key !== 'string' || element.key.indexOf("emptykey") === -1){
+                if (!this.change_list.includes(element.key)) {
                 this.change_list.push(element.key)
+                }
+                this.change_dict[element.key] = element.value
             }
-            this.change_dict[element.key] = element.value
         },
         saveName() {
             var name = prompt("Please enter your name or ORCID", "");
@@ -363,6 +364,22 @@ export default {
             this.empty_elements.push(object)
             this.addElement({ 'key': object.empty_key, 'value': true })
         },
+        getDecisionsValues(occurrence){
+            var decision = null
+            var statusCode = "PNDG"
+            if (this.change_dict[occurrence] == "yes"){
+                decision = true
+                statusCode = "DONE"
+            }   
+            if (this.change_dict[occurrence] == "no"){
+                decision = false
+                statusCode = "DONE"
+            }   
+            else if (this.change_dict[occurrence] == "undecided"){
+                statusCode = "UDCB"       
+            }
+            return [decision, statusCode]
+        },
         saveToSibBackend(occurrenceIdToSave) {
             const occurrenceRelations = {};
             // create occurrenceRelations using the existing decisions and occurrences
@@ -370,13 +387,19 @@ export default {
                 occurrenceRelations[relation.object.key] = {
                     occurrence: { ... relation.object },  // make a copy of the occurrence so we delete "relations"
                     decision: relation.matching.match,
-                    is_new_decision: false
+                     is_new_decision: false
                 }
                 delete occurrenceRelations[relation.object.key].occurrence.relations;
             }
             // update occurrenceRelations with the new user decisions
             for (var i = 0; i < occurrenceIdToSave.length; i++) {
-                occurrenceRelations[occurrenceIdToSave[i]].decision = this.change_dict[this.change_list[i]];
+                var decisions = this.getDecisionsValues(this.change_list[i])
+                // If manual relation
+                if (!(occurrenceIdToSave[i] in occurrenceRelations)){
+                    occurrenceRelations[occurrenceIdToSave[i]] = {}
+                }
+                occurrenceRelations[occurrenceIdToSave[i]].decision = decisions[0];
+                occurrenceRelations[occurrenceIdToSave[i]].statusCode = decisions[1];
                 occurrenceRelations[occurrenceIdToSave[i]].is_new_decision = true;
             }
             // create data (to send to the SIB backend)
@@ -398,53 +421,50 @@ export default {
         saveToPlaziBackend(occurrenceIdToSave) {
             var saved_data = []
             for (var i = 0; i < occurrenceIdToSave.length; i++) {
-                var decision = null
-                var statusCode = "PNDG"
-                if (this.change_dict[this.change_list[i]] == "yes"){
-                    decision = true
-                    statusCode = "DONE"
-                }   
-                if (this.change_dict[this.change_list[i]] == "no"){
-                    decision = false
-                    statusCode = "DONE"
-                }   
-                else if (this.change_dict[this.change_list[i]] == "undecided"){
-                    statusCode = "UDCB"       
-                }
+                var decisions = this.getDecisionsValues(this.change_list[i])
                 var element = {
                     "occurrenceKey1": this.occurrences_selection.key,
                     "occurrenceKey2": occurrenceIdToSave[i],
-                    "decision": decision,
-                    "statusCode": statusCode,
+                    "decision": decisions[0],
+                    "statusCode": decisions[1],
                     "userName": this.user.name,
                     "orcid": this.user.orcid,
                 }
                 saved_data.push(element)
             }
-            alert(JSON.stringify(saved_data))
 
             var saved_json = { "occurrenceRelations": saved_data }
             this.$backend.post_matching(saved_json)
                 .then(() => {
                     for (let i = 0; i < this.occurrences_selection.relations.length; i++) {
-                        if (this.change_list.includes(this.occurrences_selection.relations[i].object.key)) {
-                            this.occurrences_selection.relations[i].matching.match = this.change_dict[this.occurrences_selection.relations[i].object.key]
+                        if (occurrenceIdToSave.includes(this.occurrences_selection.relations[i].object.key)) {
+                            let decisions = this.getDecisionsValues(this.occurrences_selection.relations[i].object.key)
+                            this.occurrences_selection.relations[i].matching.match = decisions[0]
+                            this.occurrences_selection.relations[i].matching.statusCode = decisions[1]
+                            const index = this.change_list.indexOf(this.occurrences_selection.relations[i].object.key);
+                            this.change_list.splice(index, 1);
+                            delete this.change_dict[this.occurrences_selection.relations[i].object.key]
                         }
                     }
                     for (let i = 0; i < this.empty_elements.length; i++) {
-                        if (this.change_list.includes(this.empty_elements[i].empty_key)) {
-                            this.empty_elements[i].matching.match = this.change_dict[this.empty_elements[i].empty_key]
+                        if (occurrenceIdToSave.includes(this.empty_elements[i].object.key)) {
+                            let decisions = this.getDecisionsValues(this.empty_elements[i].object.key)
+                            this.empty_elements[i].matching.match = decisions[0]
+                            this.empty_elements[i].matching.statusCode = decisions[1]
+                            const index = this.change_list.indexOf(this.empty_elements[i].object.key);
+                            this.change_list.splice(index, 1);
+                            delete this.change_dict[this.empty_elements[i].empty_key]
                         }
                     }
-                    this.change_list = []
-                    this.change_dict = {}
-                    this.status_save_all += 1
-
+                    if (this.change_list.length == 0){                    
+                        this.status_save_all += 1
+                    }
+                    
                 })
                 .catch(error => {
                     alert("Failed to save" + error)
                 });
-        }
+        },
     },
     mounted() {
         this.$emitter.on('logged', () => {

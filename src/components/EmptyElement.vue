@@ -43,7 +43,7 @@
 
         <tr class="expanded" v-if="expanded">
             <td></td>
-            <td :colspan="get_curation_characteristics.length+1" class="cell-color-na">
+            <td :colspan="get_characteristics_curation.length+1" class="cell-color-na">
                 {{ curation.object.verbatimLabel }}
             </td>
              <td colspan="4"></td>
@@ -251,7 +251,6 @@ import shared_fields from '@/components/shared_fields.js'
             else {
                 this.curation.object = {'key': this.curation.object.key}
             }
-            this.status = "yes"
         },
         loadGBIF(){
             this.in_progress = true
