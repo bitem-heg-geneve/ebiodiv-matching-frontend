@@ -305,7 +305,6 @@ export default new class Scoring {
      */
     static FIELDS = [
         new FieldDescription("typeStatus", 2, normalize_str, get_score_string_exact),
-        new FieldDescription("basisOfRecord", 2, normalize_str, get_score_string_exact),
         new FieldDescription("recordedBy", 2, normalize_str, get_score_string_jw),
         new FieldDescription("recordNumber", 2, normalize_str, get_score_string_exact),
         new FieldDescription("recordedByIDs", 2, normalize_recordedbyids, get_score_recordedbyids),
