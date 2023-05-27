@@ -4,13 +4,13 @@
 
         <td><a :href="'https://www.gbif.org/occurrence/'+occurrence['key']" target="_blank">{{ occurrence.key }}</a></td>
         <td>{{ occurrence.scientificName }}</td>
-        <td v-if="get_occurrence_name=='Material citation'">{{ occurrence.verbatimLabel }}</td>
+        <td v-if="user_query.basisOfRecord=='MATERIAL_CITATION'">{{ occurrence.verbatimLabel }}</td>
         <td>{{ this.display_value_typeStatus(occurrence.typeStatus) }}</td>
         <td>{{ this.display_value_basisOfRecord(occurrence.basisOfRecord) }}</td>
         <td>{{ occurrence.year }}</td>
-        <td>{{ Object.entries(occurrence.relations).length }}</td>
-        <td><img :src="require('../assets/images/icon_status_'+occurrence.status+'.png')" class="small"/></td>
-        <td><button @click="displaySpecimen()" class="button-table"><img src="../assets/images/icon_todo.png"  class="mini"/></button></td>
+        <td>{{ relation_count }}</td>
+        <td><img :src="require('../assets/images/icon_status_'+status_name+'.png')" class="small"/></td>
+        <td><button @click="displayOccurrence()" class="button-table"><img src="../assets/images/icon_todo.png"  class="mini"/></button></td>
 
     </tr>
 
@@ -34,55 +34,47 @@ import shared_fields from '@/components/shared_fields.js'
             type: Object,
             required: true
         },
-        page: {
-          type: Number,
-          required: true
-        },
-        index: {
-          type: Number,
-          required: true
-        },
       },
       data() {
         return {
-            status: null,
         };
       },
       computed: {
-        ...mapState(['fields', 'format_selection', 'institution_selection', 'datasets_selection', 'theme_color']),
+        ...mapState([
+          'user_query', 
+          'theme_color'
+        ]),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
             }
         },
-        get_occurrence_name(){
-            if (this.format_selection){
-                return this.fields[this.format_selection].format_occurrence.name
-            }
-            return ""
+        relation_count(){
+          var total = 0
+          for (const value of Object.values(this.occurrence.occurrenceRelationSummary)){
+              total += value
+          }
+          return total
         },
-        get_curation_name(){
-             if (this.format_selection){
-               return this.fields[this.format_selection].format_curation.name
-            }
-            return ""
-        },
+        status_name(){
+          if (this.occurrence.occurrenceRelationSummary.PNDG == this.relation_count){
+            return "not-done"
+          }
+          if (this.occurrence.occurrenceRelationSummary.PNDG < this.relation_count){
+            return "partial"
+          }
+          return "finished"
+        }
       },
       methods:{
-        ...mapActions(['updateOccurrences', 'updateOccurrencesSelection', 'updateStep', 'updatePage', 'updatePositionDisplay']),
-        displaySpecimen(){
-            this.updateOccurrencesSelection(this.occurrence)
-            this.updateStep(3)
-            this.updatePage(this.page)
-            this.updatePositionDisplay("#"+this.page+"_"+this.index)
-            this.$router.push({
-              name: this.$router.currentRoute.name,
-              query: {
-                ...this.$router.currentRoute.query,
-                occurrenceKey: this.occurrence.key
-              }
-            })
-            this.$gtag.event('displayOccurrence');
+        ...mapActions([
+          'updateOccurrenceKey', 
+          'updateStep', 
+        ]),
+        displayOccurrence(){
+          this.updateStep(3)
+          this.updateOccurrenceKey(this.occurrence.key)
+          this.$gtag.event('displayOccurrence');
        },
       },
     }

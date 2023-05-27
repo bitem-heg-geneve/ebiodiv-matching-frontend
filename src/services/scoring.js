@@ -371,6 +371,7 @@ export default new class Scoring {
     }
 
     get_scores(occurrences1, occurrences2) {
+
         const cache_key = occurrences1.key > occurrences2.key ? occurrences1.key + '_' + occurrences2.key : occurrences2.key + '_' + occurrences1.key;
         if (this.score_cache[cache_key] != null) {
             return this.score_cache[cache_key];
@@ -388,11 +389,14 @@ export default new class Scoring {
     }
 
     #get_normalized_occurrence(occurrence) {
+
         if (this.occurrence_cache[occurrence.key] != null) {
             return this.occurrence_cache[occurrence.key];
         }
         // Purge cache if there are many entries
         if (this.occurrence_cache.length > 20000) {
+            alert("1")
+
             this.occurrence_cache = {}
         }
         // normalize the occurrence

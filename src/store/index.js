@@ -10,140 +10,172 @@ export default new Vuex.Store({
         secondary: "#008F00",
     },
     step: 1,
-    urls_parameters: {
-        institution: null,
-        format: null,
-        occurrence: null,
-        datasets: [],
+    user_query: {
+        pre_q: '',
+        q: '',
+        basisOfRecord: null,
+        limit: 20,
+        page: 1,
+        ranking: "-associatedOccurrences",
+        occurrence_key: null,
+        occurrences_keys: [],
+        facets_selection: {
+            'scientificName': [],
+            'acceptedScientificName': [],
+            'kingdom': [],
+            'phylum': [],
+            'class': [],
+            'family': [],
+            'genus': [],
+            'specificEpithet': [],
+            'infraspecificEpithet': [],
+            'taxonRank': [],
+            'country': [],
+            'stateProvince': [],
+            'typeStatus': [],
+            'recordedBy': [],
+            'institutionCode': [],
+            'collectionCode': [],
+            'title': [],
+            'gbifDoi': [],
+            'sourceDoi': [],
+            'identifier': [],
+            'creator': [],
+            'citation': [],
+            'author': [],
+            'date': [],
+            'year': [],
+            'journal': [],
+            'publisher': [],
+            'volume': [],   
+            'issue': [],
+            'numero': [],
+            'firstPage': [],
+            'lastPage': [],
+            'doi': [],
+            'zooBankId': [],          
+            'plaziUuid': [],
+        },
+        facets_visibility: {
+            'scientificName': false,
+            'acceptedScientificName': false,
+            'kingdom': false,
+            'phylum': false,
+            'class': false,
+            'family': false,
+            'genus': false,
+            'specificEpithet': false,
+            'infraspecificEpithet': false,
+            'taxonRank': false,
+            'country': false,
+            'stateProvince': false,
+            'typeStatus': false,
+            'recordedBy': false,
+            'institutionCode': false,
+            'collectionCode': false,
+            'title': false,
+            'gbifDoi': false,
+            'sourceDoi': false,
+            'identifier': false,
+            'creator': false,
+            'citation': false,
+            'author': false,
+            'date': false,
+            'year': false,
+            'journal': false,
+            'publisher': false,
+            'volume': false,   
+            'issue': false,
+            'numero': false,
+            'firstPage': false,
+            'lastPage': false,
+            'doi': false,
+            'zooBankId': false,          
+            'plaziUuid': false,          
+        }
     },
-    institutions: {
-        list: [],
-        info_dict: {}
-    },
-    institution_selection: {
-        key: null,
-        name: null,
-    },
-    datasets: [],
-    datasets_selection: [],
-    occurrences_selection: null,
-    occurrence_keys: null,
-    format_selection: null,
-    matching: null,
-    page_selection: 1,
-    position_display: "",
+    institutions: {},
     fields: {
-        matcit_specimen: {
-            format_occurrence: {
+        MATERIAL_CITATION: {
+            basisOfRecord_occurrence: {
                 name: "Material citation",
             },
-            format_curation: {
+            basisOfRecord_curation: {
                 name: "Specimen",
             }
         },
-        specimen_matcit: {
-            format_occurrence: {
+        PRESERVED_SPECIMEN: {
+            basisOfRecord_occurrence: {
                 name: "Specimen",
 
             },
-            format_curation: {
+            basisOfRecord_curation: {
                 name: "Material citation",
             }
         }
     },
-    user_selection: {
-        occurrences: {
-             facets: {
-                status: [],
-                datasetName: [],
-                country: [],
-                collectionCode: [],
-                institutionCode: [],
-                recordedBy: [],
-                kingdom: [],
-                phylum: [],
-                class: [],
-                order: [],
-                family: [],
-                genus: [],
-                species: [],
-                typeStatus: [],
-                date: [0, 2022],
-            },
-            sort: 'ID',
-        },
-        curation: {
-             facets: {
-            },
-            sort: 'ID',
-        }
-    },
     filters: {
-        occurrences: {
-            sort: ['ID', 'scientific name', 'date', 'matching number'],
-            facets: [
-                {title: 'Date', short: 'date', multi: false},
-                {title: 'Dataset', short: 'datasetName', multi: true},
-                {title: 'Curation status', short: 'status', multi: true},
-                {title: 'Country', short: 'country', multi: true},
-                {title: 'Institution code', short: 'institutionCode', multi: true},
-                {title: 'Collection code', short: 'collectionCode', multi: true},
-                {title: 'Collector', short: 'recordedBy', multi: true},
-                {title: 'Type', short: 'typeStatus', multi: true, labelMethod: "display_value_typeStatus"},
-                {title: 'Kingdom', short: 'kingdom', multi: true},
-                {title: 'Phylum', short: 'phylum', multi: true},
-                {title: 'Class', short: 'class', multi: true},
-                {title: 'Order', short: 'order', multi: true},
-                {title: 'Family', short: 'family', multi: true},
-                {title: 'Genus', short: 'genus', multi: true},
-                {title: 'Species', short: 'species', multi: true},
-            ],
-            date: [0, 2022]
-        }
-    },
-    curation_characteristics: {
-        default: [
-            {name: 'Family', score: 'family', value: ['family']},
-            {name: 'Genus', score: 'genus', value: ['genus']},
-            {name: 'Specific epithet', score: 'specificEpithet', value: ['specificEpithet']},
-            {name: 'Coordinates', score: 'decimalLatitude', value: ['decimalLatitude', 'decimalLongitude']},
-            {name: 'Elevation', score: 'elevation', value: ['elevation', 'depth']},
-            {name: 'Locality', score: 'locality', value: ['locality']},
-            {name: 'Country', score: 'country', value: ['country']},
-            {name: 'Date', score: 'year', value: ['day', 'month', 'year']},
-            {name: 'Institution code', score: 'institutionCode', value: ['institutionCode']},
-            {name: 'Collection code', score: 'collectionCode', value: ['collectionCode']},
-            {name: 'Catalog nb', score: 'catalogNumber', value: ['catalogNumber']},
-            {name: 'Individual nb', score: 'individualCount',  value: ['individualCount']},
-            {name: 'Collector (recorded by)', score: 'recordedBy', value: ['recordedBy']},
-            {name: 'Type', score: 'typeStatus', value: ['typeStatus']},
-            {name: 'Record', score: 'basisOfRecord', value: ['basisOfRecord']},
+        ranking: [
+            {title: 'ID', field:'gbifDoi'},
+            {title: 'scientific name', field:'scientificName'},
+            //{title: 'date', field:'-year'},
+            {title: 'matching number', field:'-associatedOccurrences'}
         ],
-        MATERIAL_CITATION: [
-            /*
-                collectionsCode and institutionCode are swapped
-                see https://github.com/plazi/eBioDiv/issues/105 :
-                The collection code in TreatmentBank is generally an Institution Code sensu GBIF, DWC
-            */
-            {name: 'Family', score: 'family', value: ['family']},
-            {name: 'Genus', score: 'genus', value: ['genus']},
-            {name: 'Specific epithet', score: 'specificEpithet', value: ['specificEpithet']},
-            {name: 'Coordinates', score: 'decimalLatitude', value: ['decimalLatitude', 'decimalLongitude']},
-            {name: 'Elevation', score: 'elevation', value: ['elevation', 'depth']},
-            {name: 'Locality', score: 'locality', value: ['locality']},
-            {name: 'Country', score: 'country', value: ['country']},
-            {name: 'Date', score: 'year', value: ['day', 'month', 'year']},
-            // "Institution code" uses collectionCode, note that scoring.js must be have a getter for insitutionCode (get_collectionCode)
-            {name: 'Institution code', score: 'institutionCode', value: ['collectionCode']},
-            // "Collection code" uses institutionCode, note that scoring.js must have a getter for collectionCode (get_institutionCode)
-            {name: 'Collection code', score: 'collectionCode', value: ['institutionCode']}, // <-- 
-            {name: 'Catalog nb', score: 'catalogNumber', value: ['catalogNumber']},
-            {name: 'Individual nb', score: 'individualCount',  value: ['individualCount']},
-            {name: 'Collector (recorded by)', score: 'recordedBy', value: ['recordedBy']},
-            {name: 'Type', score: 'typeStatus', value: ['typeStatus']},
-            {name: 'Record', score: 'basisOfRecord', value: ['basisOfRecord']},
+        facets: [
+            {title: 'Scientific name', field:'scientificName'},
+            {title: 'Accepted scientific name', field:'acceptedScientificName'},
+            {title: 'Kingdom', field:'kingdom'},
+            {title: 'Phylum', field:'phylum'},
+            {title: 'Class', field:'class'},
+            {title: 'Family', field:'family'},
+            {title: 'Genus', field:'genus'},
+            {title: 'Specific epithet', field:'specificEpithet'},
+            {title: 'Infraspecific epithet', field:'infraspecificEpithet'},
+            {title: 'Taxon rank', field:'taxonRank'},
+            {title: 'Country', field:'country'},
+            {title: 'State province', field:'stateProvince'},
+            {title: 'Type status', field:'typeStatus'},
+            {title: 'Recorded by', field:'recordedBy'},
+            {title: 'Institution code', field:'institutionCode'},
+            {title: 'Collection code', field:'collectionCode'},
+            {title: 'Title', field:'title'},
+            {title: 'Gbif DOI', field:'gbifDoi'},
+            {title: 'Source DOI', field:'sourceDoi'},
+            {title: 'Identifier', field:'identifier'},
+            {title: 'Creator', field:'creator'},
+            {title: 'Citation', field:'citation'},
+            {title: 'Author', field:'author'},
+            {title: 'Date', field:'date'},
+            {title: 'Year', field:'year'},
+            {title: 'Journal', field:'journal'},
+            {title: 'Publisher', field:'publisher'},
+            //{title: 'Volume', field:'volume'},            
+            //{title: 'Issue', field:'issue'},
+            //{title: 'Numero', field:'numero'},
+            //{title: 'First page', field:'firstPage'},
+            //{title: 'Last page', field:'lastPage'},    	
+            {title: 'DOI', field:'doi'},
+            {title: 'Zoo BankId', field:'zooBankId'},             
+            {title: 'Plazi Uuid', field:'plaziUuid'},
         ],
     },
+    curation_characteristics: [
+        {name: 'Family', score: 'family', value: ['family']},
+        {name: 'Genus', score: 'genus', value: ['genus']},
+        {name: 'Specific epithet', score: 'specificEpithet', value: ['specificEpithet']},
+        {name: 'Coordinates', score: 'decimalLatitude', value: ['decimalLatitude', 'decimalLongitude']},
+        {name: 'Elevation', score: 'elevation', value: ['elevation', 'depth']},
+        {name: 'Locality', score: 'locality', value: ['locality']},
+        {name: 'Country', score: 'country', value: ['country']},
+        {name: 'Date', score: 'year', value: ['day', 'month', 'year']},
+        {name: 'Institution code', score: 'institutionCode', value: ['institutionCode']},
+        {name: 'Collection code', score: 'collectionCode', value: ['collectionCode']},
+        {name: 'Catalog nb', score: 'catalogNumber', value: ['catalogNumber']},
+        {name: 'Individual nb', score: 'individualCount',  value: ['individualCount']},
+        {name: 'Collector (recorded by)', score: 'recordedBy', value: ['recordedBy']},
+        {name: 'Type', score: 'typeStatus', value: ['typeStatus']},
+        {name: 'Record', score: 'basisOfRecord', value: ['basisOfRecord']},
+    ],
     user: {
         name: null,
         orcid: null,
@@ -152,61 +184,52 @@ export default new Vuex.Store({
 
   },
   mutations: {
-    UPDATE_INSTITUTIONS_LIST(state, institution_list) {
-        state.institutions.list = institution_list
+    UPDATE_STEP(state, step) {
+        state.step = step
     },
-    UPDATE_INSTITUTIONS_INFO(state, institution_info) {
-        state.institutions.info_dict = institution_info
+    UPDATE_QUERY(state, query) {
+        state.user_query.q = query
     },
-    UPDATE_INSTITUTION_SELECTION_KEY(state, institution_key) {
-        state.institution_selection.key = institution_key
-   },
-    UPDATE_INSTITUTION_SELECTION_NAME(state, institution_name) {
-        state.institution_selection.name = institution_name
+    UPDATE_PRE_QUERY(state, query) {
+        state.user_query.pre_q = query
     },
-    UPDATE_FORMAT_SELECTION(state, modality) {
-        state.format_selection = modality
+    UPDATE_BASISOFRECORD(state, basisOfRecord) {
+        state.user_query.basisOfRecord = basisOfRecord
     },
-    UPDATE_DATASETS(state, datasets) {
-        state.datasets = datasets
+    UPDATE_PAGE(state, page) {
+        state.user_query.page = page
     },
-    UPDATE_DATASETS_SELECTION(state, datasets_selection) {
-        state.datasets_selection = datasets_selection
+    UPDATE_OCCURRENCE_KEY(state, occurrence_key) {
+        state.user_query.occurrence_key = occurrence_key
     },
-    UPDATE_OCCURRENCES_SELECTION(state, occurrences_selection) {
-        state.occurrences_selection = occurrences_selection
+    UPDATE_OCCURRENCES_KEYS(state, occurrences_keys) {
+        state.user_query.occurrences_keys = occurrences_keys
     },
-    UPDATE_OCCURRENCES_KEYS(state, occurrence_keys) {
-        state.occurrence_keys = occurrence_keys
+    UPDATE_RANKING(state, value){
+        state.user_query.ranking = value
     },
-    UPDATE_OCCURRENCES_SORT(state, value){
-        state.user_selection.occurrences.sort = value
+    UPDATE_FACET_SELECTION(state, value){
+        state.user_query.facets_selection[value.facet] = value.list
     },
-    UPDATE_OCCURRENCES_FACET(state, value){
-        state.user_selection.occurrences.facets[value.facet] = value.list
+    RESET_FACETS(state){
+        for (const key of Object.keys(state.user_query.facets_selection)) {
+            state.user_query.facets_selection[key] = []
+        }
     },
-    UPDATE_OCCURRENCES_FILTER_DATE(state, value){
-        state.filters.occurrences.date = value
+    UPDATE_FACET_VISIBILITY(state, value){
+        state.user_query.facets_visibility[value.facet] = value.visibility
     },
-    UPDATE_MATCHING(state, matching) {
-        state.matching = matching
+    UPDATE_INSTITUTIONS(state, value){
+        state.institutions = value
     },
-    UPDATE_INIT_MC_DATE_FILTER(state, dates) {
-        state.filters.occurrences.date = dates
-        state.user_selection.occurrences.facets.date = dates
-    },
-    UPDATE_URLS_PARAMETERS(state, params) {
-        state.urls_parameters = params
-    },
-    UPDATE_STEP(state, value) {
-        state.step = value
-    },
-    UPDATE_PAGE(state, value) {
-        state.page_selection = value
-    },
-    UPDATE_POSITION_DISPLAY(state, value) {
-        state.position_display = value
-    },
+    
+    // UPDATE_OCCURRENCES_FILTER_DATE(state, value){
+    //     state.filters.occurrences.date = value
+    // },
+    // UPDATE_INIT_MC_DATE_FILTER(state, dates) {
+    //     state.filters.occurrences.date = dates
+    //     state.user_selection.occurrences.facets.date = dates
+    // },   
     UPDATE_USER(state, value) {
         state.user = value
         window.sessionStorage.setItem('user', JSON.stringify(value));
@@ -221,53 +244,45 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    updateInstitutions(context, value) {
-        context.commit('UPDATE_INSTITUTIONS_LIST', value.list)
-        context.commit('UPDATE_INSTITUTIONS_INFO', value.info)
-    },
-    updateInstitutionSelection(context, value) {
-        context.commit('UPDATE_INSTITUTION_SELECTION_KEY', value.key)
-        context.commit('UPDATE_INSTITUTION_SELECTION_NAME', value.name)
-   },
-    updateFormatSelection(context, value) {
-        context.commit('UPDATE_FORMAT_SELECTION', value)
-    },
-    updateOccurrencesSelection(context, value) {
-        context.commit('UPDATE_OCCURRENCES_SELECTION', value)
-    },
-    updateDatasetsSelection(context, value) {
-        context.commit('UPDATE_DATASETS_SELECTION', value)
-    },
-    updateOccurrenceKeys(context, value) {
-        context.commit('UPDATE_OCCURRENCES_KEYS', value)
-    },
-    updateDatasets(context, value) {
-        context.commit('UPDATE_DATASETS', value)
-    },
-    updateOccurrencesSort(context, value) {
-        context.commit('UPDATE_OCCURRENCES_SORT', value)
-    },
-    updateOccurrencesFacet(context, value) {
-        context.commit('UPDATE_OCCURRENCES_FACET', value)
-    },
-    updateMatching(context, value) {
-       context.commit('UPDATE_MATCHING', value)
-    },
-    updateInitMcDateFilter(context, value){
-       context.commit('UPDATE_INIT_MC_DATE_FILTER', value)
-    },
-    updateUrlsParameters(context, value){
-        context.commit('UPDATE_URLS_PARAMETERS', value)
-    },
     updateStep(context, value){
         context.commit('UPDATE_STEP', value)
+    },
+    updateQuery(context, value) {
+        context.commit('UPDATE_QUERY', value)
+    },
+    updatePreQuery(context, value) {
+        context.commit('UPDATE_PRE_QUERY', value)
+    },
+    updateBasisOfRecord(context, value) {
+        context.commit('UPDATE_BASISOFRECORD', value)
     },
     updatePage(context, value){
         context.commit('UPDATE_PAGE', value)
     },
-    updatePositionDisplay(context, value){
-        context.commit('UPDATE_POSITION_DISPLAY', value)
+    updateOccurrenceKey(context, value) {
+        context.commit('UPDATE_OCCURRENCE_KEY', value)
     },
+    updateOccurrencesKeys(context, value) {
+        context.commit('UPDATE_OCCURRENCES_KEYS', value)
+    },
+    updateRanking(context, value) {
+        context.commit('UPDATE_RANKING', value)
+    },
+    updateFacetSelection(context, value) {
+        context.commit('UPDATE_FACET_SELECTION', value)
+    },
+    updateFacetVisibility(context, value){
+        context.commit('UPDATE_FACET_VISIBILITY', value)
+    },
+    resetFacets(context){
+        context.commit('RESET_FACETS')
+    },
+    updateInstitutions(context, value){
+        context.commit('UPDATE_INSTITUTIONS', value)
+    },
+    // updateInitMcDateFilter(context, value){
+    //    context.commit('UPDATE_INIT_MC_DATE_FILTER', value)
+    // },
     updateOrcidUser(context, user) {
         /* an example of user is {name: "John Doe", orcid: "", orcidToken: ""} */
         context.commit('UPDATE_USER', user)

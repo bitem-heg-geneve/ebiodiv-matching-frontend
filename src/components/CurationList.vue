@@ -1,88 +1,107 @@
 <template>
 
     <div class="component-container" :style="cssVars">
-        <table>
+
+        <div class="centered-container" v-if="in_progress">
+            <PulseLoader :color="theme_color.main" />
+        </div>
+
+        <table v-if="!in_progress">
+
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.default.length+6">
+                <td colspan=100>
                     <div class="separator">
-                        <h2><span>{{ get_occurrence_name }} {{ occurrences_selection.key }}</span></h2>
+                        <h2><span>{{ get_occurrence_name }} {{ user_query.occurrence_key }} {{ get_description }}</span></h2>
                     </div>
                 </td>
             </tr>
+
             <tr>
                 <th>Key</th>
                 <th></th>
-                <th v-for="char in curation_characteristics.default" :key="char.score+'sp-th'">{{ char.name }}</th>
-                <th colspan="3"></th>
+                <th v-for="characteristic in curation_characteristics" :key="characteristic.score+'main-th'">{{ characteristic.name }}</th>
+                <th colspan="2"></th>
                 <th></th>
             </tr>
+
             <tr class="reference-entity">
-                <td><a :href="'https://www.gbif.org/occurrence/'+occurrences_selection.key" target="_blank">{{
-                occurrences_selection.key}}</a></td>
+                <td><a :href="'https://www.gbif.org/occurrence/'+user_query.occurrence_key" target="_blank">{{
+                user_query.occurrence_key}}</a></td>
                 <td></td>
-                <template v-for="char in get_occurrence_curation">
-                    <td v-if="char.value" :key="char.score+'mc_td'" :class="'cell_' + char.score">{{ display_content(occurrences_selection, char.value) }}</td>
+                <template v-for="characteristic in curation_characteristics">
+                    <td v-if="characteristic.value" :key="characteristic.score+'main-td'" :class="'cell_' + characteristic.score">{{ display_content(get_occurrence, characteristic.value) }}</td>
                 </template>
-                <td colspan="3"></td>
+                <td colspan="2"></td>
                 <td>
-                    <button @click="expanded = !expanded" class="button-table">
+                    <button v-if="user_query.basisOfRecord=='MATERIAL_CITATION'" @click="expanded = !expanded" class="button-table">
                         <img v-if="!expanded" src="../assets/images/icon_expand.png" class="mini" />
                         <img v-if="expanded" src="../assets/images/icon_reduce.png" class="mini" />
                     </button>
                 </td>
-            </tr>
+            </tr>  
+
             <tr class="expanded" v-if="expanded">
-                <td :colspan="curation_characteristics.default.length+6">
-                    <div class="expanded-box" v-if="occurrences_selection.verbatimLabel">
-                        {{ occurrences_selection.verbatimLabel }}
+                <td colspan=100>
+                    <div class="expanded-box" v-if="get_occurrence.verbatimLabel">
+                        {{ get_occurrence.verbatimLabel }}
                     </div>
-                    <div class="expanded-box">
-                        <a :href="occurrences_selection.references" target="_blank">Reference to TreatmentBank</a>
+                    <div class="expanded-box" v-if="'references' in get_occurrence">
+                        <label>Data source:</label>
+                        <ul>
+                            <li><a :href="get_occurrence.references" target="_blank">Treatment</a></li>
+                            <li v-if="'identifier' in get_occurrence"><a :href="get_mc" target="_blank">Material citation</a></li>
+                        </ul>                        
                     </div>
                 </td>
             </tr>
+
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.default.length+6">
+                <td colspan=100>
                     <br /><br />
                     <div class="separator">
-                        <h2><span>{{ get_curation_name }}s associated with the {{ get_occurrence_name.toLowerCase() }} {{ occurrences_selection.key }}</span></h2>
+                        <h2><span>{{ get_curation_name }}s associated with the {{ get_occurrence_name.toLowerCase() }} {{ user_query.occurrence_key }}</span></h2>
                     </div>
+                    
                     <p>
-                        {{ processed_curation.length }} suggested 
-                        {{ get_curation_name.toLowerCase() }}{{ processed_curation.length > 1?'s':'' }}
+                        {{ to_process_curation.length }} suggested 
+                        {{ get_curation_name.toLowerCase() }}{{ to_process_curation.length > 1?'s':'' }}
                         to curate
                     </p>
                     <p class="notice">Please indicate for each suggested {{ get_curation_name.toLowerCase() }} whether it matches the {{ get_occurrence_name.toLowerCase() }} or not (Yes / No).</p>
                 </td>
             </tr>
-            <tr v-if="processed_curation.length > 0">
+
+           
+            <tr v-if="to_process_curation.length > 0">
                 <th>Key</th>
                 <th @click="sortBy('$global')">Score</th>
-                <th v-for="char in curation_characteristics.default" :key="char.score+'sp-th'" class="clickable-th"
+                <th v-for="char in curation_characteristics" :key="char.score+'sp-th'" class="clickable-th"
                     @click="sortBy(char.score)">{{ char.name }}</th>
-                <th>Yes</th>
-                <th>No</th>
-                <th>Save</th>
+                <th>Decision</th>
+                <th>Comment</th>
                 <th></th>
             </tr>
 
-            <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_curation"
-                :key="curation.object.key" :curation="curation"
-                :scores="get_scores(occurrences_selection, curation.object)" save="Save"
-                :status_save_all="status_save_all" />
+            <CurationElement v-for="to_process_key in to_process_curation"
+                @updateCuration=updateCuration 
+                :key="to_process_key.occurrenceKey2" 
+                :occurrence="occurrences[to_process_key.occurrenceKey2]" 
+                :matching="to_process_key"
+                :scores="get_scores(occurrences[user_query.occurrence_key], occurrences[to_process_key.occurrenceKey2])" />
+ <!--
             <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_empty_elements"
                 :key="curation.empty_key" :curation="curation" save="Save" :status_save_all="status_save_all" />
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.default.length+4">
+                <td :colspan="curation_characteristics.length+4">
                     <div class="left-container">
                         <a @click="addLine">+ Add another {{ get_curation_name.toLowerCase() }}</a>
                     </div>
                 </td>
-            </tr>
+            </tr>-->
 
-            <tr v-if="finished_curation.length > 0 || finished_empty_elements.length > 0" class="empty-line">
-                <td :colspan="curation_characteristics.default.length+6">
-                    <br /><br />
+           <tr v-if="finished_curation.length > 0 || finished_empty_elements.length > 0" class="empty-line">
+                <td colspan=100>
+                    <br/><br />
                     <img v-show="!show_edit" src="../assets/images/icon_plus.png" alt="[+]"
                         @click="show_edit = !show_edit" class="mini" />
                     <img v-show="show_edit" src="../assets/images/icon_minus.png" alt="[-]"
@@ -93,37 +112,42 @@
                 </td>
             </tr>
 
+
             <tr v-if="show_edit && (finished_curation.length > 0 || finished_empty_elements.length > 0)">
                 <th>Key</th>
                 <th>Score</th>
-                <th v-for="char in curation_characteristics.default" :key="char.score+'sp-th'" class="clickable-th">{{ char.name
+                <th v-for="char in curation_characteristics" :key="char.score+'sp-th'" class="clickable-th">{{ char.name
                 }}</th>
-                <th>Yes</th>
-                <th>No</th>
-                <th>Edit</th>
+                <th>Decision</th>
+                <th>Comment</th>
                 <th></th>
             </tr>
 
             <template v-if="show_edit && finished_curation.length > 0">
-                <CurationElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_curation"
-                    :key="curation.object.key" :curation="curation"
-                    :scores="get_scores(occurrences_selection, curation.object)" save="Edit"
-                    :status_save_all="status_save_all" />
+                <CurationElement v-for="finished_key in finished_curation"
+                    @updateCuration=updateCuration 
+                    :key="finished_key.occurrenceKey2" 
+                    :occurrence="occurrences[finished_key.occurrenceKey2]" 
+                    :matching="finished_key"
+                    :scores="get_scores(occurrences[user_query.occurrence_key], occurrences[finished_key.occurrenceKey2])" />
+
             </template>
-            <template v-if="show_edit && finished_empty_elements.length > 0">
+            <!--<template v-if="show_edit && finished_empty_elements.length > 0">
                 <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_empty_elements"
                     :key="curation.empty_key" :curation="curation" save="Edit" :status_save_all="status_save_all" />
-            </template>
+            </template>-->
+    
 
         </table>
 
-
-
-        <div>
+        <div v-if="!in_progress">
 
             <div class="button-container">
-                <button v-if="show_back_button" class="secondary" @click="back()">Back to list</button>
-                <button :disabled="to_disable" @click="save()">Save</button>
+                <button v-if="show_back_button" @click="nosaveBack()">Go back to list</button>
+                <button @click="nosaveNext()">Continue</button>
+                <br/><br/>
+                <button v-show="changes > 0" @click="saveBack()">Save and Go back to list</button>
+                <button v-show="changes > 0" @click="saveNext()">Save and Continue</button>
             </div>
 
             <div class="left-container">
@@ -178,6 +202,7 @@
                         <td>0.0</td>
                     </tr>
                 </table>
+                <a href="/scoring" target="_blank">Scoring algorithm</a>
             </div>
 
         </div>
@@ -190,8 +215,8 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import CurationElement from '@/components/CurationElement.vue'
-import EmptyElement from '@/components/EmptyElement.vue'
 import shared_fields from '@/components/shared_fields.js'
+var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 
 export default {
     name: 'CurationList',
@@ -200,7 +225,7 @@ export default {
     ],
     components: {
         CurationElement,
-        EmptyElement,
+        PulseLoader
     },
     props: {
         show_back_button: {
@@ -211,10 +236,12 @@ export default {
     },
     data() {
         return {
+            in_progress: true,
+            occurrences: {},
+            relations: [],
             empty_elements: [],
-            change_list: [],
-            change_dict: {},
-            status_save_all: 0,
+            change_list: {},
+            changes: 0,
             sort: {
                 by: '$global',
                 asc: false
@@ -222,38 +249,112 @@ export default {
             show_edit: false,
             expanded: false,
             pendingSave: [],
+            action: null
         };
     },
     computed: {
-        ...mapState(['urls', 'theme_color', 'institution_selection', 'datasets_selection', 'occurrences_selection', 'matching', 'curation_characteristics', 'format_selection', 'fields', 'user']),
+        ...mapState([
+            'theme_color', 
+            'curation_characteristics', 
+            'user_query', 
+            'fields', 
+            'user', 
+            'step', 
+            'institutions'
+        ]),
         cssVars() {
             return {
                 '--color': this.theme_color.main,
                 '--color-secondary': this.theme_color.secondary,
             }
         },
+        get_occurrence(){
+            return this.occurrences[this.user_query.occurrence_key]
+        },
         get_occurrence_name() {
-            const zz = this.fields[this.format_selection].format_occurrence.name;
+            const zz = this.fields[this.user_query.basisOfRecord].basisOfRecord_occurrence.name;
             return zz.charAt(0).toUpperCase() + zz.slice(1).toLowerCase();
         },
         get_curation_name() {
-            return this.fields[this.format_selection].format_curation.name
+            return this.fields[this.user_query.basisOfRecord].basisOfRecord_curation.name
         },
-        get_occurrence_curation(){
-            if (this.occurrences_selection['basisOfRecord'] == "MATERIAL_CITATION"){
-                return this.curation_characteristics.MATERIAL_CITATION;
+        get_description() {
+            if ('institutionKey' in this.occurrences[this.user_query.occurrence_key]){
+                return "from " + this.institutions[this.occurrences[this.user_query.occurrence_key].institutionKey]
             }
-            return this.curation_characteristics.default;
+           return ''
         },
-        processed_curation() {
-            var filtered_curation = this.occurrences_selection.relations
+        get_mc() {
+            return this.get_occurrence.references+this.get_occurrence.identifier.replace(".mc.", "#")
+        },
+        to_process_curation() {
+            return this.filterListToDo(this.relations, "PNDG")
+        },
+        finished_curation() {
+            return this.filterListDone(this.relations, "PNDG")
+        },
+        // TO CHECK
+        // processed_empty_elements() {
+        //     var filtered_empty = this.empty_elements
+
+        //     filtered_empty = filtered_empty.filter(element => element.matching.match == null);
+        //     return filtered_empty;
+        // },
+        finished_empty_elements() {
+            return this.filterListDone(this.empty_elements, "PNDG")
+        },
+    },
+    methods: {
+        ...mapActions([
+            'updateOccurrenceKey', 
+            'updateStep', 
+            'updateUsername'
+        ]),
+        searchCurationAPI(){
+            this.$router.push({
+                    name: this.$router.currentRoute.name,
+                    query: {
+                        ...this.$router.currentRoute.query,
+                        occurrenceKey: this.user_query.occurrence_key
+                    }
+                })
+            this.changes = 0
+            this.change_list = {}
+            this.in_progress = true
+            let response_promise = null;
+            response_promise = this.$backend.fetch_occurrence(this.user_query.occurrence_key)
+            response_promise.then(response => {
+                this.relations = response.data.occurrenceRelations;
+                this.occurrences = response.data.occurrences
+                for (const [key, value] of Object.entries(this.occurrences)){
+                    value['key'] = key
+                    this.occurrences[key] = value
+                }
+                this.in_progress = false
+            })
+            .catch(error => {
+                console.log(error)
+                alert("failed to load relations: " + error)
+            })
+        },
+        searchNextCurationAPI(){
+            let response_promise = null;
+            response_promise = this.$backend.fetch_next_occurrence_from_q(this.user_query, this.user_query.occurrence_key)
+            response_promise.then(response => {
+                this.updateOccurrenceKey(response.data.subjectOccurrenceKeys[0])
+            })
+            .catch(error => {
+                console.log(error)
+                alert("failed to load next relations: " + error)
+            })
+        },
+        filterListToDo(filtered_curation, condition) {
 
             const get_relation_scores = (relation) => {
-                const scores = this.$scoring.get_scores(this.occurrences_selection, relation.object);
+                const scores = this.$scoring.get_scores(this.occurrences[this.user_query.occurrence_key], this.occurrences[relation.occurrenceKey2]);
                 const score_value = scores[this.sort.by];
                 return score_value != null ? parseFloat(score_value) : -1
             }
-
             if (this.sort.asc) {
                 filtered_curation.sort((a, b) => get_relation_scores(a) - get_relation_scores(b));
             }
@@ -261,38 +362,13 @@ export default {
                 filtered_curation.sort((a, b) => get_relation_scores(b) - get_relation_scores(a));
             }
 
-            filtered_curation = filtered_curation.filter(element => element.matching.match == null);
+            filtered_curation = filtered_curation.filter(element => element.statusCode == condition);
+
             return filtered_curation;
         },
-        finished_curation() {
-            var filtered_curation = this.occurrences_selection.relations
-
-            filtered_curation = filtered_curation.filter(element => element.matching.match != null);
-            return filtered_curation;
+        filterListDone(filtered_curation, condition) {
+            return filtered_curation = filtered_curation.filter(element => element.statusCode != condition);
         },
-        processed_empty_elements() {
-            var filtered_empty = this.empty_elements
-
-            filtered_empty = filtered_empty.filter(element => element.matching.match == null);
-            return filtered_empty;
-        },
-        finished_empty_elements() {
-            var filtered_empty = this.empty_elements
-
-            filtered_empty = filtered_empty.filter(element => element.matching.match != null);
-            return filtered_empty;
-        },
-        to_disable() {
-            if (Object.keys(this.change_list).length > 0) {
-                return false
-            }
-            else {
-                return true
-            }
-        },
-    },
-    methods: {
-        ...mapActions(['updateOccurrencesSelection', 'updateMatching', 'updateStep', 'updateUsername']),
         get_scores(occurrence1, occurrence2) {
             if (occurrence1 == null || occurrence2 == null) {
                 return {
@@ -301,49 +377,46 @@ export default {
             }
             return this.$scoring.get_scores(occurrence1, occurrence2);
         },
-        removeElement(element) {
-            const index = this.change_list.indexOf(element.key);
-            if (index > -1) {
-                this.change_list.splice(index, 1);
-            }
-        },
-        addElement(element) {
-            if (!this.change_list.includes(element.key)) {
-                this.change_list.push(element.key)
-            }
-            this.change_dict[element.key] = element.value
-        },
-        saveName() {
-            var name = prompt("Please enter your name or ORCID", "");
-            if (name == "") {
-                this.saveName()
-            }
-            else {
-                if (name == null) {
-                    alert("Your work is not saved")
-                }
-                else {
-                    this.updateUsername(name)
+        updateCuration(element){
+            for (var i=0; i<this.relations.length; i++){
+                if(this.relations[i].occurrenceKey2 == element.key){
+                    if(this.relations[i].statusCode == element.matching.statusCode && this.relations[i].decision == element.matching.decision ){
+                        if (element.key in this.change_list){
+                             delete this.change_list[element.key]
+                        }
+                    }
+                    else {
+                        this.change_list[element.key] = element
+                    }
                 }
             }
+            this.changes = Object.keys(this.change_list).length
         },
         save() {
-            const toSave = [];
-            for (var i = 0; i < this.change_list.length; i++) {
-                if (/^\d+$/.test(this.change_list[i])) {
-                    toSave.push(this.change_list[i]);
-                }
-            }
-            this.pendingSave = toSave;
+            this.pendingSave = Object.keys(this.change_list);
             this.$emitter.emit('ensureLogin');
         },
-        back() {
-            let go_back = this.change_list.length == 0 || confirm('Are you sure you want to leaving without saving?')
+        nosaveBack() {
+            let go_back = Object.keys(this.change_list).length == 0 || confirm('Are you sure you want to leaving without saving?')
             if (go_back) {
-                this.updateOccurrencesSelection(null)
-                this.$emit('clicked')
+                this.in_progress = true
+                this.$emit('back')
                 this.$gtag.event('back');
             }
+        },
+        saveBack() {
+            this.save()
+            this.action = "back"
+        },
+        nosaveNext(){
+            let go_next = Object.keys(this.change_list).length == 0 || confirm('Are you sure you want to continue without saving?')
+            if (go_next) {
+                this.searchNextCurationAPI()
+            }
+        },
+        saveNext() {
+            this.save()
+            this.action = "next"
         },
         sortBy(name) {
             if (name == this.sort.by) {
@@ -367,7 +440,7 @@ export default {
         saveToSibBackend(occurrenceIdToSave) {
             const occurrenceRelations = {};
             // create occurrenceRelations using the existing decisions and occurrences
-            for (const relation of this.occurrences_selection.relations) {
+            for (const relation of this.user_query.occurrence_key.relations) {
                 occurrenceRelations[relation.object.key] = {
                     occurrence: { ... relation.object },  // make a copy of the occurrence so we delete "relations"
                     decision: relation.matching.match,
@@ -382,13 +455,12 @@ export default {
             }
             // create data (to send to the SIB backend)
             const data = {
-                institutionKey: this.institution_selection.key, 
-                datasetKey: this.datasets_selection[0],
+                q: this.user_query.q, 
                 user: {
                     name: this.user.name,
                     orcid: this.user.orcid,
                 },
-                refOccurrence: { ...this.occurrences_selection },  // make a copy of the occurrence so we delete "relations"
+                refOccurrence: { ...this.user_query.occurrence_key },  // make a copy of the occurrence so we delete "relations"
                 relations: Object.values(occurrenceRelations),
             };
             delete data.refOccurrence.relations
@@ -400,9 +472,10 @@ export default {
             var saved_data = []
             for (var i = 0; i < occurrenceIdToSave.length; i++) {
                 var element = {
-                    "occurrenceKey1": this.occurrences_selection.key,
+                    "occurrenceKey1": this.user_query.occurrence_key,
                     "occurrenceKey2": occurrenceIdToSave[i],
-                    "decision": this.change_dict[this.change_list[i]],
+                    "decision": this.change_list[occurrenceIdToSave[i]].matching.decision,
+                    "statusCode": this.change_list[occurrenceIdToSave[i]].matching.statusCode,
                     "userName": this.user.name,
                     "orcid": this.user.orcid,
                 }
@@ -412,20 +485,13 @@ export default {
             var saved_json = { "occurrenceRelations": saved_data }
             this.$backend.post_matching(saved_json)
                 .then(() => {
-                    for (let i = 0; i < this.occurrences_selection.relations.length; i++) {
-                        if (this.change_list.includes(this.occurrences_selection.relations[i].object.key)) {
-                            this.occurrences_selection.relations[i].matching.match = this.change_dict[this.occurrences_selection.relations[i].object.key]
-                        }
+                    this.change_list = {}
+                    if (this.action == "back"){
+                        this.nosaveBack()
                     }
-                    for (let i = 0; i < this.empty_elements.length; i++) {
-                        if (this.change_list.includes(this.empty_elements[i].empty_key)) {
-                            this.empty_elements[i].matching.match = this.change_dict[this.empty_elements[i].empty_key]
-                        }
+                    else if (this.action == "next"){
+                        this.nosaveNext()
                     }
-                    this.change_list = []
-                    this.change_dict = {}
-                    this.status_save_all += 1
-
                 })
                 .catch(error => {
                     alert("Failed to save" + error)
@@ -441,7 +507,7 @@ export default {
                 this.pendingSave = [];
 
                 // save to the SIB backend
-                this.saveToSibBackend(occurrenceIdToSave);
+                //this.saveToSibBackend(occurrenceIdToSave);
 
                 // save on the Plazi backend
                 this.saveToPlaziBackend(occurrenceIdToSave);
@@ -451,7 +517,7 @@ export default {
             }
         });
         this.$emitter.on('loginAbort', () => {
-            if (this.pendingSave) {
+            if (this.pendingSave.length > 0) {
                 // logingAbort event and this.pendingSave is not empty
                 // ==> the user clicked on "Save" or "Edit" but cancel the logged in procedure
                 this.pendingSave = [];
@@ -459,6 +525,13 @@ export default {
             }
         });
     },
+    watch: {
+        "user_query.occurrence_key": function () {
+            if (this.user_query.occurrence_key != null && this.user_query.occurrence_key != "" && this.step=="3"){
+                this.searchCurationAPI()
+            }
+        },
+    }
 }
 
 </script>
@@ -493,7 +566,8 @@ export default {
 }
 
 .notice {
-    font-size: 1rem;
+    font-size: 1em;
+    font-style: italic;
 }
 
 table {
@@ -549,7 +623,7 @@ th {
 
 button {
     display: inline-block;
-    border-radius: 10px;
+    border-radius: 5px;
     background-color: var(--color);
     border: none;
     color: #FFFFFF;
@@ -557,6 +631,8 @@ button {
     padding: 5px 10px;
     cursor: pointer;
     margin: 0px 5px;
+    width: 200px;
+
 }
 
 button:hover {
@@ -576,6 +652,8 @@ button:hover {
     text-align: center;
     padding: 5px 5px;
     cursor: pointer;
+    width: 25px;
+
 }
 
 .button-table:hover {
