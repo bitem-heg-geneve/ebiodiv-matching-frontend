@@ -46,12 +46,14 @@ export default new class Backend {
     async fetch_occurrences_from_q(user_query) {
         await this.fetch_urls()
         var url = this.urls.search + "?" + this.fillQuery(user_query) + "&limit="+user_query.limit + "&offset="+((user_query.page-1)*20)
+        console.log(url)
         return await this.axios_get(url)
     }
 
     async fetch_next_occurrence_from_q(user_query, occurrence_key) {
         await this.fetch_urls()
         var url = this.urls.occurrences + "/" + occurrence_key +"/nextWithPending?"+ this.fillQuery(user_query)
+        console.log(url)
         return await this.axios_get(url)
     }
 
@@ -81,12 +83,14 @@ export default new class Backend {
     async fetch_facet_values(field, user_query, limit, offset) {
         await this.fetch_urls()
         var url = this.urls.facet + "?field="+field +this.fillQuery(user_query, field) + "&limit="+(limit+1) + "&offset="+offset
+        console.log(url)
         return await this.axios_get(url)
     }
 
     async fetch_facet_values_with_keywords(field, pre_value, user_query, limit, offset) {
         await this.fetch_urls()
         var url = this.urls.facet + "?field="+field +this.fillQuery(user_query, field) + "&limit="+(limit+1) + "&offset="+offset+"&"+field+"="+pre_value
+        console.log(url)
         return await this.axios_get(url)
     }
 
