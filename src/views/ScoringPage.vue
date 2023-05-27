@@ -57,7 +57,7 @@ export default {
 
       let rows = [];
       let i = 1;
-      for (const cc of this.curation_characteristics.default) {
+      for (const cc of this.curation_characteristics) {
         rows.push({
           order: i,
           name: cc.name,

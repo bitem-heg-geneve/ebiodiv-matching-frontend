@@ -76,7 +76,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  font-size: 0.8em;
+  font-size: 0.8rem;
 
   .banner-container {
     width: 99%;
@@ -94,6 +94,13 @@ export default {
     border-radius: 10px;
   }
 
+  .info-container{
+      background-color: #f8b816;
+      padding: 12px 10px 0 10px;
+      text-align: center;
+      width: 100%;
+  }
+
   a {
     font-weight: bold;
     text-decoration: none;
@@ -102,6 +109,11 @@ export default {
 
   a:hover {
     text-decoration: underline;
+  }
+
+  .info-container a {
+    color: #fff;
+    font-style: italic
   }
 
   h1 {

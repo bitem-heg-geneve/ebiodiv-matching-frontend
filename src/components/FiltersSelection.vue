@@ -7,11 +7,9 @@
                 <span class="filter-remove" @click="removeFilter(filter.type, filter.name)">x </span> {{ filter.name }}
             </span>
             <span class="filters-remove" v-if="active_filters.length > 1">
-                <span @click="removeAllFilters">Remove all filters</span>
+                <span @click="resetFacets">Remove all filters</span>
             </span>
         </div>
-
-        <p v-if="processed_size==0 && total_size >0"><br/>No {{ entity_name }} retrieved with your filters. <a @click="removeAllFilters">Delete filters</a> to see all results.</p>
 
     </div>
 
@@ -24,27 +22,15 @@ import { mapState } from 'vuex'
     export default {
       name: 'FiltersSelection',
       props: {
-        entity_name: {
-            type: String,
-            required: true
-        },
-        processed_size: {
-            type: Number,
-            required: true
-        },
-        total_size: {
-            type: Number,
-            required: true
-        },
-        user_selection: {
+        facets: {
             type: Object,
             required: true
         },
-        filters: {
-            type: Object,
+        updateFacetSelection: {
+            type: Function,
             required: true
         },
-        updateFacet: {
+        resetFacets: {
             type: Function,
             required: true
         },
@@ -58,8 +44,7 @@ import { mapState } from 'vuex'
         },
         active_filters(){
             var active_filters = []
-            for (const key in this.user_selection.facets) {
-                var list = this.user_selection.facets[key]
+            for (const [key, list] of Object.entries(this.facets)) {
                 if (key != "date"){
                     for (var i=0; i<list.length; i++){
                         var item = {}
@@ -68,13 +53,14 @@ import { mapState } from 'vuex'
                         active_filters.push(item)
                     }
                 }
+                // TO CHECK
                 else {
-                    if (this.filters.date[0] != this.user_selection.facets.date[0] || this.filters.date[1] != this.user_selection.facets.date[1]){
-                        var item_date = {}
-                        item_date.name = "date range"
-                        item_date.type = key
-                        active_filters.push(item_date)
-                    }
+                    // if (this.filters.date[0] != this.user_selection.facets.date[0] || this.filters.date[1] != this.user_selection.facets.date[1]){
+                    //     var item_date = {}
+                    //     item_date.name = "date range"
+                    //     item_date.type = key
+                    //     active_filters.push(item_date)
+                    // }
                 }
             }
             return active_filters;
@@ -82,26 +68,13 @@ import { mapState } from 'vuex'
       },
       methods:{
         removeFilter(facet_name, value){
-            if (facet_name != "date"){
-                var filter_list = this.user_selection.facets[facet_name]
-                for (var i = 0; i < filter_list.length; i++ ) {
-                   if (filter_list[i] == value) {
-                     filter_list.splice(i, 1)
-                   }
+            var filter_list = this.facets[facet_name];
+            for (var i = 0; i < filter_list.length; i++) {
+                if (filter_list[i] == value) {
+                    filter_list.splice(i, 1)
                 }
-                this.updateFacet({'facet': facet_name, 'list': filter_list })
             }
-            else{
-                this.updateFacet({'facet': 'date', 'list': this.filters.date })
-            }
-            this.$emit('clearCache')
-        },
-        removeAllFilters(){
-            for (var key in this.user_selection.facets){
-                this.updateFacet({'facet': key, 'list': [] })
-            }
-            this.updateFacet({'facet': 'date', 'list': this.filters.date })
-            this.$emit('clearCache')
+            this.updateFacetSelection({'facet': facet_name, 'list': filter_list })
         },
       },
     }

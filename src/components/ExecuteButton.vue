@@ -42,12 +42,12 @@ export default {
 
     .button {
       display: inline-block;
-      border-radius: 30px;
+      border-radius: 10px;
       background-color: var(--color);
       border: none;
       color: #FFFFFF;
       text-align: center;
-      font-size: 1em;
+      font-size: 0.9rem;
       padding: 10px 10px;
       min-width: 200px;
       transition: all 0.5s;

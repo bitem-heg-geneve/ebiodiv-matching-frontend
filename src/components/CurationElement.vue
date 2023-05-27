@@ -3,25 +3,24 @@
     <tbody>
 
         <tr>
-            <td><a :href="'https://www.gbif.org/occurrence/'+curation.object.key" target="_blank">{{ curation.object.key }}</a></td>
+            <td><a :href="'https://www.gbif.org/occurrence/'+occurrence.key" target="_blank">{{ occurrence.key }}</a></td>
             <td :class="cellColor(scores.$global)">{{ scores.$global }}</td>
             <template>
-                <td v-for="char in get_characteristics_curation" :key="char.score+'sp-td'"
+                <td v-for="char in curation_characteristics" :key="char.score+'sp-td'"
                     :class="'cell_' + char.score + ' ' + cellColor(scores[char.score])">
-                    {{ display_content(curation.object, char.value) }}
+                    {{ display_content(occurrence, char.value) }}
                 </td>
             </template>
-            <td>
-                <input type="checkbox" :checked="is_yes_selected" @click="changeSelection($event, 'yes')" />
+            <td class="decision">
+                 <input type="checkbox" :checked="status=='yes'" @click="changeSelection($event, 'yes')" /> Yes <br/>
+                 <input type="checkbox" :checked="status=='no'" @click="changeSelection($event, 'no')" /> No <br/>
+                 <input type="checkbox" :checked="status=='undecided'" @click="changeSelection($event, 'undecided')" /> Undecided
+             </td>
+            <td class="comment">
+                <CommentElement :occurrence_key="matching.occurrenceKey1" :curation_key="matching.occurrenceKey2"/>
             </td>
             <td>
-                <input type="checkbox" :checked="is_no_selected" @click="changeSelection($event, 'no')" />
-            </td>
-            <td>
-                <button :disabled="to_disable" @click="saveSelection()">{{ save }}</button>
-            </td>
-            <td>
-                <button @click="expanded = !expanded" class="button-table" v-if="curation.object.verbatimLabel">
+                <button @click="expanded = !expanded" class="button-table" v-if="occurrence.verbatimLabel">
                     <img v-if="!expanded" src="../assets/images/icon_expand.png" class="mini" />
                     <img v-if="expanded" src="../assets/images/icon_reduce.png" class="mini" />
                 </button>
@@ -29,17 +28,19 @@
         </tr>
 
         <tr class="expanded" v-if="expanded">
-            <td></td>
-            <td :colspan="curation_characteristics.length+1" class="cell-color-na">
-                <div class="expanded-box" v-if="curation.object.verbatimLabel">
-                    {{ curation.object.verbatimLabel }}
+            
+            <td  colspan="100">
+                <div class="expanded-box" v-if="occurrence.verbatimLabel">
+                        {{ occurrence.verbatimLabel }}
+                    </div>
+                    <div class="expanded-box" v-if="'references' in occurrence">
+                        <label>Data source:</label>
+                        <ul>
+                            <li><a :href="occurrence.references" target="_blank">Treatment</a></li>
+                            <li v-if="'identifier' in occurrence"><a :href="get_mc" target="_blank">Material citation</a></li>
+                        </ul>                        
                 </div>
-                <div class="expanded-box">
-                    <a :href="curation.object.references" target="_blank">Reference to TreatmentBank</a>
-                </div>
-
             </td>
-            <td colspan="4"></td>
         </tr>
     </tbody>
 
@@ -47,8 +48,9 @@
 
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapState } from 'vuex'
 import shared_fields from '@/components/shared_fields.js'
+import CommentElement from '@/components/CommentElement.vue'
 
 export default {
     name: 'CurationElement',
@@ -56,9 +58,14 @@ export default {
         shared_fields.mixin_fields
     ],
     components: {
+        CommentElement
     },
     props: {
-        curation: {
+        occurrence: {
+            type: Object,
+            required: true
+        },
+        matching: {
             type: Object,
             required: true
         },
@@ -66,73 +73,25 @@ export default {
             type: Object,
             required: true
         },
-        save: {
-            type: String,
-            default: "Save"
-        },
-        status_save_all: {
-
-        }
     },
     data() {
         return {
             status: null,
-            saved_status: null,
             expanded: false,
-            pendingSave: false,
         };
     },
     computed: {
-        ...mapState(['theme_color', 'urls', 'curation_characteristics', 'fields', 'format_selection', 'occurrences_selection', 'user']),
+        ...mapState(['theme_color', 'curation_characteristics', 'fields']),
         cssVars() {
             return {
                 '--color': this.theme_color.main,
             }
         },
-        get_occurrence_name() {
-            return this.fields[this.format_selection].format_occurrence.name
+        get_mc() {
+            return "https://treatment.plazi.org/id/"+this.occurrence.identifier.replace(".mc.", "#")
         },
-        get_curation_name() {
-            return this.fields[this.format_selection].format_curation.name
-        },
-        get_characteristics_curation(){
-            if (this.curation.object['basisOfRecord'] == "MATERIAL_CITATION"){
-                return this.curation_characteristics.MATERIAL_CITATION;
-            }
-            return this.curation_characteristics.default;
-        },
-        is_yes_selected() {
-            if (this.status == "yes") {
-                return true
-            }
-            else {
-                return false
-            }
-        },
-        is_no_selected() {
-            if (this.status == "no") {
-                return true
-            }
-            else {
-                return false
-            }
-        },
-        to_disable() {
-            if (this.curation.matching.match == true && this.is_yes_selected == true) {
-                return true
-            }
-            if (this.curation.matching.match == false && this.is_no_selected == true) {
-                return true
-            }
-            if (this.curation.matching.match == null && this.is_yes_selected == false && this.is_no_selected == false) {
-                return true
-            }
-            return false
-
-        }
     },
     methods: {
-        ...mapActions(['updateUsername']),
         normalizeValue(value) {
             if (value == null) {
                 return "NA"
@@ -196,58 +155,48 @@ export default {
                     this.status = "unknown"
                 }
             }
-            var match = null
+            else if (choice == "undecided") {
+                if (event.target.checked == true) {
+                    this.status = "undecided"
+                }
+                if (event.target.checked == false) {
+                    this.status = "unknown"
+                }
+            }
+            var matching = {}
             if (this.status == "yes") {
-                match = true
+                matching = {'statusCode': "DONE", 'decision': true}
             }
-            if (this.status == "no") {
-                match = false
+            else if (this.status == "no") {
+                matching = {'statusCode': "DONE", 'decision': false}
             }
-            if (this.status != this.saved_status) {
-                this.$emit("addOne", { 'key': this.curation.object.key, 'value': match })
+            else if (this.status == "undecided") {
+                matching = {'statusCode': "UDCB", 'decision': null}
             }
             else {
-                this.$emit("removeOne", { 'key': this.curation.object.key, 'value': match })
+                matching = {'statusCode': "PNDG", 'decision': null}
             }
-        },
-        saveSelection() {
-            this.$parent.pendingSave = [ this.curation.object.key ];
-            /*
-                ensureLogin event is going to make sure:
-                1/ the user is logged.
-                2/ to emit the "logged" event even if the user is already logged.
-
-                The CurationList element listens for the "logged" event:
-                The listener saves the occurrence relations referenced by pendingSave.
-
-                The CurationList element listens for the "loginAbort" event:
-                The listener display a message if pendingSave is not empty,
-                so the user aware that it works is not saved.
-             */
-            this.$emitter.emit('ensureLogin');
+            this.$emit("updateCuration", { 'key': this.occurrence.key, 'matching': matching })
         },
         toggle() {
             this.expanded = !this.expanded
         },
     },
     beforeMount() {
-        if (this.status == null) {
-            if (this.curation.matching.match == null) {
-                this.status = "unknown"
-            }
-            else if (this.curation.matching.match == true) {
+        if (this.matching.statusCode == "DONE") {
+            if (this.matching.decision == true) {
                 this.status = "yes"
             }
-            else if (this.curation.matching.match == false) {
+            else if (this.matching.decision == false) {
                 this.status = "no"
             }
         }
-        this.saved_status = this.status
-    },
-    watch: {
-        status_save_all() {
-            this.saved_status = this.status
-        },
+        else if (this.matching.statusCode == "UDCB"){
+            this.status = "undecided"
+        }
+        else {
+            this.status = "unknown"
+        }
     },
 }
 
@@ -293,6 +242,15 @@ th {
     background-color: #C5D88A90;
     color: #000;
 }
+
+.decision {
+         text-align: left;
+         width: 120px;
+     }
+
+     .comment {
+         width: 100px;
+     }
 
 .cell-color-5 {
     background-color: #E0E28E80;

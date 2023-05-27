@@ -3,8 +3,8 @@
     <div>
 
         <div class="title">
-            <img v-show="!expanded" src="../assets/images/icon_plus.png" alt="[+]" @click="expanded = !expanded" :class="size"/>
-            <img v-show="expanded" src="../assets/images/icon_minus.png" alt="[-]" @click="expanded = !expanded" :class="size"/>
+            <img v-show="!expanded" src="../assets/images/icon_plus.png" alt="[+]" @click="changeExpand()" :class="size"/>
+            <img v-show="expanded" src="../assets/images/icon_minus.png" alt="[-]" @click="changeExpand()" :class="size"/>
             <h2 v-if="size=='medium'"><slot name="title"></slot></h2>
             <h3 v-if="size=='small'"><slot name="title"></slot></h3>
         </div>
@@ -35,6 +35,12 @@
         return {
             expanded: this.expanded_init,
         };
+      },
+      methods: {
+        changeExpand(){
+            this.expanded = !this.expanded
+            this.$emit('clicked', this.expanded)
+        }
       }
     }
 

@@ -1,17 +1,15 @@
 <template>
     <div :class="bannerCssClasses" :style="cssVars">
-        <div class="row">
-            <div class="col-12">
-                <div class="float-start position-absolute">
-                    <a :href="baseUrl"><img src="../assets/images/logo_ebiodiv_small.png" class="medium-img" /></a>
-                </div>
-                <h1>{{ title }}</h1>
-                <p><i>{{ subtitle }}</i></p>
+        <div>
+            <div class="float-start position-absolute">
+                <a :href="baseUrl"><img src="../assets/images/logo_ebiodiv_small.png" class="medium-img" /></a>
             </div>
+            <h1>{{ title }}</h1>
+            <p><i>{{ subtitle }}</i></p>
         </div>
         <div class="user-login-container">
             <b-nav>
-                <!-- <b-nav-item href="#" link-classes="ebiodiv_navbar_link" target="_blank"><b-icon-question-circle></b-icon-question-circle> Help</b-nav-item> -->
+                <b-nav-item href="https://ebiodiv.org/help/" link-classes="ebiodiv_navbar_link" target="_blank"><b-icon-question-circle></b-icon-question-circle> Help</b-nav-item>
                 <b-nav-item href="https://ebiodiv.org/" link-classes="ebiodiv_navbar_link" target="_blank"><b-icon-info-circle></b-icon-info-circle> About</b-nav-item>
             </b-nav>
             <UserComponent></UserComponent>
@@ -105,14 +103,8 @@ import UserComponent from '@/components/UserComponent.vue'
         font-size: 1rem;
     }
 
-    .row {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
     p {
-        font-size: 1.2em;
+        font-size: 1rem;
     }
 
     .medium-img {
