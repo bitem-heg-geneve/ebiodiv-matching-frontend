@@ -7,6 +7,7 @@ export default new class Backend {
     }
 
     fetch_urls() {
+        console.log(process.env.BASE_URL + 'backend.json')
         return new Promise((resolve, reject) => {
             if (this.urls !== null) {
                 resolve();
@@ -16,6 +17,7 @@ export default new class Backend {
                 .get(process.env.BASE_URL + 'backend.json')
                 .then((response) => {
                     this.urls = response.data;
+                    console.log(this.urls)
                     resolve();
                 })
                 .catch(error => {
