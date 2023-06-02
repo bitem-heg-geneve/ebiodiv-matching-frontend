@@ -32,7 +32,9 @@ export default {
     this.updateBasisOfRecord("PRESERVED_SPECIMEN");
     this.updateOccurrenceKey(occurrenceKey);
     this.updateStep(3);
-    this.$refs.curation.searchCurationAPI();
+    this.$nextTick(() => {
+      this.$refs.curation.searchCurationAPI();
+    });
   },
 }
 </script>
