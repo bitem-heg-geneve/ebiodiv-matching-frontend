@@ -1,6 +1,5 @@
 <template>
 
-
     <PanelHideShow :expanded_init="visibility" size="small" @clicked="updateVisibility">
 
         <template v-slot:title>{{ facet.title }}</template>
@@ -14,7 +13,14 @@
 
                 <div v-if="values.length > 0">
 
-                    <div v-if="facet.field != 'year'">
+                    <!-- TODO: year -->
+                    <div v-if="facet.field == 'year'">
+                        {{ user_query.facets_selection.year }}
+                        <vue-slider v-model="selected_date" :data="values" :marks="defined_labels"
+                                :tooltip="'always'"></vue-slider>
+                    </div>
+
+                    <div v-else>
 
                         <div class="inputGroup" v-for="item in values"
                             @click="changeFacet(facet.field, $event)" 
@@ -30,18 +36,11 @@
 
                     </div>
 
-                    <div v-if="facet.field == 'year'">
-                        {{ user_query.facets_selection.year }}
-                        <vue-slider v-model="selected_date" :data="values" :marks="defined_labels"
-                                :tooltip="'always'"></vue-slider>
-                    </div>
-
                 </div>
 
                 <p v-else>No value found</p>
 
             </div>
-
 
         </template>
        
@@ -107,6 +106,7 @@ export default {
         visibility(){
             return this.user_query.facets_visibility[this.facet.field]
         },
+        // TODO: year
         defined_labels: {
             get() {
                 var list = this.values
@@ -130,6 +130,7 @@ export default {
             this.values = []
             if (this.user_query.basisOfRecord != null){
                 var size = this.item_size
+                // TODO: year
                 if(this.facet.field == "year"){
                     size = 10000
                 }
@@ -147,7 +148,6 @@ export default {
             else {
                 this.in_progress = false
             }
-            
         },
         loadFacetWithKeywords(text) {
             this.in_progress = true
@@ -167,7 +167,33 @@ export default {
             })
         },
         updateFacetValues(values){
-            if(this.facet.field != "year"){
+
+            // TODO: year
+            if (this.facet.field == "year") {
+                var min_value = 100000
+                var max_value = 0
+                for (let c=0; c < values.length; c++){
+                    if (values[c].value > max_value){
+                        max_value = values[c].value
+                    }
+                    else if (values[c].value < min_value){
+                        min_value = values[c].value
+                    }
+                }
+                var list = []
+                for (var i = min_value; i <= max_value; i++) {
+                    list.push(i);
+                }
+                if (this.user_query.facets_selection.year.length != 0){
+                    this.selected_date = this.user_query.facets_selection.year
+                } 
+                else {
+                    this.selected_date = [min_value, max_value]
+                }
+                return list 
+            }
+
+            else {
                 var present_values = []
                 var clean_values = []
                 for (let c=0; c < values.length; c++){
@@ -194,29 +220,7 @@ export default {
                 }
                 return values
             }
-            else {
-                var min_value = 100000
-                var max_value = 0
-                for (let c=0; c < values.length; c++){
-                    if (values[c].value > max_value){
-                        max_value = values[c].value
-                    }
-                    else if (values[c].value < min_value){
-                        min_value = values[c].value
-                    }
-                }
-                var list = []
-                for (var i = min_value; i <= max_value; i++) {
-                    list.push(i);
-                }
-                if (this.user_query.facets_selection.year.length != 0){
-                    this.selected_date = this.user_query.facets_selection.year
-                } 
-                else {
-                    this.selected_date = [min_value, max_value]
-                }
-                return list 
-            }
+            
         },
         getCount(text) {
             let response_promise = this.$backend.fetch_facet_values_with_keywords(this.facet.field, text, this.user_query, this.item_size, 0)
@@ -272,7 +276,6 @@ export default {
     },
     mounted(){
         this.loadFacet()
-
     },
     watch: {
         "user_query.facets_selection": {

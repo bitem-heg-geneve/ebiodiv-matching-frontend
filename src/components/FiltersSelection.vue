@@ -36,7 +36,9 @@ import { mapState } from 'vuex'
         },
       },
       computed: {
-        ...mapState(['theme_color']),
+        ...mapState([
+          'theme_color'
+        ]),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
@@ -45,22 +47,17 @@ import { mapState } from 'vuex'
         active_filters(){
             var active_filters = []
             for (const [key, list] of Object.entries(this.facets)) {
-                if (key != "date"){
+                // TODO: year
+                if (key == "year"){
+                  // TO DO: check for year filter
+                }
+                else {
                     for (var i=0; i<list.length; i++){
                         var item = {}
                         item.name = list[i]
                         item.type = key
                         active_filters.push(item)
                     }
-                }
-                // TO CHECK
-                else {
-                    // if (this.filters.date[0] != this.user_selection.facets.date[0] || this.filters.date[1] != this.user_selection.facets.date[1]){
-                    //     var item_date = {}
-                    //     item_date.name = "date range"
-                    //     item_date.type = key
-                    //     active_filters.push(item_date)
-                    // }
                 }
             }
             return active_filters;

@@ -16,7 +16,7 @@ export default new Vuex.Store({
         basisOfRecord: null,
         limit: 20,
         page: 1,
-        ranking: "-associatedOccurrences",
+        ranking: "scientificName",
         occurrence_key: null,
         occurrences_keys: [],
         facets_selection: {
@@ -118,8 +118,8 @@ export default new Vuex.Store({
         ranking: [
             {title: 'ID', field:'gbifDoi'},
             {title: 'scientific name', field:'scientificName'},
-            //{title: 'date', field:'-year'},
             {title: 'matching number', field:'-associatedOccurrences'}
+            //{title: 'date', field:'-year'},
         ],
         facets: [
             {title: 'Scientific name', field:'scientificName'},
@@ -181,7 +181,6 @@ export default new Vuex.Store({
         orcid: null,
         orcidToken: null,
     }
-
   },
   mutations: {
     UPDATE_STEP(state, step) {
@@ -222,14 +221,6 @@ export default new Vuex.Store({
     UPDATE_INSTITUTIONS(state, value){
         state.institutions = value
     },
-    
-    // UPDATE_OCCURRENCES_FILTER_DATE(state, value){
-    //     state.filters.occurrences.date = value
-    // },
-    // UPDATE_INIT_MC_DATE_FILTER(state, dates) {
-    //     state.filters.occurrences.date = dates
-    //     state.user_selection.occurrences.facets.date = dates
-    // },   
     UPDATE_USER(state, value) {
         state.user = value
         window.sessionStorage.setItem('user', JSON.stringify(value));
@@ -280,9 +271,6 @@ export default new Vuex.Store({
     updateInstitutions(context, value){
         context.commit('UPDATE_INSTITUTIONS', value)
     },
-    // updateInitMcDateFilter(context, value){
-    //    context.commit('UPDATE_INIT_MC_DATE_FILTER', value)
-    // },
     updateOrcidUser(context, user) {
         /* an example of user is {name: "John Doe", orcid: "", orcidToken: ""} */
         context.commit('UPDATE_USER', user)

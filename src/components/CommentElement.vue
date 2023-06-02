@@ -5,15 +5,17 @@
         <PulseLoader v-if="in_progress" :color="theme_color.main" />
 
         <div v-if="!in_progress">
-            <button @click="openComments()" class="button-table"><img src="../assets/images/icon_comment.png"  class="small"/></button><br/>
+            <button @click="openComments()" class="button-table">
+                <img src="../assets/images/icon_comment.png"  class="small"/>
+            </button>
+            <br/>
             {{ comments.length }} comment<span v-if="comments.length > 1">s</span>
-
         </div>
 
         <div :class="comments_popup">
 
             <div class="right-container">
-                <button type="button" class="close-button" @click="closeComments()">
+                <button type="button" class="button-close" @click="closeComments()">
                     <img src="../assets/images/icon_close.png"  class="mini"/>
                     Close
                 </button>
@@ -24,7 +26,9 @@
             <div ref="commentsContainer" class="comments-container">
 
                     <div :class="comment_class(comment.orcid)" v-for="comment in comments" :key="comment.id">
-                        <label for="msg"><b class="orcid-link" @click="goToOrcid(comment.orcid)">{{ comment.userName }}</b></label> wrote on 
+                        <label for="msg">
+                            <b class="orcid-link" @click="goToOrcid(comment.orcid)">{{ comment.userName }}</b>
+                        </label> wrote on 
                         {{ new Date(comment.timestamp).toGMTString() }}                        
                          <p>{{ comment.text }}</p>
                     </div>
@@ -47,7 +51,7 @@
 
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapState } from 'vuex'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 
 export default {
@@ -92,17 +96,15 @@ export default {
                 return false
             } 
         }
-        
     },
     methods: {
-        ...mapActions(['updateUsername']),
         loadComment(){
             this.in_progress = true
             this.comments = []
             let response_promise = this.$backend.fetch_comments(this.occurrence_key, this.curation_key)
             response_promise.then(response => {
                     this.comments = response.data.results;
-                    this.scrollToBottom(); // Défilement automatique vers le bas après avoir chargé les commentaires
+                    this.scrollToBottom();
                     this.in_progress = false
             })
             .catch(error => {
@@ -129,7 +131,7 @@ export default {
             var comment = {"occurrenceKey1": this.occurrence_key, "occurrenceKey2": this.curation_key, "text": this.pending_comment, "orcid": this.user.orcid, "userName": this.user.name};
             let response_promise = this.$backend.post_comment(comment)
             response_promise.then(() => {
-                this.comment = ""
+                this.comment = ''
                 this.loadComment()
             })
             .catch(error => {
@@ -144,15 +146,15 @@ export default {
             }
             return final_class
         },
+        goToOrcid (orcid) {
+            window.open("http://orcid.org/"+orcid);
+        },
         scrollToBottom() {
             this.$nextTick(() => {
                 const container = this.$refs.commentsContainer;
                 container.scrollTop = container.scrollHeight;
             });
         },
-        goToOrcid (orcid) {
-            window.open("http://orcid.org/"+orcid);
-        }
     },
     beforeMount() {
         this.loadComment()
@@ -163,15 +165,14 @@ export default {
                 // save on the Plazi backend
                 this.sendComment(this.pending_comment);
                 this.pending_comment = '';
-
-                this.$gtag.event('post');
+                this.$gtag.event('post_comment');
             }
         });
         this.$emitter.on('loginAbort', () => {
             if (this.pending_comment != "") {
                 // logingAbort event and this.pendingSave is not empty
-                // ==> the user clicked on "Save" or "Edit" but cancel the logged in procedure
-                this.pending_comment = "";
+                // ==> the user clicked on "Send" but cancel the logged in procedure
+                this.pending_comment = '';
                 alert('Your comment is not saved');
             }
         });
@@ -245,7 +246,6 @@ textarea {
 }
 
 
-
 .button-table {
       display: inline-block;
       border-radius:5px;
@@ -257,10 +257,9 @@ textarea {
       cursor: pointer;
     }
 
-    .button-table:hover {
-      background-color: var(--color);
-    }
-
+.button-table:hover {
+    background-color: var(--color);
+}
 
 .button-validation {
     display: inline-block;
@@ -279,26 +278,26 @@ textarea {
     background-color: var(--color-secondary);
 }
 
-.button-validation:disabled,
-    .button-validation[disabled]{
-      background-color: #cccccc;
-      color: #666666;
-      cursor: not-allowed;
-    }.button-validation:disabled,
-    .button-validation[disabled]{
-      background-color: #cccccc;
-      color: #666666;
-      cursor: not-allowed;
-    }
+.button-validation:disabled, .button-validation[disabled]{
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
 
-    .close-button{
-        background: #fff;
-        border: 0px
-    }
-    .close-button:hover{
-        cursor: pointer;
-        background-color:#f2f2f2
-    }
+.button-validation:disabled, .button-validation[disabled]{
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
 
+.button-close{
+    background: #fff;
+    border: 0px
+}
+
+.button-close:hover{
+    cursor: pointer;
+    background-color:#f2f2f2
+}
 
 </style>

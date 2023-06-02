@@ -3,6 +3,7 @@
     "facet": "https://tb.plazi.org/GbifOccLink/sandbox/occurrences/searchFieldValues",
     "institutions": "https://tb.plazi.org//GbifOccLink/sandbox/institutionList",
     "occurrences": "https://tb.plazi.org/GbifOccLink/sandbox/occurrences",
+    "occurrencesList": "https://tb.plazi.org/GbifOccLink/sandbox/occurrenceList",
     "matching": "https://tb.plazi.org/GbifOccLink/sandbox/occurrenceRelations",
     "comments": "https://tb.plazi.org/GbifOccLink/sandbox/notes",
     "sib_backend_url": "api/"
