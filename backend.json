@@ -1,7 +1,9 @@
 {
-    "institutions": "https://tb.plazi.org/GbifOccLink/data/institutionList",
-    "datasets": "https://tb.plazi.org/GbifOccLink/data/datasets",
+    "search": "https://tb.plazi.org/GbifOccLink/data/occurrences/search",
+    "facet": "https://tb.plazi.org/GbifOccLink/data/occurrences/searchFieldValues",
+    "institutions": "https://tb.plazi.org//GbifOccLink/data/institutionList",
     "occurrences": "https://tb.plazi.org/GbifOccLink/data/occurrences",
     "matching": "https://tb.plazi.org/GbifOccLink/data/occurrenceRelations",
+    "comments": "https://tb.plazi.org/GbifOccLink/data/notes",
     "sib_backend_url": "api/"
 }
