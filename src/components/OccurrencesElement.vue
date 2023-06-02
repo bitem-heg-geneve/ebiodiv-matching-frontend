@@ -1,7 +1,6 @@
 <template>
 
-    <tr :style="cssVars">
-
+    <tr :style="cssVars" :class="tr_even">
         <td><a :href="'https://www.gbif.org/occurrence/'+occurrence['key']" target="_blank">{{ occurrence.key }}</a></td>
         <td>{{ occurrence.scientificName }}</td>
         <td v-if="user_query.basisOfRecord=='MATERIAL_CITATION'">{{ occurrence.verbatimLabel }}</td>
@@ -9,7 +8,10 @@
         <td>{{ this.display_value_basisOfRecord(occurrence.basisOfRecord) }}</td>
         <td>{{ occurrence.year }}</td>
         <td>{{ relation_count }}</td>
-        <td><img :src="require('../assets/images/icon_status_'+status_name+'.png')" class="small"/></td>
+        <td>
+          <img v-if="status_name != 'unknown'" :src="require('../assets/images/icon_status_'+status_name+'.png')" class="small"/>
+          <span v-else>unknown</span>
+        </td>
         <td><button @click="displayOccurrence()" class="button-table"><img src="../assets/images/icon_todo.png"  class="mini"/></button></td>
 
     </tr>
@@ -34,6 +36,10 @@ import shared_fields from '@/components/shared_fields.js'
             type: Object,
             required: true
         },
+        index: {
+          type: Number,
+          required: true
+        }
       },
       data() {
         return {
@@ -49,21 +55,35 @@ import shared_fields from '@/components/shared_fields.js'
                 '--color': this.theme_color.main,
             }
         },
+        tr_even (){
+          if (this.index % 2 == 0){
+            return "tr-even"
+          }
+          return "tr-odd"
+        },
         relation_count(){
           var total = 0
-          for (const value of Object.values(this.occurrence.occurrenceRelationSummary)){
-              total += value
+          if('occurrenceRelationSummary' in this.occurrence){
+            for (const value of Object.values(this.occurrence.occurrenceRelationSummary)){
+                total += value
+            }
+          }
+          else {
+            return "unknown"
           }
           return total
         },
         status_name(){
-          if (this.occurrence.occurrenceRelationSummary.PNDG == this.relation_count){
-            return "not-done"
+          if('occurrenceRelationSummary' in this.occurrence){
+            if (this.occurrence.occurrenceRelationSummary.PNDG == this.relation_count){
+              return "not-done"
+            }
+            if (this.occurrence.occurrenceRelationSummary.PNDG < this.relation_count){
+              return "partial"
+            }
+            return "finished"
           }
-          if (this.occurrence.occurrenceRelationSummary.PNDG < this.relation_count){
-            return "partial"
-          }
-          return "finished"
+          return "unknown"
         }
       },
       methods:{
@@ -112,6 +132,10 @@ import shared_fields from '@/components/shared_fields.js'
       padding: 6px;
       text-align: center;
     }
+
+    .tr-even {
+    background-color: #fff;
+}
 
 
 </style>

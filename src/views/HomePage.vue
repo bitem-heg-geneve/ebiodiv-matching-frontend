@@ -19,11 +19,11 @@
         </div>
     </div>
 
-    <div class="row" id="occurrences"  v-show="step == 2" ref="step2">
+    <div class="row"  v-show="step == 2" ref="step2">
         <OccurrencesList ref="occurrencesList"/>
     </div>
 
-    <div class="row" id="specimen"  v-show="step == 3">
+    <div class="row"  v-show="step == 3">
         <CurationList ref="curationList" @back="reloadOccurrences"/>
     </div>
 
@@ -77,17 +77,18 @@ export default {
         ]),
         runSearchFromButton(basisOfRecord, page){
             this.resetFacets()
+            this.updateOccurrencesKeys([])
             this.$refs["step2"].scrollIntoView({ behavior: "smooth" })
             this.displayOccurrences(basisOfRecord, page)
         },
         runSearchFromURL(){
-            if(this.user_query.pre_q != ""  && this.user_query.basisOfRecord != null && this.user_query.occurrence_key == null){
+            if(this.user_query.pre_q != "" && this.user_query.basisOfRecord != null && this.user_query.occurrence_key == null){
                 this.displayOccurrences(this.user_query.basisOfRecord, this.user_query.page)
             }
             else if (this.user_query.occurrences_keys.length > 0  && this.user_query.basisOfRecord != null && this.user_query.occurrence_key == null){
                 this.displayOccurrences(this.user_query.basisOfRecord, this.user_query.page)
             }
-            else if(this.user_query.occurrence_key != null){
+            else if (this.user_query.occurrence_key != null){
                 this.displayCuration()
             }
         },
@@ -107,7 +108,6 @@ export default {
             var prev_occurrence = this.user_query.occurrence_key
             this.updateStep(2)
             this.updateOccurrenceKey(null)
-            this.updateQuery(this.user_query.pre_q)
             this.$refs.occurrencesList.searchOccurrencesAPI(prev_occurrence)
         },
         displayCuration(){
@@ -117,11 +117,9 @@ export default {
                 occurrence: this.user_query.occurrence_key
             });
         },
-        
         loadParametersFromURL(){
-
             this.updateStep(1)
-
+            
             var q = ''
             if ('q' in this.$route.query && this.$route.query.q.length > 0){
                 q = this.$route.query.q
@@ -144,23 +142,23 @@ export default {
             }
             this.updatePage(page)
 
-            var ranking = '-associatedOccurrences'
+            var ranking = 'scientificName'
             if ('ranking' in this.$route.query && this.$route.query.ranking.length > 0){
                 ranking = this.$route.query.ranking
             }
             this.updateRanking(ranking)
 
-            this.resetFacets()
             for (const name of Object.keys(this.user_query.facets_selection)) {
                 if (name in this.$route.query && this.$route.query[name].length > 0){
                     var values = this.$route.query[name].split("|")
-                    if (name != "year"){
-                        this.updateFacetSelection(Object.freeze({'facet': name, 'list': values }))
-                    }
-                    else {
+                    // TODO: year
+                    if (name == "year"){
                         values = values.map(str => {
                             return parseInt(str, 10);
                         });
+                        this.updateFacetSelection(Object.freeze({'facet': name, 'list': values }))
+                    }
+                    else {
                         this.updateFacetSelection(Object.freeze({'facet': name, 'list': values }))
                     }
                 }
@@ -174,14 +172,10 @@ export default {
 
             var occurrences_keys = []
             if ('occurrencesKeys' in this.$route.query && this.$route.query.occurrencesKeys.length > 0){
-                occurrences_keys = this.$route.query.occurrencesKeys.split("|")
+                occurrences_keys = this.$route.query.occurrencesKeys.split(",")
             }
             this.updateOccurrencesKeys(occurrences_keys)
 
-        },
-        handlePopstate() {
-            this.loadParametersFromURL()
-            this.runSearchFromURL()
         },
         loadInstitutions() {
             let response_promise = this.$backend.fetch_institutions()
@@ -205,28 +199,22 @@ export default {
     mounted(){
         this.runSearchFromURL()
     },
-    created() {
-        window.addEventListener('popstate', this.handlePopstate);
-    },
-    beforeDestroy() {
-        window.removeEventListener('popstate', this.handlePopstate);
-    },
 }
 </script>
 
 <style scoped lang="scss">
 
-    .container-fluid{
-        padding-right: 0px;
-        padding-left: 0px;
-        margin-right: auto;
-        margin-left: auto;
-    }
+.container-fluid{
+    padding-right: 0px;
+    padding-left: 0px;
+    margin-right: auto;
+    margin-left: auto;
+}
 
-    .row {
-        padding: 50px;
-        margin-left: 0;
-        margin-right: 0;
-    }
+.row {
+    padding: 50px;
+    margin-left: 0;
+    margin-right: 0;
+}
 
 </style>

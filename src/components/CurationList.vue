@@ -68,7 +68,6 @@
                     <div class="separator">
                         <h2><span>{{ get_curation_name }}s associated with the {{ get_occurrence_name.toLowerCase() }} {{ user_query.occurrence_key }}</span></h2>
                     </div>
-                    
                     <p>
                         {{ to_process_curation.length }} suggested 
                         {{ get_curation_name.toLowerCase() }}{{ to_process_curation.length > 1?'s':'' }}
@@ -136,7 +135,6 @@
                 </td>
             </tr>
 
-
             <tr v-if="show_edit && finished_curation.length > 0">
                 <th>Key</th>
                 <th>Score</th>
@@ -148,6 +146,7 @@
             </tr>
 
             <template v-if="show_edit && finished_curation.length > 0">
+
                 <CurationElement v-for="finished_key in finished_curation"
                     @updateCuration=updateCuration 
                     :key="finished_key.occurrenceKey2" 
@@ -250,7 +249,6 @@ export default {
         CurationElement,
         PulseLoader,
         vPagination,
-
     },
     props: {
         show_back_button: {
@@ -262,6 +260,7 @@ export default {
     data() {
         return {
             in_progress: true,
+            show_back_button_final: true,
             warning: false,
             occurrences: {},
             relations: [],
@@ -340,9 +339,6 @@ export default {
             filtered_empty = filtered_empty.filter(element => element.matching.match == null);
             return filtered_empty
         },
-        finished_empty_elements() {
-            return this.filterListDone(this.empty_elements, "PNDG")
-        },
         page_total() {
             return Math.ceil(this.relations.length / this.per_page)
         },
@@ -359,15 +355,20 @@ export default {
     methods: {
         ...mapActions([
             'updateOccurrenceKey', 
-            'updateStep', 
             'updateUsername'
         ]),
         searchCurationAPI(){
+            if(this.user_query.q == '' && this.user_query.occurrences_keys.length == 0){
+                this.show_back_button_final = false
+            }
+            else {
+                this.show_back_button_final = true
+            }
             var query = {
                 ...this.$router.currentRoute.query,
                 occurrenceKey: this.user_query.occurrence_key
             }
-            if (this.show_back_button && Object.entries(query).toString() !== Object.entries(this.$router.currentRoute.query).toString()){
+            if (this.show_back_button_final && Object.entries(query).toString() !== Object.entries(this.$router.currentRoute.query).toString()){
                 this.$router.replace({
                     name: this.$router.currentRoute.name,
                     query
@@ -405,9 +406,26 @@ export default {
                 this.updateOccurrenceKey(response.data.subjectOccurrenceKeys[0])
             })
             .catch(error => {
+                alert("There are no more occurrence to process.")
+                this.in_progress = false
+                this.nosaveBack()
                 console.log(error)
-                alert("failed to load next relations: " + error)
             })
+        },
+        searchNextByList(){
+            var prev_key = this.user_query.occurrence_key
+            for (var i=0; i<this.user_query.occurrences_keys.length; i++){
+                if (prev_key == this.user_query.occurrences_keys[i]){
+                    if (i<this.user_query.occurrences_keys.length-1){
+                        this.updateOccurrenceKey(this.user_query.occurrences_keys[i+1])
+                    }
+                    else{
+                        alert("There are no more occurrence to process.")
+                        this.in_progress = false
+                        this.nosaveBack()
+                    }
+                }
+            }
         },
         filterListToDo(filtered_curation, condition) {
 
@@ -469,32 +487,33 @@ export default {
                 }
             }
         },
-        save() {
-            this.pendingSave = Object.keys(this.change_list);
-            this.$emitter.emit('ensureLogin');
-        },
         nosaveBack() {
             let go_back = Object.keys(this.change_list).length == 0 || confirm('Are you sure you want to leaving without saving?')
             if (go_back) {
                 this.in_progress = true
                 this.empty_elements = []
+                this.current_page = 1
                 this.$emit('back')
                 this.$gtag.event('back');
-                this.current_page = 1
             }
-        },
-        saveBack() {
-            this.save()
-            this.action = "back"
         },
         nosaveNext(){
             let go_next = Object.keys(this.change_list).length == 0 || confirm('Are you sure you want to continue without saving?')
             if (go_next) {
                 this.in_progress = true
                 this.empty_elements = []
-                this.searchNextCurationAPI()
                 this.current_page = 1
+                if (this.user_query.occurrences_keys.length == 0){
+                    this.searchNextCurationAPI()
+                }
+                else {
+                    this.searchNextByList()
+                }
             }
+        },
+        saveBack() {
+            this.save()
+            this.action = "back"
         },
         saveNext() {
             this.save()
@@ -503,6 +522,10 @@ export default {
         saveStop() {
             this.save()
             this.action = "stop"
+        },
+        save() {
+            this.pendingSave = Object.keys(this.change_list);
+            this.$emitter.emit('ensureLogin');
         },
         sortBy(name) {
             if (name == this.sort.by) {
@@ -516,6 +539,7 @@ export default {
         addLine() {
             this.empty_elements.push("emptykey_" + this.empty_elements.length)
         },
+        // TO CHECK
         saveToSibBackend(occurrenceIdToSave) {
             const occurrenceRelations = {};
             // create occurrenceRelations using the existing decisions and occurrences
@@ -571,6 +595,9 @@ export default {
                     else if (this.action == "next"){
                         this.nosaveNext()
                     }
+                    else if (this.action == "stop"){
+                        this.searchCurationAPI()
+                    }
                 })
                 .catch(error => {
                     alert("Failed to save" + error)
@@ -603,7 +630,7 @@ export default {
                 alert('Your work is not saved');
             }
         });
-        if(this.user_query.q == ''){
+        if(this.user_query.q == '' && this.user_query.occurrences_keys.length == 0){
             this.show_back_button_final = false
         }
         if( this.show_back_button == false){
@@ -630,17 +657,6 @@ export default {
 </style>
 
 <style scoped lang="scss">
-.full-container {
-    width: 100%;
-    margin: 0 auto;
-}
-
-.abstract-container {
-    background-color: #eee;
-    border-radius: 10px;
-    padding: 10px;
-    margin: 20px;
-}
 
 .button-container {
     text-align: right;
@@ -722,10 +738,6 @@ button {
 
 button:hover {
     background-color: var(--color-secondary);
-}
-
-.secondary {
-    background-color: #AAA;
 }
 
 .button-table {

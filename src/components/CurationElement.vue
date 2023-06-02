@@ -262,13 +262,12 @@ export default {
                         this.matching = {"occurrenceKey1": parseInt(this.user_query.occurrence_key), "occurrenceKey2": parseInt(this.occurrence_key), "statusCode": "DONE", "decision": true}
                         this.$emit("addCuration", { 'key': this.occurrence_key, 'matching': this.matching })
                     }
+                    else {
+                        this.warning = "unknown GBIF key"
+                    }
                     this.in_progress = false
                 })
-                .catch(error => {
-                    this.occurrence = {'key': this.occurrence_key, 'error': error}
-                    this.warning = "unknown GBIF key"
-                });
-        }
+        },
     },
     beforeMount() {
         if(this.pre_occurrence != null){
@@ -297,6 +296,7 @@ export default {
 
 
 <style scoped lang="scss">
+
 td,
 th {
     border: 1px solid #ddd;
@@ -336,14 +336,6 @@ th {
     color: #000;
 }
 
-.decision {
-         text-align: left;
-         width: 120;
-     }
-
-     .comment {
-         width: 100px;
-     }
 
 .cell-color-5 {
     background-color: #E0E28E80;
@@ -385,6 +377,15 @@ th {
     color: #000;
 }
 
+.decision {
+    text-align: left;
+    width: 120;
+}
+
+.comment {
+    width: 100px;
+}
+
 .expanded-box {
     margin: 5px 0px 0px 10px
 }
@@ -396,10 +397,6 @@ th {
 .expanded td {
     padding: 20px;
     text-align: left;
-}
-
-.secondary {
-    background-color: #AAA;
 }
 
 .button-table {
@@ -444,18 +441,18 @@ button[disabled] {
 }
 
 .warning {
-        color: red;
-    }
+    color: red;
+}
 
-    .empty_key {
-        margin: 0px;
-        padding: 0px;
-        width: 75%;
-        margin-right: 5px;
-    }
+.empty_key {
+    margin: 0px;
+    padding: 0px;
+    width: 75%;
+    margin-right: 5px;
+}
 
-    .key {
-        width: 120px;
-    }
+.key {
+    width: 120px;
+}
     
 </style>

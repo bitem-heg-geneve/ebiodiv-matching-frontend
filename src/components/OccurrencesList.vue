@@ -14,7 +14,11 @@
 
             <div class="content-container">
 
-                <FacetsComponent ref="facetsBox" class="facets-container" :filters="filters" :user_query="user_query" :updateRanking="updateRanking" :updateFacetSelection="updateFacetSelection"/>
+                <FacetsComponent v-if="this.user_query.occurrences_keys.length == 0" ref="facetsBox" class="facets-container" 
+                    :filters="filters" 
+                    :user_query="user_query" 
+                    :updateRanking="updateRanking" 
+                    :updateFacetSelection="updateFacetSelection"/>
                 
                 <div class="centered-container" v-if="in_progress">
                     <PulseLoader :color="theme_color.main" />
@@ -22,10 +26,11 @@
 
                 <div class="full-container"  v-if="!in_progress">
                     
-                    
-                    <FiltersSelection :facets="this.user_query.facets_selection"
-                        :updateFacetSelection="this.updateFacetSelection" :resetFacets="this.resetFacets" />
-                        
+                    <FiltersSelection  v-if="this.user_query.occurrences_keys.length == 0" 
+                        :facets="this.user_query.facets_selection"
+                        :updateFacetSelection="this.updateFacetSelection" 
+                        :resetFacets="this.resetFacets" />
+
                     <div v-if="occurrences.length > 0">
 
                         <table ref="table">
@@ -42,9 +47,10 @@
                                 <th style="width:5%"></th>
                             </tr>
 
-                            <tbody v-for="occurrence in occurrences" :key="'occurrence_'+occurrence.key"   ref="table_row">
+                            <tbody v-for="(occurrence, index) in occurrences" :key="'occurrence_'+occurrence.key"   ref="table_row">
                                 <OccurrencesElement
                                     :occurrence="occurrence" 
+                                    :index="index"
                                     />
                             </tbody>
 
@@ -140,7 +146,8 @@ export default {
         ...mapActions([
             'updateFacetSelection', 
             'updateRanking', 
-            'resetFacets'
+            'resetFacets',
+            'updateOccurrencesKeys'
         ]),
         searchOccurrencesAPI(prev_position=null) {
             if (this.user_query.q != '' || this.user_query.occurrences_keys.length > 0) {
@@ -149,53 +156,57 @@ export default {
                 let response_promise = null;
                 if (this.user_query.occurrences_keys.length > 0) {
                     response_promise = this.$backend.fetch_occurrences_from_occurrencekeys(this.user_query.occurrences_keys)
-                } else {
+                } 
+                else {
                     response_promise = this.$backend.fetch_occurrences_from_q(this.user_query)
                 }
                 response_promise.then(response => {
-                        this.occurrences = response.data.results;
-                        this.total = response.data.count
-                        this.in_progress = false
-                        var parameters= {}
-                        if (this.user_query.q != ''){
-                            parameters['q'] = this.user_query.q
+                    this.occurrences = response.data.results;
+                    if (this.user_query.occurrences_keys.length > 0) {
+                        var new_list = []
+                        for (var i=0; i<response.data.results.length; i++){
+                            new_list.push(response.data.results[i].key)
                         }
-                        parameters['basisOfRecord'] = this.user_query.basisOfRecord
-                        if (this.user_query.page != 1){
-                            parameters['page'] = this.user_query.page
+                        this.updateOccurrencesKeys(new_list)
+                    }
+                    var parameters= {}
+                    if (this.user_query.q != ''){
+                        parameters['q'] = this.user_query.q
+                    }
+                    parameters['basisOfRecord'] = this.user_query.basisOfRecord
+                    if (this.user_query.page != 1){
+                        parameters['page'] = this.user_query.page
+                    }
+                    if (this.user_query.ranking != "scientificName"){
+                        parameters['ranking'] = this.user_query.ranking
+                    }      
+                    if (this.user_query.occurrences_keys.length > 0){
+                        parameters['occurrencesKeys'] = this.user_query.occurrences_keys.join(",")
+                    }  
+                    for (const [name, values] of Object.entries(this.user_query.facets_selection)) {
+                        if(values.length > 0){
+                            parameters[name] = values.join("|");
                         }
-                        if (this.user_query.ranking != "-associatedOccurrences"){
-                            parameters['ranking'] = this.user_query.ranking
-                        }      
-                        if (this.user_query.occurrences_keys.length > 0){
-                            parameters['occurrencesKeys'] = this.user_query.occurrences_keys.join("|")
-                        }  
-                        for (const [name, values] of Object.entries(this.user_query.facets_selection)) {
-                            if(values.length > 0){
-                                parameters[name] = values.join("|");
+                    }
+                    this.$router.replace({ query: parameters }).catch(()=>{});
+                    this.total = response.data.count
+                    this.in_progress = false
+
+                    if (prev_position != null){
+                        this.$nextTick(() => {
+                            var position = 0
+                            for (var i=0; i<this.occurrences.length; i++){
+                                if (this.occurrences[i].key == prev_position){
+                                    position = i;
+                                    break;
+                                }
                             }
-                        }
-                        this.$router.replace({ query: parameters }).catch(()=>{});
-
-                        if (prev_position != null){
-                            this.$nextTick(() => {
-                                var position = 0
-                                for (var i=0; i<this.occurrences.length; i++){
-                                    if (this.occurrences[i].key == prev_position){
-                                        position = i;
-                                        break;
-                                    }
-                                }
-                                const rowToScroll = this.$refs.table_row[position]; // index est l'indice de la ligne souhaitée
-                                if (rowToScroll) {
-                                    rowToScroll.scrollIntoView({ behavior: "smooth" });
-                                }
-                            });
-                        }
-
-                        
-                       
-                       // alert(JSON.stringify(this.$refs))
+                            const rowToScroll = this.$refs.table_row[position]; 
+                            if (rowToScroll) {
+                                rowToScroll.scrollIntoView({ behavior: "smooth" });
+                            }
+                        });
+                    }
                 })
                 .catch(error => {
                     console.log(error)
@@ -264,10 +275,6 @@ th {
     border-bottom: 1px solid #ddd;
     padding: 6px;
     text-align: center;
-}
-
-tr:nth-child(even) {
-    background-color: #fff;
 }
 
 tr:hover {
