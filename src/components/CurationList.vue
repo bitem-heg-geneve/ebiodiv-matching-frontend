@@ -368,7 +368,6 @@ export default {
                     query
                 })
             }
-            alert(this.user_query.occurrence_key)
             this.changes = 0
             this.change_list = {}
             this.in_progress = true
