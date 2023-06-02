@@ -28,7 +28,7 @@
                         
                     <div v-if="occurrences.length > 0">
 
-                        <table>
+                        <table ref="table">
 
                             <tr>
                                 <th style="width:5%">{{ get_occurrence_name }} ID</th>
@@ -42,11 +42,12 @@
                                 <th style="width:5%"></th>
                             </tr>
 
-                            <OccurrencesElement v-for="occurrence in occurrences"
-                                :id="occurrence.key"
-                                :key="'occurrence_'+occurrence.key" 
-                                :occurrence="occurrence" />
-                            
+                            <tbody v-for="occurrence in occurrences" :key="'occurrence_'+occurrence.key"   ref="table_row">
+                                <OccurrencesElement
+                                    :occurrence="occurrence" 
+                                    />
+                            </tbody>
+
                         </table>
 
                         <br />
@@ -174,14 +175,27 @@ export default {
                                 parameters[name] = values.join("|");
                             }
                         }
-                        if(prev_position == null){
-                            this.$router.push({ query: parameters }).catch(()=>{});
-                        } 
-                        else {
-                            
-                            this.$router.push({ hash: '#'+prev_position, query: parameters }).catch(()=>{});
+                        this.$router.replace({ query: parameters }).catch(()=>{});
 
-                        }  
+                        if (prev_position != null){
+                            this.$nextTick(() => {
+                                var position = 0
+                                for (var i=0; i<this.occurrences.length; i++){
+                                    if (this.occurrences[i].key == prev_position){
+                                        position = i;
+                                        break;
+                                    }
+                                }
+                                const rowToScroll = this.$refs.table_row[position]; // index est l'indice de la ligne souhaitée
+                                if (rowToScroll) {
+                                    rowToScroll.scrollIntoView({ behavior: "smooth" });
+                                }
+                            });
+                        }
+
+                        
+                       
+                       // alert(JSON.stringify(this.$refs))
                 })
                 .catch(error => {
                     console.log(error)
@@ -189,12 +203,10 @@ export default {
                 })
             }
         },
-        clearCache(){
-            this.$refs['facetsBox'].clearCache()
-        },
     },
     watch: {
         "user_query.page": function () {
+            this.$refs["table"].scrollIntoView({ behavior: "smooth" })
             this.searchOccurrencesAPI()
         },
         "user_query.ranking": function () {
@@ -205,7 +217,7 @@ export default {
                 this.searchOccurrencesAPI()
             },
             deep: true
-        }
+        },
     },
 }
 

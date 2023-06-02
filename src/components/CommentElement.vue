@@ -224,7 +224,7 @@ export default {
 }
 
 .comment-container {
-    background-color: #eee;
+    background-color: #ddd;
     border-radius: 5px;
     padding: 5px;
     margin: 10px 0px;

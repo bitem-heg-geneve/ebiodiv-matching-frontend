@@ -52,6 +52,9 @@
                             <li v-if="'identifier' in get_occurrence"><a :href="get_mc" target="_blank">Material citation</a></li>
                         </ul>                        
                     </div>
+                    <div class="expanded-box" v-if="'references' in get_occurrence">
+                        <a :href="get_report_link" target="_blank">Report an error     on the content</a>                   
+                    </div>
                 </td>
             </tr>
 
@@ -82,38 +85,55 @@
                 <th></th>
             </tr>
 
-            <CurationElement v-for="to_process_key in to_process_curation"
+            <CurationElement v-for="to_process_key in to_process_curation.slice(item_min, item_max)"
                 @updateCuration=updateCuration 
                 :key="to_process_key.occurrenceKey2" 
-                :occurrence="occurrences[to_process_key.occurrenceKey2]" 
-                :matching="to_process_key"
-                :scores="get_scores(occurrences[user_query.occurrence_key], occurrences[to_process_key.occurrenceKey2])" />
- <!--
-            <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in processed_empty_elements"
-                :key="curation.empty_key" :curation="curation" save="Save" :status_save_all="status_save_all" />
+                :pre_occurrence="occurrences[to_process_key.occurrenceKey2]" 
+                :pre_matching="to_process_key"
+                :pre_scores="get_scores(occurrences[user_query.occurrence_key], occurrences[to_process_key.occurrenceKey2])" 
+                />
+
+            <tr class="empty-line centered-empty" v-if="page_total > 1">
+                <td colspan=100>
+                    <div class="page-box">
+                        <v-pagination v-model="current_page" :page-count="page_total"
+                            :classes="bootstrapPaginationClasses" :labels="paginationAnchorTexts">
+                        </v-pagination>
+                    </div>
+                </td>
+            </tr>
+
+            <CurationElement v-for="empty_element in empty_elements"
+                @updateCuration=updateCuration 
+                @addCuration=addCuration
+                @deleteCuration=deleteCuration
+                :key="empty_element" 
+                :all_occurrences="occurrences"
+                />
+
             <tr class="empty-line">
-                <td :colspan="curation_characteristics.length+4">
+                <td colspan=100>
                     <div class="left-container">
                         <a @click="addLine">+ Add another {{ get_curation_name.toLowerCase() }}</a>
                     </div>
                 </td>
-            </tr>-->
+            </tr>
 
-           <tr v-if="finished_curation.length > 0 || finished_empty_elements.length > 0" class="empty-line">
+           <tr v-if="finished_curation.length > 0" class="empty-line">
                 <td colspan=100>
                     <br/><br />
                     <img v-show="!show_edit" src="../assets/images/icon_plus.png" alt="[+]"
                         @click="show_edit = !show_edit" class="mini" />
                     <img v-show="show_edit" src="../assets/images/icon_minus.png" alt="[-]"
                         @click="show_edit = !show_edit" class="mini" />
-                    {{ finished_curation.length+finished_empty_elements.length }} {{ get_curation_name.toLowerCase()
-                    }}<span v-if="(finished_curation.length+finished_empty_elements.length) > 1">s</span> already
+                    {{ finished_curation.length }} {{ get_curation_name.toLowerCase()
+                    }}<span v-if="finished_curation.length > 1">s</span> already
                     curated
                 </td>
             </tr>
 
 
-            <tr v-if="show_edit && (finished_curation.length > 0 || finished_empty_elements.length > 0)">
+            <tr v-if="show_edit && finished_curation.length > 0">
                 <th>Key</th>
                 <th>Score</th>
                 <th v-for="char in curation_characteristics" :key="char.score+'sp-th'" class="clickable-th">{{ char.name
@@ -127,16 +147,11 @@
                 <CurationElement v-for="finished_key in finished_curation"
                     @updateCuration=updateCuration 
                     :key="finished_key.occurrenceKey2" 
-                    :occurrence="occurrences[finished_key.occurrenceKey2]" 
-                    :matching="finished_key"
-                    :scores="get_scores(occurrences[user_query.occurrence_key], occurrences[finished_key.occurrenceKey2])" />
+                    :pre_occurrence="occurrences[finished_key.occurrenceKey2]" 
+                    :pre_matching="finished_key"
+                    :pre_scores="get_scores(occurrences[user_query.occurrence_key], occurrences[finished_key.occurrenceKey2])" />
 
-            </template>
-            <!--<template v-if="show_edit && finished_empty_elements.length > 0">
-                <EmptyElement @removeOne=removeElement @addOne=addElement v-for="curation in finished_empty_elements"
-                    :key="curation.empty_key" :curation="curation" save="Edit" :status_save_all="status_save_all" />
-            </template>-->
-    
+            </template>    
 
         </table>
 
@@ -217,6 +232,7 @@ import { mapState, mapActions } from 'vuex'
 import CurationElement from '@/components/CurationElement.vue'
 import shared_fields from '@/components/shared_fields.js'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
+import vPagination from 'vue-plain-pagination'
 
 export default {
     name: 'CurationList',
@@ -225,7 +241,9 @@ export default {
     ],
     components: {
         CurationElement,
-        PulseLoader
+        PulseLoader,
+        vPagination,
+
     },
     props: {
         show_back_button: {
@@ -239,6 +257,7 @@ export default {
             in_progress: true,
             occurrences: {},
             relations: [],
+            empty_relations: [],
             empty_elements: [],
             change_list: {},
             changes: 0,
@@ -249,7 +268,22 @@ export default {
             show_edit: false,
             expanded: false,
             pendingSave: [],
-            action: null
+            action: null,
+            current_page: 1,
+            per_page: 10,
+            bootstrapPaginationClasses: {
+                ul: 'pagination',
+                li: 'page-item',
+                liActive: 'active',
+                liDisable: 'disabled',
+                button: 'page-link'
+            },
+            paginationAnchorTexts: {
+                first: '<<',
+                prev: '<',
+                next: '>',
+                last: '>>'
+            },
         };
     },
     computed: {
@@ -279,7 +313,7 @@ export default {
             return this.fields[this.user_query.basisOfRecord].basisOfRecord_curation.name
         },
         get_description() {
-            if ('institutionKey' in this.occurrences[this.user_query.occurrence_key]){
+            if (this.user_query.occurrence_key in this.occurrences &&  'institutionKey' in this.occurrences[this.user_query.occurrence_key]){
                 return "from " + this.institutions[this.occurrences[this.user_query.occurrence_key].institutionKey]
             }
            return ''
@@ -293,15 +327,25 @@ export default {
         finished_curation() {
             return this.filterListDone(this.relations, "PNDG")
         },
-        // TO CHECK
-        // processed_empty_elements() {
-        //     var filtered_empty = this.empty_elements
-
-        //     filtered_empty = filtered_empty.filter(element => element.matching.match == null);
-        //     return filtered_empty;
-        // },
+        to_process_empty() {
+            var filtered_empty = this.empty_elements
+            filtered_empty = filtered_empty.filter(element => element.matching.match == null);
+            return filtered_empty
+        },
         finished_empty_elements() {
             return this.filterListDone(this.empty_elements, "PNDG")
+        },
+        page_total() {
+            return Math.ceil(this.relations.length / this.per_page)
+        },
+        item_min(){
+            return ((this.current_page-1)*this.per_page)
+        },
+        item_max(){
+            return ((this.current_page*this.per_page))
+        },
+        get_report_link(){
+            return "https://github.com/plazi/community/issues/new?body=Please%20leave%20your%20comment%20here...%0A%0A**Context**%0A%5BGBIF%20occurrence%5D(https%3A%2F%2Fwww.gbif.org%2Foccurrence%2F"+this.get_occurrence.key+")%0A%5BPlazi%20reference%5D("+this.get_occurrence.references+")"
         },
     },
     methods: {
@@ -311,13 +355,17 @@ export default {
             'updateUsername'
         ]),
         searchCurationAPI(){
-            this.$router.push({
+            var query = {
+                ...this.$router.currentRoute.query,
+                occurrenceKey: this.user_query.occurrence_key
+            }
+            if (Object.entries(query).toString() !== Object.entries(this.$router.currentRoute.query).toString()){
+                this.$router.replace({
                     name: this.$router.currentRoute.name,
-                    query: {
-                        ...this.$router.currentRoute.query,
-                        occurrenceKey: this.user_query.occurrence_key
-                    }
+                    query
                 })
+            }
+
             this.changes = 0
             this.change_list = {}
             this.in_progress = true
@@ -378,9 +426,10 @@ export default {
             return this.$scoring.get_scores(occurrence1, occurrence2);
         },
         updateCuration(element){
-            for (var i=0; i<this.relations.length; i++){
-                if(this.relations[i].occurrenceKey2 == element.key){
-                    if(this.relations[i].statusCode == element.matching.statusCode && this.relations[i].decision == element.matching.decision ){
+            var all_relations = this.relations.concat(this.empty_relations);
+            for (var i=0; i<all_relations.length; i++){
+                if(all_relations[i].occurrenceKey2 == element.key){
+                    if(all_relations[i].statusCode == element.matching.statusCode && all_relations[i].decision == element.matching.decision ){
                         if (element.key in this.change_list){
                              delete this.change_list[element.key]
                         }
@@ -392,6 +441,21 @@ export default {
             }
             this.changes = Object.keys(this.change_list).length
         },
+        addCuration(element){
+            this.change_list[element.key] = element
+            this.changes = Object.keys(this.change_list).length
+            this.empty_relations.push(element.matching)
+        },
+        deleteCuration(element){
+            delete this.change_list[element.key]
+            this.changes = Object.keys(this.change_list).length
+            for (var i=0; i<this.empty_relations.length; i++){
+                if (element.key == this.empty_relations[i].occurrenceKey2){
+                    this.empty_relations.splice(i, 1)
+                    break;
+                }
+            }
+        },
         save() {
             this.pendingSave = Object.keys(this.change_list);
             this.$emitter.emit('ensureLogin');
@@ -400,8 +464,10 @@ export default {
             let go_back = Object.keys(this.change_list).length == 0 || confirm('Are you sure you want to leaving without saving?')
             if (go_back) {
                 this.in_progress = true
+                this.empty_elements = []
                 this.$emit('back')
                 this.$gtag.event('back');
+                this.current_page = 1
             }
         },
         saveBack() {
@@ -411,7 +477,10 @@ export default {
         nosaveNext(){
             let go_next = Object.keys(this.change_list).length == 0 || confirm('Are you sure you want to continue without saving?')
             if (go_next) {
+                this.in_progress = true
+                this.empty_elements = []
                 this.searchNextCurationAPI()
+                this.current_page = 1
             }
         },
         saveNext() {
@@ -428,14 +497,7 @@ export default {
             }
         },
         addLine() {
-            var object = {}
-            object.object = {}
-            object.object.key = ""
-            object.empty_key = "emptykey_" + this.empty_elements.length
-            object.matching = {}
-            object.matching.match = null
-            this.empty_elements.push(object)
-            this.addElement({ 'key': object.empty_key, 'value': true })
+            this.empty_elements.push("emptykey_" + this.empty_elements.length)
         },
         saveToSibBackend(occurrenceIdToSave) {
             const occurrenceRelations = {};
@@ -762,5 +824,10 @@ button[disabled] {
 .expanded td {
     padding: 20px;
     text-align: left;
+}
+
+.page-box {
+    display: flex;
+    justify-content: center;
 }
 </style>

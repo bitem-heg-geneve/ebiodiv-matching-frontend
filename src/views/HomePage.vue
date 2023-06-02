@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    <div class="row" id="occurrences"  v-show="step == 2">
+    <div class="row" id="occurrences"  v-show="step == 2" ref="step2">
         <OccurrencesList ref="occurrencesList"/>
     </div>
 
@@ -77,6 +77,7 @@ export default {
         ]),
         runSearchFromButton(basisOfRecord, page){
             this.resetFacets()
+            this.$refs["step2"].scrollIntoView({ behavior: "smooth" })
             this.displayOccurrences(basisOfRecord, page)
         },
         runSearchFromURL(){
@@ -153,7 +154,15 @@ export default {
             for (const name of Object.keys(this.user_query.facets_selection)) {
                 if (name in this.$route.query && this.$route.query[name].length > 0){
                     var values = this.$route.query[name].split("|")
-                    this.updateFacetSelection(Object.freeze({'facet': name, 'list': values }))
+                    if (name != "year"){
+                        this.updateFacetSelection(Object.freeze({'facet': name, 'list': values }))
+                    }
+                    else {
+                        values = values.map(str => {
+                            return parseInt(str, 10);
+                        });
+                        this.updateFacetSelection(Object.freeze({'facet': name, 'list': values }))
+                    }
                 }
             }
 

@@ -3,42 +3,69 @@
     <tbody>
 
         <tr>
-            <td><a :href="'https://www.gbif.org/occurrence/'+occurrence.key" target="_blank">{{ occurrence.key }}</a></td>
-            <td :class="cellColor(scores.$global)">{{ scores.$global }}</td>
-            <template>
-                <td v-for="char in curation_characteristics" :key="char.score+'sp-td'"
-                    :class="'cell_' + char.score + ' ' + cellColor(scores[char.score])">
-                    {{ display_content(occurrence, char.value) }}
+            <td v-if="pre_occurrence" class="key">
+                <a :href="'https://www.gbif.org/occurrence/'+occurrence.key" target="_blank">{{ occurrence.key }}</a>
+            </td>
+            <td v-else>
+                <input class="empty_key" v-model="occurrence_key" @blur="fetchOccurrence()"/>
+                <a v-if="empty_link" :href="empty_link" target="_blank"> <img src="../assets/images/icon_link.png"  class="mini"/></a>
+                <span class="warning" v-if="warning"><br/>{{ warning }}</span>
+            </td>
+
+            <template v-if="occurrence">
+                <td :class="cellColor(scores.$global)">{{ scores.$global }}</td>
+                <template>
+                    <td v-for="char in curation_characteristics" :key="char.score+'sp-td'"
+                        :class="'cell_' + char.score + ' ' + cellColor(scores[char.score])">
+                        {{ display_content(occurrence, char.value) }}
+                    </td>
+                </template>
+                <td class="decision">
+                     <input type="checkbox" :checked="status=='yes'" @click="changeSelection($event, 'yes')" /> Yes <br/>
+                     <input type="checkbox" :checked="status=='no'" @click="changeSelection($event, 'no')" /> No <br/>
+                     <input type="checkbox" :checked="status=='undecided'" @click="changeSelection($event, 'undecided')" /> Undecided
+                 </td>
+                <td class="comment">
+                    <CommentElement :occurrence_key="matching.occurrenceKey1" :curation_key="matching.occurrenceKey2"/>
+                </td>
+                <td>
+                    <button @click="expanded = !expanded" class="button-table" v-if="occurrence.verbatimLabel">
+                        <img v-if="!expanded" src="../assets/images/icon_expand.png" class="mini" />
+                        <img v-if="expanded" src="../assets/images/icon_reduce.png" class="mini" />
+                    </button>
                 </td>
             </template>
-            <td class="decision">
-                 <input type="checkbox" :checked="status=='yes'" @click="changeSelection($event, 'yes')" /> Yes <br/>
-                 <input type="checkbox" :checked="status=='no'" @click="changeSelection($event, 'no')" /> No <br/>
-                 <input type="checkbox" :checked="status=='undecided'" @click="changeSelection($event, 'undecided')" /> Undecided
-             </td>
-            <td class="comment">
-                <CommentElement :occurrence_key="matching.occurrenceKey1" :curation_key="matching.occurrenceKey2"/>
-            </td>
-            <td>
-                <button @click="expanded = !expanded" class="button-table" v-if="occurrence.verbatimLabel">
-                    <img v-if="!expanded" src="../assets/images/icon_expand.png" class="mini" />
-                    <img v-if="expanded" src="../assets/images/icon_reduce.png" class="mini" />
-                </button>
-            </td>
+            <template v-else>
+                <td></td>
+                <template v-if="in_progress == false">
+                    <td v-for="char in curation_characteristics" class="cell-color-na" :key="char.score+'sp-td-em'"></td>
+                </template>
+                <template v-else>
+                    <td v-for="char in curation_characteristics" class="cell-color-na" :key="char.score+'sp-td-em'">
+                        <PulseLoader  :color="theme_color.main" size="5px"/>
+                    </td>
+                </template>
+                <td class="decision"></td>
+                <td class="comment"></td>
+                <td></td>
+            </template>
         </tr>
 
         <tr class="expanded" v-if="expanded">
             
             <td  colspan="100">
                 <div class="expanded-box" v-if="occurrence.verbatimLabel">
-                        {{ occurrence.verbatimLabel }}
-                    </div>
-                    <div class="expanded-box" v-if="'references' in occurrence">
-                        <label>Data source:</label>
-                        <ul>
-                            <li><a :href="occurrence.references" target="_blank">Treatment</a></li>
-                            <li v-if="'identifier' in occurrence"><a :href="get_mc" target="_blank">Material citation</a></li>
-                        </ul>                        
+                    {{ occurrence.verbatimLabel }}
+                </div>
+                <div class="expanded-box" v-if="'references' in occurrence">
+                    <label>Data source:</label>
+                    <ul>
+                        <li><a :href="occurrence.references" target="_blank">Treatment</a></li>
+                        <li v-if="'identifier' in occurrence"><a :href="get_mc" target="_blank">Material citation</a></li>
+                    </ul>                        
+                </div>
+                <div class="expanded-box" v-if="'references' in occurrence">
+                    <a :href="get_report_link" target="_blank">Report an error on the content</a>                   
                 </div>
             </td>
         </tr>
@@ -51,6 +78,7 @@
 import { mapState } from 'vuex'
 import shared_fields from '@/components/shared_fields.js'
 import CommentElement from '@/components/CommentElement.vue'
+var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 
 export default {
     name: 'CurationElement',
@@ -58,30 +86,37 @@ export default {
         shared_fields.mixin_fields
     ],
     components: {
-        CommentElement
+        CommentElement,
+        PulseLoader
     },
     props: {
-        occurrence: {
+        pre_occurrence: {
             type: Object,
-            required: true
         },
-        matching: {
+        pre_matching: {
             type: Object,
-            required: true
         },
-        scores: {
+        pre_scores: {
             type: Object,
-            required: true
         },
+        all_occurrences: {
+            type: Object
+        }
     },
     data() {
         return {
             status: null,
             expanded: false,
+            occurrence_key: '',
+            occurrence: null,
+            matching: null,
+            scores: null,
+            warning: null,
+            in_progress: false
         };
     },
     computed: {
-        ...mapState(['theme_color', 'curation_characteristics', 'fields']),
+        ...mapState(['theme_color', 'user_query', 'curation_characteristics', 'fields']),
         cssVars() {
             return {
                 '--color': this.theme_color.main,
@@ -89,6 +124,21 @@ export default {
         },
         get_mc() {
             return "https://treatment.plazi.org/id/"+this.occurrence.identifier.replace(".mc.", "#")
+        },
+        get_report_link(){
+            return "https://github.com/plazi/community/issues/new?body=Please%20leave%20your%20comment%20here...%0A%0A**Context**%0A%5BGBIF%20occurrence%5D(https%3A%2F%2Fwww.gbif.org%2Foccurrence%2F"+this.occurrence.key+")%0A%5BPlazi%20reference%5D("+this.occurrence.references+")"
+        },
+        get_curation_name(){
+            return this.fields[this.user_query.basisOfRecord].basisOfRecord_curation.name
+        },
+        empty_link(){
+            if (/^http/.test(this.occurrence_key)){
+                return this.occurrence_key
+            }
+            else if (/^\d+$/.test(this.occurrence_key)){
+                return "https://www.gbif.org/occurrence/"+this.occurrence_key
+            }
+            return null
         },
     },
     methods: {
@@ -181,21 +231,64 @@ export default {
         toggle() {
             this.expanded = !this.expanded
         },
+        fetchOccurrence(){
+            if (this.occurrence){
+                this.$emit("deleteCuration", { 'key': this.occurrence.key })
+            }
+            this.warning = null
+            this.occurrence = null
+            this.matching = null
+            if (this.occurrence_key in this.all_occurrences){
+                this.warning = "already in suggested "+this.get_curation_name.toLowerCase()+"s";
+            }
+            if (this.occurrence_key == this.user_query.occurrence_key){
+                this.warning = "current curation object";
+            }
+            if (this.warning == null){
+                if (this.occurrence_key != "" && /^\d+$/.test(this.occurrence_key)){
+                    this.loadGBIF()
+                }                
+            }
+        },
+        loadGBIF(){
+            this.in_progress = true
+            this.$backend.fetch_occurrence(this.occurrence_key, true)
+                .then(response => {
+                    if ('occurrences' in response.data  && this.occurrence_key in response.data.occurrences){
+                        this.occurrence = response.data.occurrences[this.occurrence_key]
+                        this.occurrence['key'] = parseInt(this.occurrence_key)
+                        this.status = "yes"
+                        this.scores = {},                    
+                        this.matching = {"occurrenceKey1": parseInt(this.user_query.occurrence_key), "occurrenceKey2": parseInt(this.occurrence_key), "statusCode": "DONE", "decision": true}
+                        this.$emit("addCuration", { 'key': this.occurrence_key, 'matching': this.matching })
+                    }
+                    this.in_progress = false
+                })
+                .catch(error => {
+                    this.occurrence = {'key': this.occurrence_key, 'error': error}
+                    this.warning = "unknown GBIF key"
+                });
+        }
     },
     beforeMount() {
-        if (this.matching.statusCode == "DONE") {
-            if (this.matching.decision == true) {
-                this.status = "yes"
+        if(this.pre_occurrence != null){
+            this.occurrence = this.pre_occurrence
+            this.scores = this.pre_scores
+            this.matching = this.pre_matching
+            if (this.matching.statusCode == "DONE") {
+                if (this.matching.decision == true) {
+                    this.status = "yes"
+                }
+                else if (this.matching.decision == false) {
+                    this.status = "no"
+                }
             }
-            else if (this.matching.decision == false) {
-                this.status = "no"
+            else if (this.matching.statusCode == "UDCB"){
+                this.status = "undecided"
             }
-        }
-        else if (this.matching.statusCode == "UDCB"){
-            this.status = "undecided"
-        }
-        else {
-            this.status = "unknown"
+            else {
+                this.status = "unknown"
+            }
         }
     },
 }
@@ -245,7 +338,7 @@ th {
 
 .decision {
          text-align: left;
-         width: 120px;
+         width: 120;
      }
 
      .comment {
@@ -349,4 +442,20 @@ button[disabled] {
     background-color: #cccccc;
     color: #666666;
 }
+
+.warning {
+        color: red;
+    }
+
+    .empty_key {
+        margin: 0px;
+        padding: 0px;
+        width: 75%;
+        margin-right: 5px;
+    }
+
+    .key {
+        width: 120px;
+    }
+    
 </style>

@@ -1,31 +1,32 @@
 <template>
   <div class="container-fluid">
-    <BannerComponent title="eBioDiv" subtitle="Linking material citations to specimens" />
+    test
+    <!--<BannerComponent title="eBioDiv" subtitle="Linking material citations to specimens" />
 
     <PulseLoader v-if="in_progress" :color="theme_color.main"/>
     <template v-else>
-      <div v-if="occurrences_selection">
+      <div v-if="user_query.occurrence_key">
         <CurationList v-bind:show_back_button="false"/>
       </div>
       <div v-else class="alert alert-warning" role="alert">
-        Occurrence {{ occurrenceKey }} not found
+        Occurrence {{ user_query.occurrence_key }} not found
       </div>
-    </template>
+    </template>-->
   </div>
 </template>
 <script>
 import { mapState, mapActions } from 'vuex'
-import BannerComponent from '@/components/BannerComponent.vue'
-import CurationList from '@/components/CurationList.vue'
+//import BannerComponent from '@/components/BannerComponent.vue'
+//import CurationList from '@/components/CurationList.vue'
 
-var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
+//var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 
 export default {
   name: 'OccurrencePage',
   components: {
-    PulseLoader,
-    BannerComponent,
-    CurationList,
+    //PulseLoader,
+    //BannerComponent,
+    //CurationList,
   },
   data() {
     return {
@@ -34,25 +35,26 @@ export default {
     }
   },
   computed: {
-    ...mapState(['occurrences_selection', 'theme_color']),
+    ...mapState(['user_query', 'theme_color']),
   },
   methods:{
-    ...mapActions(['updateFormatSelection', 'updateOccurrencesSelection']),
+    ...mapActions(['updateBasisOfRecord', 'updateOccurrenceKey']),
   },
-  async mounted() {
-    const occurrenceKey = this.$route.params.occurrenceKey;
-    this.occurrenceKey = occurrenceKey;
-    this.updateFormatSelection("matcit_specimen");
-    const response = await this.$backend.fetch_occurrence(occurrenceKey, true);
-    const occurrenceWithRelation = this.$backend.processOccurrences(response.data, "specimen_matcit");
-    if (occurrenceWithRelation.length != 0) {
-      if (occurrenceWithRelation[0].key != occurrenceKey) {
-        alert("Internal error");
-        return;
-      }
-      this.updateOccurrencesSelection(occurrenceWithRelation[0]);
-    }
-    this.in_progress = false;
-  },
+  //async mounted() {
+    //alert("hhh")
+    // const occurrenceKey = this.$route.params.occurrenceKey;
+    // this.user_query.occurrence_key = occurrenceKey;
+    // this.updateBasisOfRecord("PRESERVED_SPECIMEN");
+    // const response = await this.$backend.fetch_occurrence(occurrenceKey, true);
+    // const occurrenceWithRelation = this.$backend.processOccurrences(response.data, "PRESERVED_SPECIMEN");
+    // if (occurrenceWithRelation.length != 0) {
+    //   if (occurrenceWithRelation[0].key != occurrenceKey) {
+    //     alert("Internal error");
+    //     return;
+    //   }
+    //   this.updateOccurrenceKey(occurrenceWithRelation[0]);
+    // }
+    // this.in_progress = false;
+  //},
 }
 </script>
