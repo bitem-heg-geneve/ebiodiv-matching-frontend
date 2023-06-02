@@ -157,12 +157,15 @@
 
         <div v-if="!in_progress">
 
-            <div class="button-container">
-                <button v-if="show_back_button" @click="nosaveBack()">Go back to list</button>
+            <div class="button-container" v-if="show_back_button">
+                <button @click="nosaveBack()">Go back to list</button>
                 <button @click="nosaveNext()">Continue</button>
                 <br/><br/>
                 <button v-show="changes > 0" @click="saveBack()">Save and Go back to list</button>
                 <button v-show="changes > 0" @click="saveNext()">Save and Continue</button>
+            </div>
+            <div class="button-container" v-else>
+                <button @click="saveStop()">Save</button>
             </div>
 
             <div class="left-container">
@@ -487,6 +490,10 @@ export default {
             this.save()
             this.action = "next"
         },
+        saveStop() {
+            this.save()
+            this.action = "stop"
+        },
         sortBy(name) {
             if (name == this.sort.by) {
                 this.sort.asc = !this.sort.asc
@@ -586,6 +593,9 @@ export default {
                 alert('Your work is not saved');
             }
         });
+        if(this.user_query.q == ''){
+            this.show_back_button = false
+        }
     },
     watch: {
         "user_query.occurrence_key": function () {
