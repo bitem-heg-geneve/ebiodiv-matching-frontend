@@ -6,7 +6,11 @@
             <PulseLoader :color="theme_color.main" />
         </div>
 
-        <table v-if="!in_progress">
+        <div v-if="warning" class="alert alert-warning">
+            Occurrence {{ user_query.occurrence_key }} not found
+        </div>
+
+        <table v-if="!in_progress && !warning">
 
             <tr class="empty-line">
                 <td colspan=100>
@@ -155,7 +159,7 @@
 
         </table>
 
-        <div v-if="!in_progress">
+        <div v-if="!in_progress && !warning">
 
             <div class="button-container" v-if="show_back_button_final">
                 <button @click="nosaveBack()">Go back to list</button>
@@ -258,6 +262,7 @@ export default {
     data() {
         return {
             in_progress: true,
+            warning: false,
             occurrences: {},
             relations: [],
             empty_relations: [],
@@ -370,15 +375,21 @@ export default {
             }
             this.changes = 0
             this.change_list = {}
+            this.warning = false
             this.in_progress = true
             let response_promise = null;
             response_promise = this.$backend.fetch_occurrence(this.user_query.occurrence_key)
             response_promise.then(response => {
-                this.relations = response.data.occurrenceRelations;
-                this.occurrences = response.data.occurrences
-                for (const [key, value] of Object.entries(this.occurrences)){
-                    value['key'] = key
-                    this.occurrences[key] = value
+                if ('occurrences' in response.data){
+                    this.relations = response.data.occurrenceRelations;
+                    this.occurrences = response.data.occurrences
+                    for (const [key, value] of Object.entries(this.occurrences)){
+                        value['key'] = key
+                        this.occurrences[key] = value
+                    }
+                }
+                else {
+                    this.warning = true
                 }
                 this.in_progress = false
             })
