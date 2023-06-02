@@ -10,20 +10,30 @@
 
             <div v-else>
 
-                <input :ref="facet.field+'_input'" type="text" required v-model.trim="pre_value" placeholder="search"/>
+                <input :ref="facet.field+'_input'" type="text" required v-model.trim="pre_value" placeholder="search" v-if="facet.field != 'year'"/>
 
                 <div v-if="values.length > 0">
 
-                    <div class="inputGroup" v-for="item in values"
-                        @click="changeFacet(facet.field, $event)" 
-                        :key="facet.field+'_'+item.value">
-                        <input :id="facet.field+'_'+item.value" :name="item.value" type="checkbox" v-bind:value="item.value" :checked="item.checked" />
-                        <label :for="facet.field+'_'+item.value">
-                            <span class="name">
-                                {{ getPrettyItemValue(item.value) }}
-                            </span>
-                            <span class="count">{{ item.count }}</span>
-                        </label>
+                    <div v-if="facet.field != 'year'">
+
+                        <div class="inputGroup" v-for="item in values"
+                            @click="changeFacet(facet.field, $event)" 
+                            :key="facet.field+'_'+item.value">
+                            <input :id="facet.field+'_'+item.value" :name="item.value" type="checkbox" v-bind:value="item.value" :checked="item.checked" />
+                            <label :for="facet.field+'_'+item.value">
+                                <span class="name">
+                                    {{ getPrettyItemValue(item.value) }}
+                                </span>
+                                <span class="count">{{ item.count }}</span>
+                            </label>
+                        </div>
+
+                    </div>
+
+                    <div v-if="facet.field == 'year'">
+                        {{ user_query.facets_selection.year }}
+                        <vue-slider v-model="selected_date" :data="values" :marks="defined_labels"
+                                :tooltip="'always'"></vue-slider>
                     </div>
 
                 </div>
@@ -46,6 +56,7 @@ import PanelHideShow from '@/components/PanelHideShow.vue'
 import '../assets/css/ebiodiv.css'
 import shared_fields from '@/components/shared_fields.js'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
+import VueSlider from 'vue-slider-component'
 
 export default {
     name: 'FacetElement',
@@ -54,7 +65,8 @@ export default {
     ],
     components: {
         PanelHideShow,
-        PulseLoader
+        PulseLoader,
+        VueSlider,
     },
     props: {
         item_size: {
@@ -80,6 +92,7 @@ export default {
             values: [],
             pre_value: '',
             timer: null,
+            selected_date: []
         };
     },
     computed: {
@@ -94,26 +107,47 @@ export default {
         visibility(){
             return this.user_query.facets_visibility[this.facet.field]
         },
-        
+        defined_labels: {
+            get() {
+                var list = this.values
+                var minDate = Math.min.apply(Math, list)
+                var maxDate = Math.max.apply(Math, list)
+                var marks = [minDate, maxDate]
+                return marks
+            },
+            set(value) {
+                this.value = value
+            }
+        },
     },
     methods: {
         ...mapActions([
             'updateFacetVisibility', 
-            'updatePage'
+            'updatePage',
         ]),       
         loadFacet() {
             this.in_progress = true
             this.values = []
-            let response_promise = this.$backend.fetch_facet_values(this.facet.field, this.user_query, this.item_size, 0)
-            response_promise.then(response => {
-                    var values = response.data.results;
-                    this.values = this.updateFacetValues(values)
+            if (this.user_query.basisOfRecord != null){
+                var size = this.item_size
+                if(this.facet.field == "year"){
+                    size = 10000
+                }
+                let response_promise = this.$backend.fetch_facet_values(this.facet.field, this.user_query, size, 0)
+                response_promise.then(response => {
+                        var values = response.data.results;
+                        this.values = this.updateFacetValues(values)
+                        this.in_progress = false
+                })
+                .catch(error => {
+                    console.log(error)
                     this.in_progress = false
-            })
-            .catch(error => {
-                console.log(error)
+                })
+            }
+            else {
                 this.in_progress = false
-            })
+            }
+            
         },
         loadFacetWithKeywords(text) {
             this.in_progress = true
@@ -133,31 +167,56 @@ export default {
             })
         },
         updateFacetValues(values){
-            var present_values = []
-            var clean_values = []
-            for (var c=0; c < values.length; c++){
-                if (clean_values.length < 5 && values[c].value != ""){
-                    clean_values.push(values[c])
+            if(this.facet.field != "year"){
+                var present_values = []
+                var clean_values = []
+                for (let c=0; c < values.length; c++){
+                    if (clean_values.length < 5 && values[c].value != ""){
+                        clean_values.push(values[c])
+                    }
                 }
+                values = clean_values
+                for (let i=0; i< values.length; i++){
+                    present_values.push(values[i].value)
+                    if (this.user_query.facets_selection[this.facet.field].includes(values[i].value)){
+                        values[i]['checked'] = true 
+                    }
+                    else {
+                        values[i]['checked'] = false
+                    }
+                }
+                for (let j=0; j<this.user_query.facets_selection[this.facet.field].length; j++){
+                    var term = this.user_query.facets_selection[this.facet.field][j]
+                    if (!present_values.includes(term)){
+                        values.push({'value': term, 'count': 0, 'checked': true})
+                        this.getCount(term)
+                    }
+                }
+                return values
             }
-            values = clean_values
-            for (var i=0; i< values.length; i++){
-                present_values.push(values[i].value)
-                if (this.user_query.facets_selection[this.facet.field].includes(values[i].value)){
-                    values[i]['checked'] = true 
+            else {
+                var min_value = 100000
+                var max_value = 0
+                for (let c=0; c < values.length; c++){
+                    if (values[c].value > max_value){
+                        max_value = values[c].value
+                    }
+                    else if (values[c].value < min_value){
+                        min_value = values[c].value
+                    }
                 }
+                var list = []
+                for (var i = min_value; i <= max_value; i++) {
+                    list.push(i);
+                }
+                if (this.user_query.facets_selection.year.length != 0){
+                    this.selected_date = this.user_query.facets_selection.year
+                } 
                 else {
-                    values[i]['checked'] = false
+                    this.selected_date = [min_value, max_value]
                 }
+                return list 
             }
-            for (var j=0; j<this.user_query.facets_selection[this.facet.field].length; j++){
-                var term = this.user_query.facets_selection[this.facet.field][j]
-                if (!present_values.includes(term)){
-                    values.push({'value': term, 'count': 0, 'checked': true})
-                    this.getCount(term)
-                }
-            }
-            return values
         },
         getCount(text) {
             let response_promise = this.$backend.fetch_facet_values_with_keywords(this.facet.field, text, this.user_query, this.item_size, 0)
@@ -213,6 +272,7 @@ export default {
     },
     mounted(){
         this.loadFacet()
+
     },
     watch: {
         "user_query.facets_selection": {
@@ -222,9 +282,7 @@ export default {
             deep: true
         },
         pre_value: function () {
-            if (this.pre_value.length > 0){
-                this.searchFacet(this.pre_value)
-            }
+            this.searchFacet(this.pre_value)
         }, 
     },
 
