@@ -157,7 +157,7 @@
 
         <div v-if="!in_progress">
 
-            <div class="button-container" v-if="show_back_button">
+            <div class="button-container" v-if="show_back_button_final">
                 <button @click="nosaveBack()">Go back to list</button>
                 <button @click="nosaveNext()">Continue</button>
                 <br/><br/>
@@ -368,7 +368,7 @@ export default {
                     query
                 })
             }
-
+            alert(this.user_query.occurrence_key)
             this.changes = 0
             this.change_list = {}
             this.in_progress = true
@@ -594,7 +594,10 @@ export default {
             }
         });
         if(this.user_query.q == ''){
-            this.show_back_button = false
+            this.show_back_button_final = false
+        }
+        if( this.show_back_button == false){
+            this.show_back_button_final = false
         }
     },
     watch: {
