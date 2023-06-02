@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <BannerComponent title="eBioDiv" subtitle="Linking material citations to specimens" />
     <div v-if="user_query.occurrence_key">
-      <CurationList v-bind:show_back_button="false"/>
+      <CurationList ref="curation" v-bind:show_back_button="false"/>
     </div>
   </div>
 </template>
@@ -32,6 +32,7 @@ export default {
     this.updateBasisOfRecord("PRESERVED_SPECIMEN");
     this.updateOccurrenceKey(occurrenceKey);
     this.updateStep(3);
+    this.curation.searchCurationAPI();
   },
 }
 </script>

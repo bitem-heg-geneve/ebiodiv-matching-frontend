@@ -39,6 +39,8 @@ const router = new VueRouter({
   // hash: false,
   base: process.env.BASE_URL,
   routes,
+  hash: false,
+ 
   /*scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition;
