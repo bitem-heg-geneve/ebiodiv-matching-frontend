@@ -1,7 +1,7 @@
 {
     "client_id": "APP-LSUF3LMMH0K7TJ20",
-    "issuer": "https://sandbox.orcid.org",
-    "authUrl": "https://sandbox.orcid.org/oauth/authorize",
+    "issuer": "https://staging.orcid.org",
+    "authUrl": "https://staging.orcid.org/oauth/authorize",
     "key": {
         "kty": "RSA",
         "e": "AQAB",
