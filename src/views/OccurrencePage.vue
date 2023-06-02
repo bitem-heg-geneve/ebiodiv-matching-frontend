@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <BannerComponent title="eBioDiv" subtitle="Linking material citations to specimens" />
-    <div v-if="user_query.occurrenceKey">
+    <div v-if="user_query.occurrence_key">
       <CurationList v-bind:show_back_button="false"/>
     </div>
   </div>
