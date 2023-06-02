@@ -40,8 +40,6 @@ export default new class Backend {
         if (fetch_missing) {
             url = url + "&fetchMissing=true"
         }
-        alert(url)
-
         return await this.axios_get(url)
     }
 
