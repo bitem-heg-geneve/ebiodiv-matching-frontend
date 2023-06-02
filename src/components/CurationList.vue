@@ -359,7 +359,7 @@ export default {
                 ...this.$router.currentRoute.query,
                 occurrenceKey: this.user_query.occurrence_key
             }
-            if (Object.entries(query).toString() !== Object.entries(this.$router.currentRoute.query).toString()){
+            if (this.show_back_button && Object.entries(query).toString() !== Object.entries(this.$router.currentRoute.query).toString()){
                 this.$router.replace({
                     name: this.$router.currentRoute.name,
                     query
