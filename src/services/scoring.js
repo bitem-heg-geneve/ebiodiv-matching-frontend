@@ -210,16 +210,16 @@ function get_score_latlon(subject_occ, related_occ) {
 }
 
 function get_collectionCode(occ) {
-    if (occ['basisOfRecord'] == "MATERIAL_CITATION") {
-        return occ['institutionCode'];
-    }
+    // if (occ['basisOfRecord'] == "MATERIAL_CITATION") {
+    //     return occ['institutionCode'];
+    // }
     return occ['collectionCode'];
 }
 
 function get_institutionCode(occ) {
-    if (occ['basisOfRecord'] == "MATERIAL_CITATION") {
-        return occ['collectionCode'];
-    }
+    // if (occ['basisOfRecord'] == "MATERIAL_CITATION") {
+    //     return occ['collectionCode'];
+    // }
     return occ['institutionCode'];
 }
 
