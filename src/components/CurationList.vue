@@ -162,10 +162,10 @@
 
             <div class="button-container" v-if="show_back_button_final">
                 <button @click="nosaveBack()">Go back to list</button>
-                <button @click="nosaveNext()">Continue</button>
+                <button @click="nosaveNext()">Continue to the next {{ get_occurrence_name.toLowerCase() }}</button>
                 <br/><br/>
                 <button v-show="changes > 0" @click="saveBack()">Save and Go back to list</button>
-                <button v-show="changes > 0" @click="saveNext()">Save and Continue</button>
+                <button v-show="changes > 0" @click="saveNext()">Save and Continue to the next {{ get_occurrence_name.toLowerCase() }}</button>
             </div>
             <div class="button-container" v-else>
                 <button @click="saveStop()">Save</button>
@@ -732,7 +732,7 @@ button {
     padding: 5px 10px;
     cursor: pointer;
     margin: 0px 5px;
-    width: 200px;
+    width: 300px;
 
 }
 
