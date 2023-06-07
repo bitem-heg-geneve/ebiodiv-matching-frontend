@@ -539,7 +539,7 @@ export default {
             }
         },
         in_current_page(index){
-            if (index > this.item_min && index < this.item_max){
+            if (index >= this.item_min && index < this.item_max){
                 return true
             }
             else {
