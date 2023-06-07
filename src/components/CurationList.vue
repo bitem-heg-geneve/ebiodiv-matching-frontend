@@ -88,14 +88,15 @@
                 <th></th>
             </tr>
 
-            <CurationElement v-for="to_process_key in to_process_curation.slice(item_min, item_max)"
+
+            <CurationElement v-show="in_current_page(index)" v-for="(to_process_key, index) in to_process_curation"
                 @updateCuration=updateCuration 
                 :key="to_process_key.occurrenceKey2" 
                 :pre_occurrence="occurrences[to_process_key.occurrenceKey2]" 
                 :pre_matching="to_process_key"
                 :pre_scores="get_scores(occurrences[user_query.occurrence_key], occurrences[to_process_key.occurrenceKey2])" 
                 />
-
+            
             <tr class="empty-line centered-empty" v-if="page_total > 1">
                 <td colspan=100>
                     <div class="page-box">
@@ -348,6 +349,7 @@ export default {
         item_max(){
             return ((this.current_page*this.per_page))
         },
+        
         get_report_link(){
             return "https://github.com/plazi/community/issues/new?body=Please%20leave%20your%20comment%20here...%0A%0A**Context**%0A%5BGBIF%20occurrence%5D(https%3A%2F%2Fwww.gbif.org%2Foccurrence%2F"+this.get_occurrence.key+")%0A%5BPlazi%20reference%5D("+this.get_occurrence.references+")"
         },
@@ -534,6 +536,14 @@ export default {
             else {
                 this.sort.by = name
                 this.sort.asc = false
+            }
+        },
+        in_current_page(index){
+            if (index > this.item_min && index < this.item_max){
+                return true
+            }
+            else {
+                return false
             }
         },
         addLine() {
