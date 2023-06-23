@@ -115,7 +115,11 @@ export default new class Backend {
                     }
                     else {
                         for (var i=0; i<values.length; i++){
-                            query += "&" + name + "=" + encodeURIComponent(values[i]);
+                            var fieldName = name
+                            if (name == "dataset" || name == "institution"){
+                                fieldName = name+"Key"
+                            }
+                            query += "&" + fieldName + "=" + encodeURIComponent(values[i].value);
                         }
                     }
                     

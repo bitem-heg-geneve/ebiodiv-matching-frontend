@@ -10,6 +10,7 @@
             Occurrence {{ user_query.occurrence_key }} not found
         </div>
 
+        <div class="table-container">
         <table v-if="!in_progress && !warning">
 
             <tr class="empty-line">
@@ -158,18 +159,16 @@
             </template>    
 
         </table>
+        </div>
 
         <div v-if="!in_progress && !warning">
 
-            <div class="button-container" v-if="show_back_button_final">
+            <div class="button-container">
                 <button @click="nosaveBack()">Go back to list</button>
                 <button @click="nosaveNext()">Continue to the next {{ get_occurrence_name.toLowerCase() }}</button>
                 <br/><br/>
                 <button v-show="changes > 0" @click="saveBack()">Save and Go back to list</button>
                 <button v-show="changes > 0" @click="saveNext()">Save and Continue to the next {{ get_occurrence_name.toLowerCase() }}</button>
-            </div>
-            <div class="button-container" v-else>
-                <button @click="saveStop()">Save</button>
             </div>
 
             <div class="left-container">
@@ -251,17 +250,9 @@ export default {
         PulseLoader,
         vPagination,
     },
-    props: {
-        show_back_button: {
-            type: Boolean,
-            required: false,
-            default: true,
-        },
-    },
     data() {
         return {
             in_progress: true,
-            show_back_button_final: true,
             warning: false,
             occurrences: {},
             relations: [],
@@ -360,17 +351,11 @@ export default {
             'updateUsername'
         ]),
         searchCurationAPI(){
-            if(this.user_query.q == '' && this.user_query.occurrences_keys.length == 0){
-                this.show_back_button_final = false
-            }
-            else {
-                this.show_back_button_final = true
-            }
             var query = {
                 ...this.$router.currentRoute.query,
                 occurrenceKey: this.user_query.occurrence_key
             }
-            if (this.show_back_button_final && Object.entries(query).toString() !== Object.entries(this.$router.currentRoute.query).toString()){
+            if (Object.entries(query).toString() !== Object.entries(this.$router.currentRoute.query).toString()){
                 this.$router.replace({
                     name: this.$router.currentRoute.name,
                     query
@@ -640,12 +625,6 @@ export default {
                 alert('Your work is not saved');
             }
         });
-        if(this.user_query.q == '' && this.user_query.occurrences_keys.length == 0){
-            this.show_back_button_final = false
-        }
-        if( this.show_back_button == false){
-            this.show_back_button_final = false
-        }
     },
     watch: {
         "user_query.occurrence_key": function () {
@@ -875,4 +854,12 @@ button[disabled] {
     display: flex;
     justify-content: center;
 }
+
+.table-container {
+    margin: 0;
+    padding: 1px;
+    overflow-x: auto;
+    flex-grow: 1;
+}
+
 </style>

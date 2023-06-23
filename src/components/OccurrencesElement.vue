@@ -1,18 +1,15 @@
 <template>
 
     <tr :style="cssVars" :class="tr_even">
-        <td><a :href="'https://www.gbif.org/occurrence/'+occurrence['key']" target="_blank">{{ occurrence.key }}</a></td>
-        <td>{{ occurrence.scientificName }}</td>
-        <td v-if="user_query.basisOfRecord=='MATERIAL_CITATION'">{{ occurrence.verbatimLabel }}</td>
-        <td>{{ this.display_value_typeStatus(occurrence.typeStatus) }}</td>
-        <td>{{ this.display_value_basisOfRecord(occurrence.basisOfRecord) }}</td>
-        <td>{{ occurrence.year }}</td>
-        <td>{{ relation_count }}</td>
+        <td class="space">
+          <a :href="'https://www.gbif.org/occurrence/'+occurrence['key']" target="_blank">{{ occurrence.key }}</a>
+        </td>
+        <td v-for="field in fields_to_display" :key="field.title">{{ getValue(field.field) }}</td>        
         <td>
           <img v-if="status_name != 'unknown'" :src="require('../assets/images/icon_status_'+status_name+'.png')" class="small"/>
           <span v-else>unknown</span>
         </td>
-        <td><button @click="displayOccurrence()" class="button-table"><img src="../assets/images/icon_todo.png"  class="mini"/></button></td>
+        <td><button @click="displayOccurrence()" class="button-td"><img src="../assets/images/icon_todo.png"  class="mini"/></button></td>
 
     </tr>
 
@@ -20,6 +17,7 @@
 
 
 <script>
+
 import { mapState, mapActions } from 'vuex'
 import shared_fields from '@/components/shared_fields.js'
 
@@ -48,12 +46,22 @@ import shared_fields from '@/components/shared_fields.js'
       computed: {
         ...mapState([
           'user_query', 
-          'theme_color'
+          'theme_color',
+          'occurrence_characteristics',
         ]),
         cssVars () {
             return{
                 '--color': this.theme_color.main,
             }
+        },
+        fields_to_display() {
+          var fields = []
+          for (var i=0; i<this.occurrence_characteristics.length; i++){
+            if (this.occurrence_characteristics[i].selection){
+              fields.push(this.occurrence_characteristics[i])
+            }
+          }
+          return fields
         },
         tr_even (){
           if (this.index % 2 == 0){
@@ -96,6 +104,17 @@ import shared_fields from '@/components/shared_fields.js'
           this.updateOccurrenceKey(this.occurrence.key)
           this.$gtag.event('displayOccurrence');
        },
+       getValue(variable){
+          if (variable == "occurrence.typeStatus"){
+            return (this.display_value_typeStatus(eval("this."+variable)))
+          }
+          else if (variable == "occurrence.basisOfRecord"){
+            return (this.display_value_basisOfRecord(eval("this."+variable)))
+          }
+          else {
+            return eval("this."+variable)
+          }
+        },
       },
     }
 
@@ -104,7 +123,7 @@ import shared_fields from '@/components/shared_fields.js'
 
 <style scoped lang="scss">
 
-    .button-table {
+    .button-td {
       display: inline-block;
       border-radius:5px;
       background-color: #AAA;
@@ -115,7 +134,7 @@ import shared_fields from '@/components/shared_fields.js'
       cursor: pointer;
     }
 
-    .button-table:hover {
+    .button-td:hover {
       background-color: var(--color);
     }
 
@@ -126,16 +145,51 @@ import shared_fields from '@/components/shared_fields.js'
     .mini {
         width: 15px;
     }
+    .space {
+      padding-left: 20px;
+    }
 
     td {
-      border-bottom: 1px solid #ddd;
       padding: 6px;
-      text-align: center;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    td:first-child, th:first-child {
+      position:sticky;
+      left:0;
+      z-index:1;
+    }
+    td:last-child, th:last-child {
+      position:sticky;
+      right:0;
+      z-index:1;
+    }
+
+    .tr-odd:not(:hover) td:first-child, .tr-odd:not(:hover) td:last-child {
+        background-color: #eee;
+    }
+
+    .tr-odd:hover td:first-child, .tr-odd:hover td:last-child {
+        background-color: #ddd;
+    }
+
+    .tr-odd {
+      background-color: #eee;
     }
 
     .tr-even {
-    background-color: #fff;
-}
+      background-color: #fff;
+    }
+
+    .tr-even:not(:hover) td:first-child, .tr-even:not(:hover) td:last-child {
+        background-color: #fff;
+    }
+
+    .tr-even:hover td:first-child, .tr-even:hover td:last-child {
+        background-color: #ddd;
+    }
+
 
 
 </style>

@@ -23,12 +23,12 @@
                     <div v-else>
 
                         <div class="inputGroup" v-for="item in values"
-                            @click="changeFacet(facet.field, $event)" 
+                            @click="changeFacet(facet.field, getPrettyItemValue(item), $event)" 
                             :key="facet.field+'_'+item.value">
                             <input :id="facet.field+'_'+item.value" :name="item.value" type="checkbox" v-bind:value="item.value" :checked="item.checked" />
                             <label :for="facet.field+'_'+item.value">
                                 <span class="name">
-                                    {{ getPrettyItemValue(item.value) }}
+                                    {{ getPrettyItemValue(item) }}
                                 </span>
                                 <span class="count">{{ item.count }}</span>
                             </label>
@@ -204,17 +204,24 @@ export default {
                 values = clean_values
                 for (let i=0; i< values.length; i++){
                     present_values.push(values[i].value)
-                    if (this.user_query.facets_selection[this.facet.field].includes(values[i].value)){
-                        values[i]['checked'] = true 
+                    var status = false
+                    for (var k=0; k<this.user_query.facets_selection[this.facet.field].length; k++){
+                        if (this.user_query.facets_selection[this.facet.field][k].value == values[i].value){
+                            status = true;
+                            break;
+                        }
                     }
-                    else {
-                        values[i]['checked'] = false
-                    }
+                    values[i]['checked'] = status
                 }
                 for (let j=0; j<this.user_query.facets_selection[this.facet.field].length; j++){
                     var term = this.user_query.facets_selection[this.facet.field][j]
-                    if (!present_values.includes(term)){
-                        values.push({'value': term, 'count': 0, 'checked': true})
+                    if (!present_values.includes(term.value)){
+                        if ('label' in term){
+                            values.push({'value': term.value, 'label': term.label, 'count': 0, 'checked': true})
+                        }
+                        else {
+                            values.push({'value': term.value, 'count': 0, 'checked': true})
+                        }
                         this.getCount(term)
                     }
                 }
@@ -238,17 +245,22 @@ export default {
                 console.log(error)
             })
         },
-        changeFacet(field, event){
+        changeFacet(field, label, event){
             // Add the facet to the list if checked
             if (event.target.checked != undefined){
                 var filter_list = this.user_query.facets_selection[field]
                 if (event.target.checked) {
-                    filter_list.push(event.target.value)
+                    if(label !=  event.target.value){
+                        filter_list.push({'value': event.target.value, 'label': label})
+                    }
+                    else {
+                        filter_list.push({'value': event.target.value})
+                    }
                 }                       
                 // Remove the facet from the list if unchecked
                 else {
                     for (var i = 0; i < filter_list.length; i++) {
-                        if (filter_list[i] == event.target.value) {
+                        if (filter_list[i].value == event.target.value) {
                             filter_list.splice(i, 1)
                         }
                     }
@@ -267,9 +279,16 @@ export default {
         updateVisibility(val){
             this.updateFacetVisibility({'facet': this.facet.field, 'visibility': val})
         },
-        getPrettyItemValue(value){
+        getPrettyItemValue(item){
+            var value = ""
             if (this.facet.field == "typeStatus"){
-               value = this.display_value_typeStatus(value)
+               value = this.display_value_typeStatus(item.value)
+            }
+            else if ("label" in item){
+                value = item.label
+            }
+            else {
+                value = item.value
             }
             return value
         }
@@ -283,6 +302,9 @@ export default {
                 this.loadFacet()
             },
             deep: true
+        },
+        "user_query.q": function (){
+            this.loadFacet()
         },
         pre_value: function () {
             this.searchFacet(this.pre_value)
