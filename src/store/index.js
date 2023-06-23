@@ -9,11 +9,12 @@ export default new Vuex.Store({
         main: "#70AD47",
         secondary: "#008F00",
     },
-    step: 1,
+    landing: true,
+    step: 2,
     user_query: {
         pre_q: '',
         q: '',
-        basisOfRecord: null,
+        basisOfRecord: "PRESERVED_SPECIMEN",
         limit: 20,
         page: 1,
         ranking: "scientificName",
@@ -34,7 +35,8 @@ export default new Vuex.Store({
             'stateProvince': [],
             'typeStatus': [],
             'recordedBy': [],
-            'institutionCode': [],
+            'institution': [],
+            'dataset': [],
             'collectionCode': [],
             'title': [],
             'gbifDoi': [],
@@ -71,7 +73,8 @@ export default new Vuex.Store({
             'stateProvince': false,
             'typeStatus': false,
             'recordedBy': false,
-            'institutionCode': false,
+            'institution': false,
+            'dataset': false,
             'collectionCode': false,
             'title': false,
             'gbifDoi': false,
@@ -95,6 +98,7 @@ export default new Vuex.Store({
         }
     },
     institutions: {},
+    
     fields: {
         MATERIAL_CITATION: {
             basisOfRecord_occurrence: {
@@ -112,11 +116,11 @@ export default new Vuex.Store({
             basisOfRecord_curation: {
                 name: "Material citation",
             }
-        }
+        },
     },
     filters: {
         ranking: [
-            {title: 'ID', field:'gbifDoi'},
+            {title: 'identifier', field:'gbifDoi'},
             {title: 'scientific name', field:'scientificName'},
             {title: 'matching number', field:'-associatedOccurrences'}
             //{title: 'date', field:'-year'},
@@ -136,7 +140,8 @@ export default new Vuex.Store({
             {title: 'State province', field:'stateProvince'},
             {title: 'Type status', field:'typeStatus'},
             {title: 'Recorded by', field:'recordedBy'},
-            {title: 'Institution code', field:'institutionCode'},
+            {title: 'Institution', field:'institution'},
+            {title: 'Dataset', field:'dataset'},
             {title: 'Collection code', field:'collectionCode'},
             {title: 'Title', field:'title'},
             {title: 'Gbif DOI', field:'gbifDoi'},
@@ -159,10 +164,32 @@ export default new Vuex.Store({
             {title: 'Plazi Uuid', field:'plaziUuid'},
         ],
     },
+    occurrence_characteristics: [
+        {title: 'Scientific name', field: 'occurrence.scientificName', selection: true},
+        {title: 'Verbatim label', field: 'occurrence.verbatimLabel', selection: true},
+        {title: 'Type', field: 'occurrence.typeStatus', selection: true},
+        {title: 'Record', field: 'occurrence.basisOfRecord', selection: true},
+        {title: 'Year', field: 'occurrence.year', selection: true},
+        {title: 'nb', field: 'relation_count', selection: true},
+        {title: 'Kingdom', field: 'occurrence.kingdom', selection: false},
+        {title: 'Phylum', field: 'occurrence.phylum', selection: false},
+        {title: 'Order', field: 'occurrence.order', selection: false},
+        {title: 'Family', field: 'occurrence.family', selection: false},
+        {title: 'Genus', field: 'occurrence.genus', selection: false},
+        {title: 'Species', field: 'occurrence.species', selection: false},
+        {title: 'Specific epithet', field: 'occurrence.specificEpithet', selection: false},
+        {title: 'Taxon rank', field: 'occurrence.taxonRank', selection: false},
+        {title: 'Country', field: 'occurrence.country', selection: false},
+        {title: 'Locality', field: 'occurrence.locality', selection: false},
+        {title: 'Institution code', field: 'occurrence.institutionCode', selection: false},
+        {title: 'Collection code', field: 'occurrence.collectionCode', selection: false},
+        {title: 'Recorded by', field: 'occurrence.recordedBy', selection: false},
+    ],
     curation_characteristics: [
         {name: 'Family', score: 'family', value: ['family']},
         {name: 'Genus', score: 'genus', value: ['genus']},
         {name: 'Specific epithet', score: 'specificEpithet', value: ['specificEpithet']},
+        {name: 'Infraspecific epithet', score: 'infraspecificEpithet', value: ['infraspecificEpithet']},
         {name: 'Coordinates', score: 'decimalLatitude', value: ['decimalLatitude', 'decimalLongitude']},
         {name: 'Elevation', score: 'elevation', value: ['elevation', 'depth']},
         {name: 'Locality', score: 'locality', value: ['locality']},
@@ -185,6 +212,9 @@ export default new Vuex.Store({
   mutations: {
     UPDATE_STEP(state, step) {
         state.step = step
+    },
+    UPDATE_LANDING(state) {
+        state.landing = false
     },
     UPDATE_QUERY(state, query) {
         state.user_query.q = query
@@ -209,6 +239,9 @@ export default new Vuex.Store({
     },
     UPDATE_FACET_SELECTION(state, value){
         state.user_query.facets_selection[value.facet] = value.list
+    },
+    UPDATE_FIELDS_SELECTION(state, value){
+        state.displayed_fields = value
     },
     RESET_FACETS(state){
         for (const key of Object.keys(state.user_query.facets_selection)) {
@@ -238,6 +271,9 @@ export default new Vuex.Store({
     updateStep(context, value){
         context.commit('UPDATE_STEP', value)
     },
+    udpateLanding(context){
+        context.commit('UPDATE_LANDING')
+    },
     updateQuery(context, value) {
         context.commit('UPDATE_QUERY', value)
     },
@@ -261,6 +297,9 @@ export default new Vuex.Store({
     },
     updateFacetSelection(context, value) {
         context.commit('UPDATE_FACET_SELECTION', value)
+    },
+    updateFieldsSelection(context, value) {
+        context.commit('UPDATE_FIELDS_SELECTION', value)
     },
     updateFacetVisibility(context, value){
         context.commit('UPDATE_FACET_VISIBILITY', value)

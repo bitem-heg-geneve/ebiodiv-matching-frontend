@@ -54,7 +54,12 @@ import { mapState } from 'vuex'
                 else {
                     for (var i=0; i<list.length; i++){
                         var item = {}
-                        item.name = list[i]
+                        if ('label' in list[i]){
+                          item.name = list[i].label
+                        }
+                        else {
+                          item.name = list[i].value
+                        }
                         item.type = key
                         active_filters.push(item)
                     }
@@ -67,8 +72,15 @@ import { mapState } from 'vuex'
         removeFilter(facet_name, value){
             var filter_list = this.facets[facet_name];
             for (var i = 0; i < filter_list.length; i++) {
-                if (filter_list[i] == value) {
-                    filter_list.splice(i, 1)
+                if ('label' in filter_list[i]){
+                  if (filter_list[i].label == value) {
+                      filter_list.splice(i, 1)
+                  }
+                }
+                else {
+                  if (filter_list[i].value == value) {
+                      filter_list.splice(i, 1)
+                  }
                 }
             }
             this.updateFacetSelection({'facet': facet_name, 'list': filter_list })

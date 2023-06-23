@@ -4,16 +4,7 @@
 
     <BannerComponent title="eBioDiv Matching Service" subtitle="Linking material citations to specimens" />
 
-    <div class="row" id="query" v-show="step != 3">
-        <QueryChoice />
-    </div>
-
-    <div class="button-container" v-show="step != 3">
-        <ExecuteButton @click="runSearchFromButton('PRESERVED_SPECIMEN', 1)" button_text="See specimens" :disabled="is_disabled"/>
-        <ExecuteButton @click="runSearchFromButton('MATERIAL_CITATION', 1)" button_text="See material citations" :disabled="is_disabled" />
-    </div>
-
-    <div class="row"  v-show="step == 1 && user_query.basisOfRecord == null">
+    <div class="row" v-if="landing">
         <div class="info-container">
             <p>Are you new to the matching service? Then <a href="https://ebiodiv.org/help/" target="_blank">click here</a> !</p>
         </div>
@@ -34,8 +25,6 @@
 <script>
 // @ is an alias to /src
 import BannerComponent from '@/components/BannerComponent.vue'
-import ExecuteButton from '@/components/ExecuteButton.vue'
-import QueryChoice from '@/components/QueryChoice.vue'
 import OccurrencesList from '@/components/OccurrencesList.vue'
 import CurationList from '@/components/CurationList.vue'
 import { mapState, mapActions } from 'vuex'
@@ -44,15 +33,14 @@ export default {
   name: 'HomePage',
   components: {
     BannerComponent,
-    ExecuteButton,
-    QueryChoice,
     OccurrencesList,
     CurationList
   },
   computed: {
         ...mapState([
             'user_query', 
-            'step'
+            'step',
+            'landing'
         ]),
         is_disabled(){
             if (this.user_query.pre_q.length > 0){
@@ -75,17 +63,8 @@ export default {
             'resetFacets',
             'updateInstitutions'
         ]),
-        runSearchFromButton(basisOfRecord, page){
-            this.resetFacets()
-            this.updateOccurrencesKeys([])
-            this.$refs["step2"].scrollIntoView({ behavior: "smooth" })
-            this.displayOccurrences(basisOfRecord, page)
-        },
         runSearchFromURL(){
-            if(this.user_query.pre_q != "" && this.user_query.basisOfRecord != null && this.user_query.occurrence_key == null){
-                this.displayOccurrences(this.user_query.basisOfRecord, this.user_query.page)
-            }
-            else if (this.user_query.occurrences_keys.length > 0  && this.user_query.basisOfRecord != null && this.user_query.occurrence_key == null){
+            if(this.user_query.occurrence_key == null){
                 this.displayOccurrences(this.user_query.basisOfRecord, this.user_query.page)
             }
             else if (this.user_query.occurrence_key != null){
@@ -118,7 +97,7 @@ export default {
             });
         },
         loadParametersFromURL(){
-            this.updateStep(1)
+            this.updateStep(2)
             
             var q = ''
             if ('q' in this.$route.query && this.$route.query.q.length > 0){
@@ -134,7 +113,9 @@ export default {
                     basisOfRecord = null
                 }
             }
-            this.updateBasisOfRecord(basisOfRecord)
+            if (basisOfRecord != null){
+                this.updateBasisOfRecord(basisOfRecord)
+            }
 
             var page = 1
             if ('page' in this.$route.query && this.$route.query.page.length > 0){
@@ -151,6 +132,16 @@ export default {
             for (const name of Object.keys(this.user_query.facets_selection)) {
                 if (name in this.$route.query && this.$route.query[name].length > 0){
                     var values = this.$route.query[name].split("|")
+                    var values_complete = []
+                    for (var i=0; i<values.length; i++){
+                        var elements = values[i].split(";;")
+                        if (elements.length > 1){
+                            values_complete.push({'value': elements[0], 'label': elements[1]})
+                        }
+                        else {
+                            values_complete.push({'value': elements[0]})                           
+                        }
+                    }
                     // TODO: year
                     if (name == "year"){
                         values = values.map(str => {
@@ -159,7 +150,7 @@ export default {
                         this.updateFacetSelection(Object.freeze({'facet': name, 'list': values }))
                     }
                     else {
-                        this.updateFacetSelection(Object.freeze({'facet': name, 'list': values }))
+                        this.updateFacetSelection(Object.freeze({'facet': name, 'list': values_complete }))
                     }
                 }
             }
@@ -212,7 +203,7 @@ export default {
 }
 
 .row {
-    padding: 50px;
+    padding: 20px;
     margin-left: 0;
     margin-right: 0;
 }

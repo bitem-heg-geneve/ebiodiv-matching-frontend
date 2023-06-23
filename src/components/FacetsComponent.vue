@@ -2,32 +2,29 @@
 
     <div class="facets-container" :style="cssVars">
 
-        <div class="all-filters-container" v-if="visible_facets">
+        <h2>Query</h2>
 
-            <h2>Sort</h2>
+        <input type="text" required v-model.trim="user_query.pre_q"/>
+        <button class="button" @click="search()">
+            <img :src="require('../assets/images/icon_search.png')" class="mini" />
+        </button>
 
-            <div class="inputGroup" v-for="ranking in filters.ranking" @click="updateRanking(ranking.field)" :key="ranking.title">
-                <input type="radio" :id="ranking.title" name="ranking" :value="ranking.field" v-model="user_query.ranking" />
-                <label :for="ranking">By {{ ranking.title }}</label>
-            </div>
+        <div class="radiobutton-container">
 
-            <br/>
+            <input type="radio" id="basisOfRecord" name="basisOfRecord" value="PRESERVED_SPECIMEN" :checked="selectedBasis('PRESERVED_SPECIMEN')" @click="updateBasis($event)">
+            <label for="basisOfRecord">Preserved specimen</label><br>
 
-            <h2>Filters</h2>
-
-            <div v-for="facet in sorted_facets" :key="facet.name">
-                <FacetElement :facet="facet" :updateFacetSelection="updateFacetSelection" :user_query="user_query"/>
-            </div>
+            <input type="radio" id="basisOfRecord" name="basisOfRecord" value="MATERIAL_CITATION" :checked="selectedBasis('MATERIAL_CITATION')" @click="updateBasis($event)">
+            <label for="basisOfRecord">Material citation</label><br>
 
         </div>
 
-        <div class="expand-container" @click="visible_facets = !visible_facets">
-            <img src="../assets/images/icon_show_more.png" alt="+" v-show="!visible_facets" />
-            <img src="../assets/images/icon_show_more.png" alt="+" v-show="!visible_facets" />
-            <img src="../assets/images/icon_show_more.png" alt="+" v-show="!visible_facets" />
-            <img src="../assets/images/icon_show_less.png" alt="-" v-show="visible_facets" />
-            <img src="../assets/images/icon_show_less.png" alt="-" v-show="visible_facets" />
-            <img src="../assets/images/icon_show_less.png" alt="-" v-show="visible_facets" />
+
+
+        <h2>Filters</h2>
+
+        <div v-for="facet in this.filters.facets" :key="facet.name">
+            <FacetElement :facet="facet" :updateFacetSelection="updateFacetSelection" :user_query="user_query"/>
         </div>
 
     </div>
@@ -58,6 +55,10 @@ export default {
             type: Object,
             required: true
         },
+        updateQuery: {
+            type: Function,
+            required: true
+        },
         updateRanking: {
             type: Function,
             required: true
@@ -66,11 +67,10 @@ export default {
             type: Function,
             required: true
         },
-    },
-    data() {
-        return {
-            visible_facets: true,
-        };
+        updateBasisOfRecord: {
+            type: Function,
+            required: true
+        }
     },
     computed: {
         ...mapState([
@@ -82,12 +82,23 @@ export default {
                 '--color': this.theme_color.main,
             }
         },
-        sorted_facets(){
-            var facets_array = this.filters.facets
-            facets_array = facets_array.sort((a, b) => a.title.localeCompare(b.title))
-            return facets_array
-        }
     },
+    methods: {
+        search(){
+            this.updateQuery(this.user_query.pre_q)
+        },
+        selectedBasis(value){
+            if (this.user_query.basisOfRecord == value){
+                return true
+            }
+            else{
+                return false
+            }
+        },
+        updateBasis(event){
+            this.updateBasisOfRecord(event.target.value)
+        }
+    }
 }
 
 </script>
@@ -100,119 +111,39 @@ export default {
     padding: 0;
     margin: 0px;
     border-right: 1px solid #ddd;
-    display: flex;
-}
-
-.all-filters-container {
-    float: left;
     padding: 10px;
-    width: 300px;
 }
 
-.expand-container {
-    float: right;
-    background-color: #aaa;
-    width: 10px;
-    padding: 10px 1px;
+input[type='text']{
+    width: 90%
+}
+
+.mini {
+    width: 13px;
     cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
 
-.expand-container:hover {
-    background-color: var(--color);
+.button {
+    display: inline-block;
+    background-color: #AAA;
+    border: none;
+    color: #FFFFFF;
+    text-align: center;
+    padding: 3px 5px;
+    cursor: pointer;
 }
 
-.expand-container img {
-    width: 8px;
+.button:hover {
+    background-color: var(--color)
 }
 
-.inputGroup {
-    background-color: #fff;
-    display: block;
-    margin: 10px 0;
-    position: relative;
-    border-radius: 10px;
-
-    label {
-        padding: 5px 25px 5px 10px;
-        width: 100%;
-        display: block;
-        text-align: left;
-        font-size: 0.8em;
-        color: #3C454C;
-        cursor: pointer;
-        position: relative;
-        z-index: 2;
-        transition: color 200ms ease-in;
-        overflow: hidden;
-        border-radius: 10px;
-
-        &:before {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            content: '';
-            background-color: var(--color);
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%) scale3d(1, 1, 1);
-            transition: all 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
-            opacity: 0;
-            z-index: -1;
-        }
-
-        &:after {
-            width: 15px;
-            height: 15px;
-            content: '';
-            border: 2px solid #D1D7DC;
-            background-color: #fff;
-            border-radius: 50%;
-            z-index: 2;
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            transition: all 200ms ease-in;
-        }
-
-    }
-
-    input:checked~label {
-        color: #fff;
-
-        &:before {
-            transform: translate(-50%, -50%) scale3d(56, 56, 1);
-            opacity: 1;
-        }
-
-        &:after {
-            background-color: #CCCCCC;
-            border-color: #CCCCCC;
-        }
-
-    }
-
-    input {
-        width: 15px;
-        height: 15px;
-        order: 1;
-        z-index: 2;
-        position: absolute;
-        right: 30px;
-        top: 50%;
-        transform: translateY(-50%);
-        cursor: pointer;
-        visibility: hidden;
-    }
+.radiobutton-container {
+    margin-top: 20px;
 }
 
-.slider {
-    margin: 30px 10px;
+input[type='radio']{
+    margin-right: 10px;
+    accent-color: #232323;
 }
 
 </style>
