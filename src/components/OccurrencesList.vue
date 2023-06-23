@@ -233,7 +233,9 @@ export default {
                 if (this.user_query.q != ''){
                     parameters['q'] = this.user_query.q
                 }
-                parameters['basisOfRecord'] = this.user_query.basisOfRecord
+                if (this.user_query.basisOfRecord != "PRESERVED_SPECIMEN"){
+                    parameters['basisOfRecord'] = this.user_query.basisOfRecord
+                }    
                 if (this.user_query.page != 1){
                     parameters['page'] = this.user_query.page
                 }
