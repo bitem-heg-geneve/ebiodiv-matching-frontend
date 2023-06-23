@@ -152,7 +152,7 @@ export default {
         loadFacetWithKeywords(text) {
             this.in_progress = true
             this.values = []
-            let response_promise = this.$backend.fetch_facet_values_with_keywords(this.facet.field, text+"*", this.user_query, this.item_size, 0)
+            let response_promise = this.$backend.fetch_facet_values_with_keywords(this.facet.field, "*"+text+"*", this.user_query, this.item_size, 0)
             response_promise.then(response => {
                     var values = response.data.results;
                     this.values = this.updateFacetValues(values)
