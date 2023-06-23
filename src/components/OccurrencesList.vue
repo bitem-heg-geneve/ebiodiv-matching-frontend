@@ -39,6 +39,27 @@
                             <div class="table-container">
                         
                                 <table>
+                                    <div :class="fields_popup">
+
+                                        <div class="right-container">
+                                            <button type="button" class="button-close" @click="closeFields()">
+                                                <img src="../assets/images/icon_close.png"  class="mini"/>
+                                                Close
+                                            </button>
+                                        </div>
+
+                                        <div class="content-popup">
+
+                                            <h1>Fields</h1>
+
+                                            <p v-for="field in occurrence_characteristics" :key="'allfields_'+field.title">
+                                                <input type="checkbox" id="fields" name="fields" :checked="field.selection" @change="changeSelection($event, field.field)">
+                                                <span v-if="field.title == 'nb'">{{ get_curation_name }}</span>     
+                                                {{ field.title }}
+                                            </p>
+
+                                        </div>
+                                    </div>
         
                                     <thead>
                                         <tr>
@@ -84,32 +105,7 @@
 
 
             </div>
-            <div :class="fields_popup">
 
-                <div class="right-container">
-                    <button type="button" class="button-close" @click="closeFields()">
-                        <img src="../assets/images/icon_close.png"  class="mini"/>
-                        Close
-                    </button>
-                </div>
-
-                <div class="content-popup">
-
-                    <h1>Fields</h1>
-
-                    <p v-for="field in occurrence_characteristics" :key="'allfields_'+field.title">
-                        <input type="checkbox" id="fields" name="fields" :checked="field.selection" @change="changeSelection($event, field.field)">
-                        <span v-if="field.title == 'nb'">{{ get_curation_name }}</span>     
-                        {{ field.title }}
-                    </p>
-
-                </div>
-
-                
-
-            </div>
-
-        
         </div>
 
     </div>
@@ -285,7 +281,7 @@ export default {
             })
         },
         popupFields(){
-            this.popup_visibility = true
+            this.popup_visibility = !this.popup_visibility
         },
         closeFields(){
             this.popup_visibility = false
@@ -385,7 +381,7 @@ table {
     font-size: 0.8rem;
     background-color: #eee;
     width: 100%;
-
+    position: relative;
 }
 
 td:first-child, th:first-child {
@@ -458,17 +454,17 @@ th {
 
 .fields-popup {
     display: none;
-    position: fixed;
-    top: 48%;
-    left: 490px;
     transform: translate(-50%, -50%);
     width: 300px;
     height: 400px;
     border: 3px solid #f1f1f1;
-    z-index: 9;
     background-color: #fff;
     text-align: left;
     padding: 10px;
+    position: absolute;
+    top: 240px;
+    left: 150px;
+    z-index: 9;
 }
 
 .content-popup {
