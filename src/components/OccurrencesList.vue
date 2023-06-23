@@ -245,12 +245,7 @@ export default {
                     if(values.length > 0){
                         var val = []
                         for (var j=0; j<values.length; j++){
-                            if ('label' in values[j]){
-                                val.push(values[j].value+";;"+values[j].label)
-                            }
-                            else {
-                                val.push(values[j].value)
-                            }
+                            val.push(values[j])
                         }
                         parameters[name] = val.join("|");
                     }
