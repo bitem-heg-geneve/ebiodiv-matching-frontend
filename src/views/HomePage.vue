@@ -132,16 +132,6 @@ export default {
             for (const name of Object.keys(this.user_query.facets_selection)) {
                 if (name in this.$route.query && this.$route.query[name].length > 0){
                     var values = this.$route.query[name].split("|")
-                    var values_complete = []
-                    for (var i=0; i<values.length; i++){
-                        var elements = values[i].split(";;")
-                        if (elements.length > 1){
-                            values_complete.push({'value': elements[0], 'label': elements[1]})
-                        }
-                        else {
-                            values_complete.push({'value': elements[0]})                           
-                        }
-                    }
                     // TODO: year
                     if (name == "year"){
                         values = values.map(str => {
@@ -150,7 +140,7 @@ export default {
                         this.updateFacetSelection(Object.freeze({'facet': name, 'list': values }))
                     }
                     else {
-                        this.updateFacetSelection(Object.freeze({'facet': name, 'list': values_complete }))
+                        this.updateFacetSelection(Object.freeze({'facet': name, 'list': values }))
                     }
                 }
             }

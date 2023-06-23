@@ -138,7 +138,7 @@ input[type='text']{
 }
 
 .radiobutton-container {
-    margin-top: 20px;
+    margin: 20px 0;
 }
 
 input[type='radio']{
