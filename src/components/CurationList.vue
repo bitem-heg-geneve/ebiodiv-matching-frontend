@@ -164,10 +164,10 @@
         <div v-if="!in_progress && !warning">
 
             <div class="button-container">
-                <button @click="nosaveBack()">Go back to list</button>
+                <button class="back-button" @click="nosaveBack()">Go back to list</button>
                 <button @click="nosaveNext()">Continue to the next {{ get_occurrence_name.toLowerCase() }}</button>
                 <br/><br/>
-                <button v-show="changes > 0" @click="saveBack()">Save and Go back to list</button>
+                <button class="back-button"  v-show="changes > 0" @click="saveBack()">Save and Go back to list</button>
                 <button v-show="changes > 0" @click="saveNext()">Save and Continue to the next {{ get_occurrence_name.toLowerCase() }}</button>
             </div>
 
@@ -538,10 +538,10 @@ export default {
         saveToSibBackend(occurrenceIdToSave) {
             const occurrenceRelations = {};
             // create occurrenceRelations using the existing decisions and occurrences
-            for (const relation of this.user_query.occurrence_key.relations) {
+            for (const relation of this.user_query.occurrence_key.relations) { // UPDATE: this.relations
                 occurrenceRelations[relation.object.key] = {
                     occurrence: { ... relation.object },  // make a copy of the occurrence so we delete "relations"
-                    decision: relation.matching.match,
+                    decision: relation.matching.match, // UPDATE: matching.decision / matching.statusCode
                     is_new_decision: false
                 }
                 delete occurrenceRelations[relation.object.key].occurrence.relations;
@@ -549,7 +549,7 @@ export default {
             // update occurrenceRelations with the new user decisions
             for (var i = 0; i < occurrenceIdToSave.length; i++) {
                 occurrenceRelations[occurrenceIdToSave[i]].decision = this.change_dict[this.change_list[i]];
-                occurrenceRelations[occurrenceIdToSave[i]].is_new_decision = true;
+                occurrenceRelations[occurrenceIdToSave[i]].is_new_decision = true; // UPDATE: matching.decision / matching.statusCode
             }
             // create data (to send to the SIB backend)
             const data = {
@@ -750,6 +750,14 @@ button:disabled,
 button[disabled] {
     background-color: #cccccc;
     color: #666666;
+}
+
+.back-button {
+    background-color: #bbb
+}
+
+.back-button:hover {
+    background-color: #aaa
 }
 
 .mini {

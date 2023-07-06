@@ -72,6 +72,12 @@ export default new class Backend {
         return await this.axios_get(url)
     }
 
+    async fetch_status_code() {
+        await this.fetch_urls()
+        var url = this.urls.statusCode
+        return await this.axios_get(url)
+    }
+
     async post_comment(data) {
         await this.fetch_urls()
         return await axios.post(this.urls.comments, data)

@@ -9,7 +9,7 @@
 
             <div v-else>
 
-                <input :ref="facet.field+'_input'" type="text" required v-model.trim="pre_value" placeholder="search" v-if="facet.field != 'year'"/>
+                <input :ref="facet.field+'_input'" type="text" required v-model.trim="pre_value" placeholder="search" v-if="facet.field != 'year' && facet.field != 'hasRelationWithStatus'"/>
 
                 <div v-if="values.length > 0">
 
@@ -126,27 +126,48 @@ export default {
             'updatePage',
         ]),       
         loadFacet() {
-            this.in_progress = true
-            this.values = []
-            if (this.user_query.basisOfRecord != null){
-                var size = this.item_size
-                // TODO: year
-                if(this.facet.field == "year"){
-                    size = 10000
-                }
-                let response_promise = this.$backend.fetch_facet_values(this.facet.field, this.user_query, size, 0)
-                response_promise.then(response => {
-                        var values = response.data.results;
-                        this.values = this.updateFacetValues(values)
+            
+            if (this.facet.field == "hasRelationWithStatus"){
+                    this.in_progress = true
+                    this.values = []
+                    let response_promise = this.$backend.fetch_status_code()
+                    response_promise.then(response => {
+                        var values = []
+                            for (var k=0; k < Object.keys(response.data).length; k++){
+                                var key =Object.keys(response.data)[k]
+                                values.push({ "value": key, "count": null, 'checked': false})
+                            }
+                            this.values = this.updateFacetValues(values)
+                            this.in_progress = false
+                    })
+                    .catch(error => {
+                        console.log(error)
                         this.in_progress = false
-                })
-                .catch(error => {
-                    console.log(error)
-                    this.in_progress = false
-                })
+                    })
             }
             else {
-                this.in_progress = false
+                this.in_progress = true
+                this.values = []
+                if (this.user_query.basisOfRecord != null){
+                    var size = this.item_size
+                    // TODO: year
+                    if(this.facet.field == "year"){
+                        size = 10000
+                    }
+                    let response_promise = this.$backend.fetch_facet_values(this.facet.field, this.user_query, size, 0)
+                    response_promise.then(response => {
+                            var values = response.data.results;
+                            this.values = this.updateFacetValues(values)
+                            this.in_progress = false
+                    })
+                    .catch(error => {
+                        console.log(error)
+                        this.in_progress = false
+                    })
+                }
+                else {
+                    this.in_progress = false
+                }
             }
         },
         loadFacetWithKeywords(text) {
@@ -243,6 +264,9 @@ export default {
             if (event.target.checked != undefined){
                 var filter_list = this.user_query.facets_selection[field]
                 if (event.target.checked) {
+                    if (field == "hasRelationWithStatus"){
+                        filter_list = []
+                    }
                     filter_list.push(event.target.value)
                 }                       
                 // Remove the facet from the list if unchecked
@@ -271,6 +295,9 @@ export default {
             var value = ""
             if (this.facet.field == "typeStatus"){
                value = this.display_value_typeStatus(item.value)
+            }
+            else if (this.facet.field == "hasRelationWithStatus"){
+               value = this.display_value_statusCode(item.value)
             }
             else {
                 value = item.value

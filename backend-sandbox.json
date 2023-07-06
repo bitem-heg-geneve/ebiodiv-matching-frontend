@@ -6,6 +6,7 @@
     "occurrencesList": "https://tb.plazi.org/GbifOccLink/sandbox/occurrenceList",
     "matching": "https://tb.plazi.org/GbifOccLink/sandbox/occurrenceRelations",
     "comments": "https://tb.plazi.org/GbifOccLink/sandbox/notes",
-    "sib_backend_url": "api/"
+    "sib_backend_url": "api/",
+    "statusCode": "https://tb.plazi.org/GbifOccLink/sandbox/statusCodes"
 }
 
