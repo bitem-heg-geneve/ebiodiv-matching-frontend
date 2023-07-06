@@ -264,9 +264,6 @@ export default {
             if (event.target.checked != undefined){
                 var filter_list = this.user_query.facets_selection[field]
                 if (event.target.checked) {
-                    if (field == "hasRelationWithStatus"){
-                        filter_list = []
-                    }
                     filter_list.push(event.target.value)
                 }                       
                 // Remove the facet from the list if unchecked
