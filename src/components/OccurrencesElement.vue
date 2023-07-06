@@ -4,11 +4,9 @@
         <td class="space">
           <a :href="'https://www.gbif.org/occurrence/'+occurrence['key']" target="_blank">{{ occurrence.key }}</a>
         </td>
-        <td v-for="field in fields_to_display" :key="field.title">{{ getValue(field.field) }}</td>  
-        <td v-if="comment_count">
-          {{ comment_count }} <img src="../assets/images/icon_comment.png"  class="mini"/>
-        </td>    
-        <td v-else></td>  
+        <td v-for="field in fields_to_display" :key="field.title">{{ getValue(field.field) }}
+          <img v-if="field.field=='comment_count' && comment_count" src="../assets/images/icon_comment.png"  class="mini"/>
+        </td>   
         <td>
           <img v-if="status_name != 'unknown'" :src="require('../assets/images/icon_status_'+status_name+'.png')" class="small"/>
           <span v-else>unknown</span>
@@ -97,7 +95,7 @@ import shared_fields from '@/components/shared_fields.js'
             return "finished"
           }
           return "unknown"
-        }
+        },
       },
       methods:{
         ...mapActions([
@@ -115,6 +113,14 @@ import shared_fields from '@/components/shared_fields.js'
           }
           else if (variable == "occurrence.basisOfRecord"){
             return (this.display_value_basisOfRecord(eval("this."+variable)))
+          }
+          else if (variable == "comment_count"){
+            if (this.comment_count){
+                return this.comment_count
+            }
+            else {
+              return ""
+            }
           }
           else {
             return eval("this."+variable)
