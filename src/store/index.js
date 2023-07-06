@@ -187,6 +187,10 @@ export default new Vuex.Store({
         {title: 'Institution code', field: 'occurrence.institutionCode', selection: false},
         {title: 'Collection code', field: 'occurrence.collectionCode', selection: false},
         {title: 'Recorded by', field: 'occurrence.recordedBy', selection: false},
+        {title: 'Undecidable', field: 'occurrence.occurrenceRelationSummary.UDCB', selection: false},
+        {title: 'Pending', field: 'occurrence.occurrenceRelationSummary.PNDG', selection: false},
+        {title: 'Done', field: 'occurrence.occurrenceRelationSummary.DONE', selection: false},
+        {title: 'Comments', field: 'comment_count', selection: false},
     ],
     curation_characteristics: [
         {name: 'Family', score: 'family', value: ['family']},
