@@ -1,3 +1,9 @@
+const STATUS_CODE_LABELS = {
+        "DONE": "Done",
+        "PNDG": "Pending",
+        "UDCB": "Undecidable"        
+}
+
 // values from
 // https://github.com/gbif/download-query-tools/blob/33562b5f0486fe032a1d274987edd6682415660d/src/main/resources/org/gbif/occurrence/query/filter.properties#L130-L141
 // https://github.com/gbif/gbif-web/blob/be5c9b54d59da14c26cc43ee7cd573c2d687b27d/packages/react-components/locales/translations/en/enums/basisOfRecord.json
@@ -111,6 +117,13 @@ export default {
             display_value_day_month_year(day, month, year) {
                 const values_without_null = [day, month, year].filter(v => v != null);
                 return values_without_null.join("/");
+            },
+            display_value_statusCode(statusCode) {
+                let value = STATUS_CODE_LABELS[statusCode];
+                if (value != null) {
+                    return value;
+                }
+                return statusCode;
             },
             display_value_typeStatus(typeStatus) {
                 let value = TYPE_STATUS_LABELS[typeStatus];

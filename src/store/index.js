@@ -57,6 +57,7 @@ export default new Vuex.Store({
             'doi': [],
             'zooBankId': [],          
             'plaziUuid': [],
+            'hasRelationWithStatus': []
         },
         facets_visibility: {
             'scientificName': false,
@@ -94,7 +95,8 @@ export default new Vuex.Store({
             'lastPage': false,
             'doi': false,
             'zooBankId': false,          
-            'plaziUuid': false,          
+            'plaziUuid': false,  
+            'hasRelationWithStatus': false,        
         }
     },
     institutions: {},
@@ -126,6 +128,7 @@ export default new Vuex.Store({
             //{title: 'date', field:'-year'},
         ],
         facets: [
+            {title: 'Status code', field:'hasRelationWithStatus'},
             {title: 'Scientific name', field:'scientificName'},
             {title: 'Accepted scientific name', field:'acceptedScientificName'},
             {title: 'Kingdom', field:'kingdom'},
