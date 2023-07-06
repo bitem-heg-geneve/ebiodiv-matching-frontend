@@ -75,6 +75,7 @@ export default new class Backend {
     async fetch_status_code() {
         await this.fetch_urls()
         var url = this.urls.statusCode
+        console.log(url)
         return await this.axios_get(url)
     }
 
