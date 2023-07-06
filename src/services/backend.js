@@ -75,7 +75,6 @@ export default new class Backend {
     async fetch_status_code() {
         await this.fetch_urls()
         var url = this.urls.statusCode
-        console.log(url)
         return await this.axios_get(url)
     }
 
@@ -84,9 +83,12 @@ export default new class Backend {
         return await axios.post(this.urls.comments, data)
     }
 
-    async fetch_comments(key1, key2) {
+    async fetch_comments(key1, key2=null) {
         await this.fetch_urls()
-        var url = this.urls.comments + "?" + "occKey1=" + key1 + "&occKey2=" + key2
+        var url = this.urls.comments + "?" + "occKey1=" + key1
+        if (key2 != null){
+            url += "&occKey2=" + key2
+        } 
         return await this.axios_get(url)
     }
 

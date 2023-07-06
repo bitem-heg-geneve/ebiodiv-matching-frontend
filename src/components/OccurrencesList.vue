@@ -72,6 +72,7 @@
                                                 <span v-if="field.title == 'nb'">{{ get_curation_name }}</span>
                                                 {{ field.title }}
                                             </th>
+                                            <th>Comments</th>
                                             <th>Status</th>
                                             <th></th>
                                         </tr>

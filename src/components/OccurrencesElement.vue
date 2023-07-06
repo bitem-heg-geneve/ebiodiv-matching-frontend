@@ -4,7 +4,8 @@
         <td class="space">
           <a :href="'https://www.gbif.org/occurrence/'+occurrence['key']" target="_blank">{{ occurrence.key }}</a>
         </td>
-        <td v-for="field in fields_to_display" :key="field.title">{{ getValue(field.field) }}</td>        
+        <td v-for="field in fields_to_display" :key="field.title">{{ getValue(field.field) }}</td>  
+        <td>{{ comment_count }} <img src="../assets/images/icon_comment.png"  class="mini"/></td>      
         <td>
           <img v-if="status_name != 'unknown'" :src="require('../assets/images/icon_status_'+status_name+'.png')" class="small"/>
           <span v-else>unknown</span>
@@ -41,6 +42,7 @@ import shared_fields from '@/components/shared_fields.js'
       },
       data() {
         return {
+          comment_count: null
         };
       },
       computed: {
@@ -115,7 +117,19 @@ import shared_fields from '@/components/shared_fields.js'
             return eval("this."+variable)
           }
         },
+        loadCommentsCount(){
+            let response_promise = this.$backend.fetch_comments(this.occurrence.key)
+            response_promise.then(response => {
+                    this.comment_count = response.data.count;
+            })
+            .catch(error => {
+                console.log(error)
+            })
+        }
       },
+      mounted() {
+        this.loadCommentsCount()
+    },
     }
 
 </script>
