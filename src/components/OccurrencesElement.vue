@@ -5,7 +5,10 @@
           <a :href="'https://www.gbif.org/occurrence/'+occurrence['key']" target="_blank">{{ occurrence.key }}</a>
         </td>
         <td v-for="field in fields_to_display" :key="field.title">{{ getValue(field.field) }}</td>  
-        <td>{{ comment_count }} <img src="../assets/images/icon_comment.png"  class="mini"/></td>      
+        <td v-if="comment_count">
+          {{ comment_count }} <img src="../assets/images/icon_comment.png"  class="mini"/>
+        </td>    
+        <td v-else></td>  
         <td>
           <img v-if="status_name != 'unknown'" :src="require('../assets/images/icon_status_'+status_name+'.png')" class="small"/>
           <span v-else>unknown</span>
