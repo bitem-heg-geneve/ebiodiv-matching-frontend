@@ -344,7 +344,7 @@ export default {
             return filtered_empty
         },
         page_total() {
-            return Math.ceil(this.relations.length / this.per_page)
+            return Math.ceil(this.to_process_curation.length / this.per_page)
         },
         item_min(){
             return ((this.current_page-1)*this.per_page)
