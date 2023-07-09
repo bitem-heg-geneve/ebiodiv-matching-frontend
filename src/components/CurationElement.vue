@@ -23,7 +23,7 @@
                 <td class="decision">
                      <input type="checkbox" :checked="status=='yes'" @click="changeSelection($event, 'yes')" /> Yes <br/>
                      <input type="checkbox" :checked="status=='no'" @click="changeSelection($event, 'no')" /> No <br/>
-                     <input type="checkbox" :checked="status=='undecided'" @click="changeSelection($event, 'undecided')" /> Undecided
+                     <input type="checkbox" :checked="status=='undecidable'" @click="changeSelection($event, 'undecidable')" /> Undecidable
                  </td>
                 <td class="comment">
                     <CommentElement :occurrence_key="matching.occurrenceKey1" :curation_key="matching.occurrenceKey2"/>
@@ -205,9 +205,9 @@ export default {
                     this.status = "unknown"
                 }
             }
-            else if (choice == "undecided") {
+            else if (choice == "undecidable") {
                 if (event.target.checked == true) {
-                    this.status = "undecided"
+                    this.status = "undecidable"
                 }
                 if (event.target.checked == false) {
                     this.status = "unknown"
@@ -220,7 +220,7 @@ export default {
             else if (this.status == "no") {
                 matching = {'statusCode': "DONE", 'decision': false}
             }
-            else if (this.status == "undecided") {
+            else if (this.status == "undecidable") {
                 matching = {'statusCode': "UDCB", 'decision': null}
             }
             else {
@@ -283,7 +283,7 @@ export default {
                 }
             }
             else if (this.matching.statusCode == "UDCB"){
-                this.status = "undecided"
+                this.status = "undecidable"
             }
             else {
                 this.status = "unknown"

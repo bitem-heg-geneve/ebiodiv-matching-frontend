@@ -1,5 +1,6 @@
 {
-    "client_id": "APP-LSUF3LMMH0K7TJ20",
+    //"client_id": "APP-LSUF3LMMH0K7TJ20",
+    "client_id": "APP-YLYQT2Q2YANPUXFQ",
     "issuer": "https://sandbox.orcid.org",
     "authUrl": "https://sandbox.orcid.org/oauth/authorize",
     "key": {
