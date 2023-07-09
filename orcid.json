@@ -1,5 +1,4 @@
 {
-    // Temp change of the client id to fix the issue with staging
     "client_id": "APP-YLYQT2Q2YANPUXFQ",
     "issuer": "https://orcid.org",
     "authUrl": "https://orcid.org/oauth/authorize",
