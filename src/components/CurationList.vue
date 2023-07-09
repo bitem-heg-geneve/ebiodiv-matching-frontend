@@ -164,11 +164,23 @@
         <div v-if="!in_progress && !warning">
 
             <div class="button-container">
-                <button class="back-button" @click="nosaveBack()">Go back to list</button>
-                <button @click="nosaveNext()">Continue to the next {{ get_occurrence_name.toLowerCase() }}</button>
+                <button class="back-button" @click="nosaveBack()">
+                    <img src="../assets/images/icon_back.png" class="small" />
+                    Go back to list
+                </button>
+                <button @click="nosaveNext()">
+                    <img src="../assets/images/icon_next.png" class="small" />
+                    Continue to the next {{ get_occurrence_name.toLowerCase() }}
+                </button>
                 <br/><br/>
-                <button class="back-button"  v-show="changes > 0" @click="saveBack()">Save and Go back to list</button>
-                <button v-show="changes > 0" @click="saveNext()">Save and Continue to the next {{ get_occurrence_name.toLowerCase() }}</button>
+                <button class="back-button"  v-show="changes > 0" @click="saveBack()">
+                    <img src="../assets/images/icon_saveback.png" class="small" />
+                   Save and Go back to list
+                </button>
+                <button v-show="changes > 0" @click="saveNext()">
+                    <img src="../assets/images/icon_savenext.png" class="small" />
+                    Save and Continue to the next {{ get_occurrence_name.toLowerCase() }}
+                </button>
             </div>
 
             <div class="left-container">
@@ -717,12 +729,12 @@ button {
     background-color: var(--color);
     border: none;
     color: #FFFFFF;
-    text-align: center;
+    text-align: left;
     padding: 5px 10px;
     cursor: pointer;
     margin: 0px 5px;
-    width: 300px;
-
+    width: 360px;
+    height: 40px;
 }
 
 button:hover {
@@ -763,6 +775,11 @@ button[disabled] {
 .mini {
     width: 15px;
     padding-bottom: 4px;
+}
+
+.small {
+    height: 30px;
+    padding-right: 10px;
 }
 
 .empty-line td,
