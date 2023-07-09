@@ -379,7 +379,7 @@ th {
 
 .decision {
     text-align: left;
-    width: 120px;
+    width: 140px;
 }
 
 .comment {
