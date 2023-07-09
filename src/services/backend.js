@@ -47,7 +47,8 @@ export default new class Backend {
 
     async fetch_next_occurrence_from_q(user_query, occurrence_key) {
         await this.fetch_urls()
-        var url = this.urls.occurrences + "/" + occurrence_key + "/nextWithPending?" + this.fillQuery(user_query)
+        var url = this.urls.occurrences + "/" + occurrence_key + "/next?" + this.fillQuery(user_query)
+
         return await this.axios_get(url)
     }
 

@@ -222,6 +222,7 @@ export default {
             }
             response_promise.then(response => {
                 this.occurrences = response.data.results;
+
                 if (this.user_query.occurrences_keys.length > 0) {
                     var new_list = []
                     for (var i=0; i<response.data.results.length; i++){
@@ -256,6 +257,7 @@ export default {
                 }
                 this.$router.replace({ query: parameters }).catch(()=>{});
                 this.total = response.data.count
+
                 this.in_progress = false
 
                 if (prev_position != null){
