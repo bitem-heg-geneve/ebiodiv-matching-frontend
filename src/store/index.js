@@ -247,9 +247,6 @@ export default new Vuex.Store({
     UPDATE_FACET_SELECTION(state, value){
         state.user_query.facets_selection[value.facet] = value.list
     },
-    UPDATE_FIELDS_SELECTION(state, value){
-        state.displayed_fields = value
-    },
     RESET_FACETS(state){
         for (const key of Object.keys(state.user_query.facets_selection)) {
             state.user_query.facets_selection[key] = []
@@ -257,6 +254,9 @@ export default new Vuex.Store({
     },
     UPDATE_FACET_VISIBILITY(state, value){
         state.user_query.facets_visibility[value.facet] = value.visibility
+    },
+    UPDATE_OCCURRENCE_CHARACTERISTICS(state, value){
+        state.occurrence_characteristics = value
     },
     UPDATE_INSTITUTIONS(state, value){
         state.institutions = value
@@ -305,11 +305,11 @@ export default new Vuex.Store({
     updateFacetSelection(context, value) {
         context.commit('UPDATE_FACET_SELECTION', value)
     },
-    updateFieldsSelection(context, value) {
-        context.commit('UPDATE_FIELDS_SELECTION', value)
-    },
     updateFacetVisibility(context, value){
         context.commit('UPDATE_FACET_VISIBILITY', value)
+    },
+    updateOccurrenceCharacteristics(context, value){
+        context.commit('UPDATE_OCCURRENCE_CHARACTERISTICS', value)
     },
     resetFacets(context){
         context.commit('RESET_FACETS')
