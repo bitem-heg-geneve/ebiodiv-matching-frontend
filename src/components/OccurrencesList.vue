@@ -207,8 +207,8 @@ export default {
             'resetFacets',
             'updateOccurrencesKeys',
             'udpateLanding',
-            'updateFieldsSelection',
-            'updateBasisOfRecord'
+            'updateBasisOfRecord',
+            'updateOccurrenceCharacteristics'
         ]),
         searchOccurrencesAPI(prev_position=null) {
             this.in_progress = true
@@ -292,7 +292,7 @@ export default {
                     this.occurrence_characteristics[i].selection = event.target.checked
                 }
             }
-            this.updateFieldsSelection(fields)
+            this.updateOccurrenceCharacteristics(fields)
         }
     },
     watch: {
