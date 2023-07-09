@@ -3,11 +3,14 @@
   <div :style="cssVars">
 
       <div class="active-filters">
+          <span class="filter-name"  v-if="query_keyword != ''">
+              <span class="filter-remove" @click="removeFilter('keyword', 'q')">x </span> {{ query_keyword }}
+          </span>
           <span class="filter-name" v-for="filter in active_filters" :key="filter.name" >
               <span class="filter-remove" @click="removeFilter(filter.type, filter.name)">x </span> {{ filter.name }}
           </span>
-          <span class="filters-remove" v-if="active_filters.length > 1">
-              <span @click="resetFacets">Remove all filters</span>
+          <span class="filters-remove" v-if="filters_count > 1">
+              <span @click="removeAllFilters">Remove all filters</span>
           </span>
       </div>
 
@@ -22,9 +25,21 @@ import { mapState } from 'vuex'
   export default {
     name: 'FiltersSelection',
     props: {
+      query_keyword: {
+          type: String,
+          required: true
+      },
       facets: {
           type: Object,
           required: true
+      },
+      updatePreQuery: {
+        type: Function,
+        required: true
+      },
+      updateQuery: {
+        type: Function,
+        required: true
       },
       updateFacetSelection: {
           type: Function,
@@ -62,9 +77,17 @@ import { mapState } from 'vuex'
           }
           return active_filters;
       },
+      filters_count () {
+        var count = this.active_filters.length
+        if (this.query_keyword.length > 0){
+          count += 1
+        }
+        return count
+      }
     },
     methods:{
       removeFilter(facet_name, value){
+        if (facet_name != "keyword"){
           var filter_list = this.facets[facet_name];
           for (var i = 0; i < filter_list.length; i++) {
               if (filter_list[i] == value) {
@@ -72,6 +95,16 @@ import { mapState } from 'vuex'
               }
           }
           this.updateFacetSelection({'facet': facet_name, 'list': filter_list })
+        }
+        else {
+          this.updatePreQuery("")
+          this.updateQuery("")
+        }
+      },
+      removeAllFilters(){
+          this.resetFacets()
+          this.updatePreQuery("")
+          this.updateQuery("")
       },
     },
   }

@@ -27,7 +27,10 @@
                         </p>
 
                         <FiltersSelection  v-if="this.user_query.occurrences_keys.length == 0" 
+                                :query_keyword="this.user_query.q"
                                 :facets="this.user_query.facets_selection"
+                                :updateQuery="this.updateQuery" 
+                                :updatePreQuery="this.updatePreQuery" 
                                 :updateFacetSelection="this.updateFacetSelection" 
                                 :resetFacets="this.resetFacets" />
 
@@ -197,6 +200,7 @@ export default {
     },
     methods: {
         ...mapActions([
+            'updatePreQuery',
             'updateQuery',
             'updateFacetSelection', 
             'updateRanking', 
