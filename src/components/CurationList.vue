@@ -164,22 +164,30 @@
         <div v-if="!in_progress && !warning">
 
             <div class="button-container">
-                <button class="back-button" @click="nosaveBack()">
+                <button v-show="changes == 0" class="grey-button" @click="nosaveBack()">
                     <img src="../assets/images/icon_back.png" class="small" />
                     Go back to list
                 </button>
-                <button @click="nosaveNext()">
+                <button v-show="changes == 0" class="grey-button" @click="nosaveNext()" >
                     <img src="../assets/images/icon_next.png" class="small" />
                     Continue to the next {{ get_occurrence_name.toLowerCase() }}
                 </button>
-                <br/><br/>
-                <button class="back-button"  v-show="changes > 0" @click="saveBack()">
-                    <img src="../assets/images/icon_saveback.png" class="small" />
-                   Save and Go back to list
+                <button v-show="changes > 0" class="red-button" @click="nosaveBack()">
+                    <img src="../assets/images/icon_resetback.png" class="small" />
+                    Reset change(s) and go back to list
                 </button>
-                <button v-show="changes > 0" @click="saveNext()">
+                <button v-show="changes > 0" class="red-button" @click="nosaveNext()">
+                    <img src="../assets/images/icon_resetnext.png" class="small" />
+                    Reset change(s) and continue to the next {{ get_occurrence_name.toLowerCase() }}
+                </button>
+                <br/><br/>
+                <button v-show="changes > 0" class="green-button"  @click="saveBack()">
+                    <img src="../assets/images/icon_saveback.png" class="small" />
+                   Save and go back to list
+                </button>
+                <button v-show="changes > 0" class="green-button" @click="saveNext()">
                     <img src="../assets/images/icon_savenext.png" class="small" />
-                    Save and Continue to the next {{ get_occurrence_name.toLowerCase() }}
+                    Save and continue to the next {{ get_occurrence_name.toLowerCase() }}
                 </button>
             </div>
 
@@ -726,19 +734,14 @@ th {
 button {
     display: inline-block;
     border-radius: 5px;
-    background-color: var(--color);
     border: none;
     color: #FFFFFF;
     text-align: left;
     padding: 5px 10px;
     cursor: pointer;
     margin: 0px 5px;
-    width: 360px;
+    width: 420px;
     height: 40px;
-}
-
-button:hover {
-    background-color: var(--color-secondary);
 }
 
 .button-table {
@@ -764,13 +767,30 @@ button[disabled] {
     color: #666666;
 }
 
-.back-button {
+.grey-button {
     background-color: #bbb
 }
 
-.back-button:hover {
+.grey-button:hover {
     background-color: #aaa
 }
+
+.red-button {
+    background-color: #f15c5c
+}
+
+.red-button:hover {
+    background-color: #d62121
+}
+
+.green-button {
+    background-color: var(--color)
+}
+
+.green-button:hover {
+    background-color: var(--color-secondary)
+}
+
 
 .mini {
     width: 15px;
