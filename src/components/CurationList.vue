@@ -556,32 +556,35 @@ export default {
         },
         // TO CHECK
         saveToSibBackend(occurrenceIdToSave) {
-            const occurrenceRelations = {};
+            const occurrenceRelations = {};            
             // create occurrenceRelations using the existing decisions and occurrences
-            for (const relation of this.user_query.occurrence_key.relations) { // UPDATE: this.relations
-                occurrenceRelations[relation.object.key] = {
-                    occurrence: { ... relation.object },  // make a copy of the occurrence so we delete "relations"
-                    decision: relation.matching.match, // UPDATE: matching.decision / matching.statusCode
+            for (const relation of this.relations) { // UPDATE: this.relations
+                occurrenceRelations[relation.occurrenceKey2] = {
+                    occurrence: { ... this.occurrences[relation.occurrenceKey2] },  // make a copy of the occurrence so we delete "relations"
+                    statusCode: relation.statusCode, // UPDATE: matching.decision / matching.statusCode
+                    decision: relation.decision, // UPDATE: matching.decision / matching.statusCode
                     is_new_decision: false
                 }
-                delete occurrenceRelations[relation.object.key].occurrence.relations;
             }
             // update occurrenceRelations with the new user decisions
             for (var i = 0; i < occurrenceIdToSave.length; i++) {
-                occurrenceRelations[occurrenceIdToSave[i]].decision = this.change_dict[this.change_list[i]];
+                occurrenceRelations[occurrenceIdToSave[i]].statusCode = this.change_list[occurrenceIdToSave[i]].matching.statusCode,
+                occurrenceRelations[occurrenceIdToSave[i]].decision = this.change_list[occurrenceIdToSave[i]].matching.decision,
                 occurrenceRelations[occurrenceIdToSave[i]].is_new_decision = true; // UPDATE: matching.decision / matching.statusCode
             }
             // create data (to send to the SIB backend)
             const data = {
-                q: this.user_query.q, 
                 user: {
                     name: this.user.name,
                     orcid: this.user.orcid,
                 },
-                refOccurrence: { ...this.user_query.occurrence_key },  // make a copy of the occurrence so we delete "relations"
+                refOccurrence: { ...this.occurrences[this.user_query.occurrence_key] },  // make a copy of the occurrence so we delete "relations"
                 relations: Object.values(occurrenceRelations),
             };
-            delete data.refOccurrence.relations
+            // FIXME : temporary workaround
+            data.datasetKey = data.refOccurrence.datasetKey
+            data.institutionKey = data.refOccurrence.institutionKey
+            // end temporary workaround
             this.$backend.post_sib_matching(data)
                 .then(() => {})
                 .catch(() => {})
@@ -628,7 +631,7 @@ export default {
                 this.pendingSave = [];
 
                 // save to the SIB backend
-                //this.saveToSibBackend(occurrenceIdToSave);
+                this.saveToSibBackend(occurrenceIdToSave);
 
                 // save on the Plazi backend
                 this.saveToPlaziBackend(occurrenceIdToSave);
