@@ -4,6 +4,9 @@ export default new class Backend {
 
     constructor() {
         this.urls = null;
+        this.sendingRequest = false;
+        this.pendingPromiseResolve = [];
+        this.pendingPromiseReject = [];
     }
 
     fetch_urls() {
@@ -12,14 +15,23 @@ export default new class Backend {
                 resolve();
                 return
             }
+            if (this.sendingRequest === true) {
+                this.pendingPromiseResolve.push(resolve)
+                this.pendingPromiseReject.push(reject)
+                return
+            }
+            this.sendingRequest = true;
             axios
                 .get(process.env.BASE_URL + 'backend.json')
                 .then((response) => {
                     this.urls = response.data;
+                    this.sendingRequest = false;
                     resolve();
+                    this.pendingPromiseResolve.forEach(resolve => resolve())
                 })
                 .catch(error => {
                     reject(error)
+                    this.pendingPromiseReject.forEach(reject => reject())
                 })
         })
     }
