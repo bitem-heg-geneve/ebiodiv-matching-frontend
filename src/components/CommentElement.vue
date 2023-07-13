@@ -171,7 +171,7 @@ export default {
             }
         });
         this.$emitter.on('loginAbort', () => {
-            if (this.pending_comment != "") {
+            if (this.pending_comment != undefined && this.pending_comment != "") {
                 // logingAbort event and this.pendingSave is not empty
                 // ==> the user clicked on "Send" but cancel the logged in procedure
                 this.pending_comment = '';
