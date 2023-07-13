@@ -123,8 +123,10 @@ export default {
             }
         },
         postComment(){
-            this.pending_comment = this.comment
-            this.$emitter.emit('ensureLogin');
+            if (this.comment != ""){
+                this.pending_comment = this.comment
+                this.$emitter.emit('ensureLogin');
+            }
         },
         sendComment(){
             this.in_progress = true
@@ -161,7 +163,7 @@ export default {
     },
     mounted() {
         this.$emitter.on('logged', () => {
-            if (this.pending_comment != '') {
+            if (this.pending_comment != undefined && this.pending_comment != '') {
                 // save on the Plazi backend
                 this.sendComment(this.pending_comment);
                 this.pending_comment = '';
