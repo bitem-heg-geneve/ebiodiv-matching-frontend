@@ -8,8 +8,11 @@
           <img v-if="field.field=='comment_count' && comment_count" src="../assets/images/icon_comment.png"  class="mini"/>
         </td>   
         <td>
-          <img v-if="status_name != 'unknown'" :src="require('../assets/images/icon_status_'+status_name+'.png')" class="small"/>
-          <span v-else>unknown</span>
+          <div class="progress-status">&nbsp;
+            <div class="done-status" v-for="i in done_count" :key="'done_'+i"></div>
+            <div class="udcb-status" v-for="i in udcb_count" :key="'udcb_'+i"></div>
+            <div class="pending-status" v-for="i in pending_count" :key="'pndg_'+i"></div>
+          </div>
         </td>
         <td><button @click="displayOccurrence()" class="button-td"><img src="../assets/images/icon_todo.png"  class="mini"/></button></td>
 
@@ -56,6 +59,31 @@ import shared_fields from '@/components/shared_fields.js'
             return{
                 '--color': this.theme_color.main,
             }
+        },
+        done_count(){
+          if (this.occurrence.occurrenceRelationSummary.DONE){
+            return [...Array(this.occurrence.occurrenceRelationSummary.DONE).keys()].slice(0,20)
+          }
+          else {
+            return []
+          }
+        },
+        udcb_count(){
+          if (this.occurrence.occurrenceRelationSummary.UDCB){
+            return [...Array(this.occurrence.occurrenceRelationSummary.UDCB).keys()].slice(0,20)
+          }
+          else {
+            return []
+          }
+          
+        },
+        pending_count(){
+          if (this.occurrence.occurrenceRelationSummary.PNDG){
+            return [...Array(this.occurrence.occurrenceRelationSummary.PNDG).keys()].slice(0,20)
+          }
+          else {
+            return []
+          }
         },
         fields_to_display() {
           var fields = []
@@ -213,6 +241,24 @@ import shared_fields from '@/components/shared_fields.js'
         background-color: #ddd;
     }
 
+    .progress-status{
+      width: 100px;
+      display: flex;
+      padding: 0px;
+      height: 10px;
+    }
 
+    .done-status {
+      background-color: var(--color);
+      width: 100%;
+    }
+    .udcb-status {
+      background-color: red;
+      width: 100%;
+    }
+    .pending-status {
+      background-color: #ccc;
+      width: 100%;
+    }
 
 </style>
