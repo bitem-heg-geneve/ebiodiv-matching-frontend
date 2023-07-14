@@ -128,22 +128,13 @@ export default {
         loadFacet() {
             
             if (this.facet.field == "hasRelationWithStatus"){
-                    this.in_progress = true
                     this.values = []
-                    let response_promise = this.$backend.fetch_status_code()
-                    response_promise.then(response => {
-                        var values = []
-                            for (var k=0; k < Object.keys(response.data).length; k++){
-                                var key =Object.keys(response.data)[k]
-                                values.push({ "value": key, "count": null, 'checked': false})
-                            }
-                            this.values = this.updateFacetValues(values)
-                            this.in_progress = false
-                    })
-                    .catch(error => {
-                        console.log(error)
-                        this.in_progress = false
-                    })
+                    this.values.push({ "value": "PNDG", "count": null, 'checked': false})
+                    this.values.push({ "value": "Done (YES)", "count": null, 'checked': false})
+                    this.values.push({ "value": "Done (NO)", "count": null, 'checked': false})
+                    this.values.push({ "value": "UDCB", "count": null, 'checked': false})
+                    this.values = this.updateFacetValues(this.values)
+                    this.in_progress = false
             }
             else {
                 this.in_progress = true
@@ -159,6 +150,7 @@ export default {
                             var values = response.data.results;
                             this.values = this.updateFacetValues(values)
                             this.in_progress = false
+
                     })
                     .catch(error => {
                         console.log(error)
@@ -294,7 +286,7 @@ export default {
                value = this.display_value_typeStatus(item.value)
             }
             else if (this.facet.field == "hasRelationWithStatus"){
-               value = this.display_value_statusCode(item.value)
+                value = this.display_value_statusCode(item.value)
             }
             else {
                 value = item.value

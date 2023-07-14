@@ -128,17 +128,41 @@ export default new class Backend {
         if (user_query.q != ""){
             query += "&q=" + user_query.q
         }
-
         for (const [name, values] of Object.entries(user_query.facets_selection)) {
             if (name != type){
                 if(values.length > 0){
                     if (name == 'year'){
                         query += "&" +name + "=" + values.join(",")
                     }
+                    else if (name == 'hasRelationWithStatus'){
+                        var yes = false
+                        var no = false
+                        for (let i=0; i<values.length; i++){
+                            if (name == "hasRelationWithStatus" & values[i] == "Done (YES)"){
+                                yes = true
+                            }
+                            else if (name == "hasRelationWithStatus" & values[i] == "Done (NO)"){
+                                no = true
+                            }
+                            else {
+                                query += "&" + name + "=" + encodeURIComponent(values[i]);
+                            }
+                        }
+                        if (yes && no){
+                            query += "&" + name + "=" + encodeURIComponent("DONE");                           
+                        }
+                        else if (yes){
+                            query += "&hasRelationWithVote=" + encodeURIComponent("YES");
+                        }
+                        else if (no){
+                            query += "&hasRelationWithVote=" + encodeURIComponent("NO");
+                        }
+                    }
                     else {
-                        for (var i=0; i<values.length; i++){
+                        for (let i=0; i<values.length; i++){
                             var fieldName = name
                             query += "&" + fieldName + "=" + encodeURIComponent(values[i]);
+                            
                         }
                     }
                     
@@ -146,7 +170,6 @@ export default new class Backend {
             }
             
         }
-
         return query
 
     }
