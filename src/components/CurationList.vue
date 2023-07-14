@@ -119,7 +119,7 @@
             <tr class="empty-line">
                 <td colspan=100>
                     <div class="left-container">
-                        <a @click="addLine">+ Add another {{ get_curation_name.toLowerCase() }}</a>
+                        <a class="add-button" @click="addLine">+ Add another {{ get_curation_name.toLowerCase() }}</a>
                     </div>
                 </td>
             </tr>
@@ -908,6 +908,10 @@ button[disabled] {
     padding: 1px;
     overflow-x: auto;
     flex-grow: 1;
+}
+
+.add-button:hover {
+    cursor: pointer;
 }
 
 </style>
