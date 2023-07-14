@@ -148,13 +148,13 @@ export default new class Backend {
                                 query += "&" + name + "=" + encodeURIComponent(values[i]);
                             }
                         }
-                        if (yes && no){
+                        if (yes || no){
                             query += "&" + name + "=" + encodeURIComponent("DONE");                           
                         }
-                        else if (yes){
+                        if (yes && !no){
                             query += "&hasRelationWithVote=" + encodeURIComponent("YES");
                         }
-                        else if (no){
+                        else if (no && !yes){
                             query += "&hasRelationWithVote=" + encodeURIComponent("NO");
                         }
                     }
