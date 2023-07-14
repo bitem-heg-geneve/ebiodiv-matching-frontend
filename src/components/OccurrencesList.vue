@@ -35,8 +35,6 @@
                                 :resetFacets="this.resetFacets" />
 
 
-                        <SortDropdown  :updateSort="this.updateRanking" :options="filters.ranking" :selected="user_query.ranking"/>
-
                         <div class="sub-container" v-if="occurrences.length > 0">
 
                             <div class="table-container">
@@ -122,7 +120,6 @@ import vPagination from 'vue-plain-pagination'
 import FacetsComponent from '@/components/FacetsComponent.vue'
 import FiltersSelection from '@/components/FiltersSelection.vue'
 import OccurrencesElement from '@/components/OccurrencesElement.vue'
-import SortDropdown from '@/components/SortDropdown.vue'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 
 export default {
@@ -133,7 +130,6 @@ export default {
         OccurrencesElement,
         FiltersSelection,
         PulseLoader,
-        SortDropdown,
     },
     data() {
         return {
