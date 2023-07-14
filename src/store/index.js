@@ -190,6 +190,8 @@ export default new Vuex.Store({
         {title: 'Undecidable', field: 'occurrence.occurrenceRelationSummary.UDCB', selection: false},
         {title: 'Pending', field: 'occurrence.occurrenceRelationSummary.PNDG', selection: false},
         {title: 'Done', field: 'occurrence.occurrenceRelationSummary.DONE', selection: false},
+        {title: 'Done (YES)', field: 'occurrence.occurrenceRelationSummary.DONE_YES', selection: false},
+        {title: 'Done (NO)', field: 'occurrence.occurrenceRelationSummary.DONE_NO', selection: false},
         {title: 'Comments', field: 'comment_count', selection: false},
     ],
     curation_characteristics: [

@@ -204,7 +204,8 @@ export default {
             'updateOccurrencesKeys',
             'udpateLanding',
             'updateBasisOfRecord',
-            'updateOccurrenceCharacteristics'
+            'updateOccurrenceCharacteristics',
+            'updatePage'
         ]),
         searchOccurrencesAPI(prev_position=null) {
             this.in_progress = true
@@ -306,17 +307,20 @@ export default {
             this.searchOccurrencesAPI()
         },
         "user_query.q": function () {
+            this.updatePage(1)
             this.closeFields()
             this.udpateLanding()
             this.searchOccurrencesAPI()
         },
         "user_query.basisOfRecord": function () {
+            this.updatePage(1)
             this.closeFields()
             this.udpateLanding()
             this.searchOccurrencesAPI()
         },
         "user_query.facets_selection": {
             handler(){
+                this.updatePage(1)
                 this.closeFields()
                 this.udpateLanding()
                 this.searchOccurrencesAPI()
