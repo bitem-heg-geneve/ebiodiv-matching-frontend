@@ -103,8 +103,10 @@ import shared_fields from '@/components/shared_fields.js'
         relation_count(){
           var total = 0
           if('occurrenceRelationSummary' in this.occurrence){
-            for (const value of Object.values(this.occurrence.occurrenceRelationSummary)){
-                total += value
+            for (const [name, value] of Object.entries(this.occurrence.occurrenceRelationSummary)){
+                if (name !="DONE_YES" && name != "DONE_NO"){
+                  total += value
+                }
             }
           }
           else {
