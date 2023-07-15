@@ -9,7 +9,8 @@
         </td>   
         <td>
           <div class="progress-status">&nbsp;
-            <div class="done-status" v-for="i in done_count" :key="'done_'+i"></div>
+            <div class="done-yes-status" v-for="i in done_yes_count" :key="'done_'+i"></div>
+            <div class="done-no-status" v-for="i in done_no_count" :key="'done_'+i"></div>
             <div class="udcb-status" v-for="i in udcb_count" :key="'udcb_'+i"></div>
             <div class="pending-status" v-for="i in pending_count" :key="'pndg_'+i"></div>
           </div>
@@ -60,9 +61,17 @@ import shared_fields from '@/components/shared_fields.js'
                 '--color': this.theme_color.main,
             }
         },
-        done_count(){
-          if (this.occurrence.occurrenceRelationSummary.DONE){
-            return [...Array(this.occurrence.occurrenceRelationSummary.DONE).keys()].slice(0,20)
+        done_yes_count(){
+          if (this.occurrence.occurrenceRelationSummary.DONE_YES){
+            return [...Array(this.occurrence.occurrenceRelationSummary.DONE_YES).keys()].slice(0,20)
+          }
+          else {
+            return []
+          }
+        },
+        done_no_count(){
+          if (this.occurrence.occurrenceRelationSummary.DONE_NO){
+            return [...Array(this.occurrence.occurrenceRelationSummary.DONE_NO).keys()].slice(0,20)
           }
           else {
             return []
@@ -250,12 +259,16 @@ import shared_fields from '@/components/shared_fields.js'
       height: 10px;
     }
 
-    .done-status {
+    .done-yes-status {
       background-color: var(--color);
       width: 100%;
     }
+    .done-no-status {
+      background-color: rgb(230, 80, 80);
+      width: 100%;
+    }
     .udcb-status {
-      background-color: red;
+      background-color: rgb(228, 228, 31);
       width: 100%;
     }
     .pending-status {
