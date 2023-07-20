@@ -202,7 +202,6 @@ export default {
             'updateRanking', 
             'resetFacets',
             'updateOccurrencesKeys',
-            'udpateLanding',
             'updateBasisOfRecord',
             'updateOccurrenceCharacteristics',
             'updatePage'
@@ -298,31 +297,26 @@ export default {
         "user_query.page": function () {
             this.$refs["table"].scrollIntoView({ behavior: "smooth" })
             this.closeFields()
-            this.udpateLanding()
             this.searchOccurrencesAPI()
         },
         "user_query.ranking": function () {
             this.closeFields()
-            this.udpateLanding()
             this.searchOccurrencesAPI()
         },
         "user_query.q": function () {
             this.updatePage(1)
             this.closeFields()
-            this.udpateLanding()
             this.searchOccurrencesAPI()
         },
         "user_query.basisOfRecord": function () {
             this.updatePage(1)
             this.closeFields()
-            this.udpateLanding()
             this.searchOccurrencesAPI()
         },
         "user_query.facets_selection": {
             handler(){
                 this.updatePage(1)
                 this.closeFields()
-                this.udpateLanding()
                 this.searchOccurrencesAPI()
             },
             deep: true

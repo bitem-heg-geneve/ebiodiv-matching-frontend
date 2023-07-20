@@ -280,7 +280,7 @@ export default new Vuex.Store({
     updateStep(context, value){
         context.commit('UPDATE_STEP', value)
     },
-    udpateLanding(context){
+    updateLanding(context){
         context.commit('UPDATE_LANDING')
     },
     updateQuery(context, value) {

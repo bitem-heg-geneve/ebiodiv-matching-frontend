@@ -6,6 +6,7 @@
 
     <div class="row" v-if="landing">
         <div class="info-container">
+            <span class="close-button" @click="removeInfo()">x </span>
             <p>Are you new to the matching service? Then <a href="https://ebiodiv.org/help/" target="_blank">click here</a> !</p>
         </div>
     </div>
@@ -61,7 +62,8 @@ export default {
             'updateOccurrencesKeys',  
             'updateStep', 
             'resetFacets',
-            'updateInstitutions'
+            'updateInstitutions',
+            'updateLanding'
         ]),
         runSearchFromURL(){
             if(this.user_query.occurrence_key == null){
@@ -171,6 +173,9 @@ export default {
             .catch(error => {
                 console.log(error)
             })
+        },
+        removeInfo(){
+            this.updateLanding(false)
         }
     },
     beforeMount() {
@@ -185,6 +190,10 @@ export default {
 
 <style scoped lang="scss">
 
+.info-container {
+    position: relative
+}
+
 .container-fluid{
     padding-right: 0px;
     padding-left: 0px;
@@ -196,6 +205,17 @@ export default {
     padding: 20px;
     margin-left: 0;
     margin-right: 0;
+}
+
+.close-button {
+    font-size: 20px;
+    position: absolute;
+    color: #fff;
+    top: 5px;
+    right: 5px;
+}
+.close-button:hover {
+    cursor: pointer
 }
 
 </style>
