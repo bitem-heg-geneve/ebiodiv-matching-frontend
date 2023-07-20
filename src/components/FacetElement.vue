@@ -8,9 +8,8 @@
             <PulseLoader v-if="in_progress" :color="theme_color.main" />
 
             <div v-else>
-
-                <input :ref="facet.field+'_input'" type="text" required v-model.trim="pre_value" placeholder="search" v-if="facet.field != 'year' && facet.field != 'hasRelationWithStatus'"/>
-
+                <input :ref="facet.field+'_input'" type="text" required v-model.trim="pre_value" placeholder="type to search" v-if="facet.field != 'year' && facet.field != 'hasRelationWithStatus'"/>
+                <hr/>
                 <div v-if="values.length > 0">
 
                     <!-- TODO: year -->
@@ -278,6 +277,11 @@ export default {
             }, 1000);
         },
         updateVisibility(val){
+            if (val == true){
+                this.$nextTick(() => {
+                        this.$refs[this.facet.field+"_input"].focus();
+                    });
+            }
             this.updateFacetVisibility({'facet': this.facet.field, 'visibility': val})
         },
         getPrettyItemValue(item){
@@ -420,7 +424,8 @@ export default {
       border: 0px solid grey;
       border-radius: 5px;
       font-size: 1em;
-      background-color: #f2f2f2
+      background-color: #f2f2f2;
+      padding-top: 10px;
    }
    input[type="text"]:focus {
     outline: none;
