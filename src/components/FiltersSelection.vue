@@ -4,10 +4,10 @@
 
       <div class="active-filters">
           <span class="filter-name"  v-if="query_keyword != ''">
-              <span class="filter-remove" @click="removeFilter('keyword', 'q')">x </span> {{ query_keyword }}
+              <span class="filter-remove" @click="removeFilter('keyword', 'q')">x </span> {{ shortIt(query_keyword) }}
           </span>
           <span class="filter-name" v-for="filter in active_filters" :key="filter.name" >
-              <span class="filter-remove" @click="removeFilter(filter.type, filter.name)">x </span> {{ filter.name }}
+              <span class="filter-remove" @click="removeFilter(filter.type, filter.name)">x </span> {{ shortIt(filter.name) }}
           </span>
           <span class="filters-remove" v-if="filters_count > 1">
               <span @click="removeAllFilters">Remove all filters</span>
@@ -106,6 +106,14 @@ import { mapState } from 'vuex'
           this.updatePreQuery("")
           this.updateQuery("")
       },
+      shortIt(term){
+        if (term.length < 20){
+          return term
+        }
+        else {
+          return term.replace(/^([\s\S]{20}\S*)[\s\S]*/, "$1 [...]");
+        }
+      }
     },
   }
 
@@ -124,7 +132,7 @@ import { mapState } from 'vuex'
     border-radius: 10px;
     padding: 2px 10px;
     margin-right: 5px;
-    font-size: 0.8em;
+    font-size: 1em;
   }
 
   .filter-remove {
@@ -141,11 +149,12 @@ import { mapState } from 'vuex'
   .filters-remove {
     padding: 2px 10px;
     margin-right: 5px;
-    font-size: 0.8em;
+    font-size: 1em;
   }
   .filters-remove:hover {
     cursor:pointer;
     color: var(--color);
   }
+
 
 </style>
