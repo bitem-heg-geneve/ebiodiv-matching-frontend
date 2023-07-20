@@ -281,8 +281,10 @@ export default {
         updateVisibility(val){
             if (val == true){
                 this.$nextTick(() => {
+                    if (this.facet.field != 'year' && this.facet.field != 'hasRelationWithStatus'){
                         this.$refs[this.facet.field+"_input"].focus();
-                    });
+                    }
+                });
             }
             this.updateFacetVisibility({'facet': this.facet.field, 'visibility': val})
         },
