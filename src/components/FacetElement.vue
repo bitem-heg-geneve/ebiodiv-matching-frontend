@@ -21,7 +21,7 @@
 
                     <div v-else>
 
-                        <div class="inputGroup" v-for="item in values"
+                        <div :class="getClass(item)" v-for="item in values"
                             @click="changeFacet(facet.field, $event)" 
                             :key="facet.field+'_'+item.value">
                             <input :id="facet.field+'_'+item.value" :name="item.value" type="checkbox" v-bind:value="item.value" :checked="item.checked" />
@@ -97,11 +97,12 @@ export default {
         ...mapState([
             'theme_color'
         ]),
-        cssVars() {
-            return {
-                '--color': this.theme_color.main,
-            }
-        },
+        cssVars () {
+                return{
+                    '--color-main': this.theme_color.main,
+                    '--color-secondary': this.theme_color.secondary,
+                }
+            },
         visibility(){
             return this.user_query.facets_visibility[this.facet.field]
         },
@@ -118,6 +119,7 @@ export default {
                 this.value = value
             }
         },
+
     },
     methods: {
         ...mapActions([
@@ -296,6 +298,18 @@ export default {
                 value = item.value
             }
             return value
+        },
+        getClass(item){
+            if (this.facet.field == "hasRelationWithStatus"){
+                if (item.value == "Done (YES)"){
+                    return "inputGroup done-yes"
+                }
+                if (item.value == "Done (NO)"){
+                    return "inputGroup done-no"
+                }
+                return "inputGroup "+item.value
+            }
+            return "inputGroup"
         }
     },
     mounted(){
@@ -417,8 +431,6 @@ export default {
 
 
 }
-
-
     input[type="text"] {
       width: 100%;
       border: 0px solid grey;
@@ -430,6 +442,62 @@ export default {
    input[type="text"]:focus {
     outline: none;
    }
+
+   .UDCB label {
+        &:after {
+            border: 2px solid rgb(228, 228, 31);
+            background-color: rgb(228, 228, 31);
+        }
+    }
+
+    .UDCB input:checked~label {
+        &:after {
+            background-color: rgb(228, 228, 31);
+            border-color: rgb(228, 228, 31);
+        }
+    }
+
+    .PNDG label {
+        &:after {
+            border: 2px solid #ccc;
+            background-color: #ccc;
+        }
+    }
+
+    .PNDG input:checked~label {
+        &:after {
+            background-color: #ccc;
+            border-color: #ccc;
+        }
+    }
+
+    .done-yes label {
+        &:after {
+            border: 2px solid rgb(0, 143, 0);
+            background-color: rgb(0, 143, 0);
+        }
+    }
+
+    .done-yes input:checked~label {
+        &:after {
+            background-color: rgb(0, 143, 0);
+            border-color: rgb(0, 143, 0);
+        }
+    }
+
+    .done-no label {
+        &:after {
+            border: 2px solid  rgb(230, 80, 80);
+            background-color:  rgb(230, 80, 80);
+        }
+    }
+
+    .done-no input:checked~label {
+        &:after {
+            background-color:  rgb(230, 80, 80);
+            border-color: rgb(230, 80, 80);
+        }
+    }
 
 </style>
 

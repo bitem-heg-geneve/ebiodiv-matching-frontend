@@ -260,7 +260,7 @@ import shared_fields from '@/components/shared_fields.js'
     }
 
     .done-yes-status {
-      background-color: var(--color);
+      background-color: rgb(0, 143, 0);
       width: 100%;
     }
     .done-no-status {
