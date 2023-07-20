@@ -185,6 +185,9 @@ export default {
     mounted(){
         this.runSearchFromURL()
     },
+    created() {
+            setTimeout(() => this.updateLanding(false), 600000)
+        }
 }
 </script>
 
