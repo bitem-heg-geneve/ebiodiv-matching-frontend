@@ -53,7 +53,7 @@ jobs:
         # see API on https://infra.text-analytics.ch/api/webstatic/
         # $GITHUB_REPOSITORY is replaced by the repository name, for example bitem-heg-geneve/ebiodiv-matching-frontend
         run: |
-          curl -f -X 'POST' "https://infra.text-analytics.ch/api/webstatic/deploy/${{ github.repository }}/dist-sandbox" \
+          curl -f -X 'POST' "https://infra.text-analytics.ch/api/webstatic/deploy/github.com/${{ github.repository }}/dist-sandbox" \
                -H 'accept: application/json' \
                -H 'Content-Type: application/x-www-form-urlencoded' \
                -d 'secret_key=${{secrets.SECRET_KEY}}'
