@@ -167,7 +167,6 @@ export default {
                 // save on the Plazi backend
                 this.sendComment(this.pending_comment);
                 this.pending_comment = '';
-                this.$gtag.event('post_comment');
             }
         });
         this.$emitter.on('loginAbort', () => {

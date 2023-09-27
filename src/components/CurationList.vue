@@ -505,7 +505,6 @@ export default {
                 this.empty_elements = []
                 this.current_page = 1
                 this.$emit('back')
-                this.$gtag.event('back');
             }
         },
         nosaveNext(){
@@ -639,9 +638,6 @@ export default {
 
                 // save on the Plazi backend
                 this.saveToPlaziBackend(occurrenceIdToSave);
-
-                //
-                this.$gtag.event('save');
             }
         });
         this.$emitter.on('loginAbort', () => {

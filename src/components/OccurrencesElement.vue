@@ -144,7 +144,6 @@ import shared_fields from '@/components/shared_fields.js'
         displayOccurrence(){
           this.updateStep(3)
           this.updateOccurrenceKey(this.occurrence.key)
-          this.$gtag.event('displayOccurrence');
        },
        getValue(variable){
           if (variable == "occurrence.typeStatus"){
