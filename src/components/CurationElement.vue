@@ -60,8 +60,16 @@
                 <div class="expanded-box" v-if="'references' in occurrence">
                     <label>Data source:</label>
                     <ul>
-                        <li><a :href="occurrence.references" target="_blank">Treatment</a></li>
                         <li v-if="'identifier' in occurrence"><a :href="get_mc" target="_blank">Material citation</a></li>
+                        <li><a :href="occurrence.references" target="_blank">Treatment</a></li>
+                    </ul>                        
+                </div>
+                <div class="expanded-box" v-if="'references' in occurrence">
+                    <label>Additional links:</label>
+                    <ul>
+                        <li><a :href="get_gbif_dataset" target="_blank">GBIF dataset {{ occurrence.datasetKey }}</a></li>
+                        <li><a :href="get_biotxplorer" target="_blank">Biotic interactions browser</a></li>
+                        <li><a :href="get_sibils" target="_blank">SIBiLS</a></li>
                     </ul>                        
                 </div>
                 <div class="expanded-box" v-if="'references' in occurrence">
@@ -122,14 +130,27 @@ export default {
                 '--color': this.theme_color.main,
             }
         },
+        get_plazi_treatment_id() {
+            const refid = this.occurrence.references.split("/");
+            return refid[refid.length - 1];
+        },
         get_mc() {
             return "https://treatment.plazi.org/id/"+this.occurrence.identifier.replace(".mc.", "#")
+        },
+        get_sibils() {
+            return "https://sibils.text-analytics.ch/search/collections/plazi/" + this.get_plazi_treatment_id;
+        },
+        get_biotxplorer() {
+            return "https://denver.text-analytics.ch/BiotXplorer/collections/plazi/" + this.get_plazi_treatment_id;
         },
         get_report_link(){
             return "https://github.com/plazi/community/issues/new?body=Please%20leave%20your%20comment%20here...%0A%0A**Context**%0A%5BGBIF%20occurrence%5D(https%3A%2F%2Fwww.gbif.org%2Foccurrence%2F"+this.occurrence.key+")%0A%5BPlazi%20reference%5D("+this.occurrence.references+")"
         },
         get_curation_name(){
             return this.fields[this.user_query.basisOfRecord].basisOfRecord_curation.name
+        },
+        get_gbif_dataset() {
+            return "https://www.gbif.org/dataset/" + this.occurrence.datasetKey;
         },
         empty_link(){
             if (/^http/.test(this.occurrence_key)){
