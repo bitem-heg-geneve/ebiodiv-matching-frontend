@@ -1,0 +1,145 @@
+[
+  {
+    "order": 1,
+    "name": "Family",
+    "GBIF_fields": [
+      "family"
+    ],
+    "weight": 1,
+    "description": "String distance using the <a href=\"https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance\">Jaro-Winkler algorithm</a>"
+  },
+  {
+    "order": 2,
+    "name": "Genus",
+    "GBIF_fields": [
+      "genus"
+    ],
+    "weight": 1,
+    "description": "String distance using the <a href=\"https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance\">Jaro-Winkler algorithm</a>"
+  },
+  {
+    "order": 3,
+    "name": "Specific epithet",
+    "GBIF_fields": [
+      "specificEpithet"
+    ],
+    "weight": 1,
+    "description": "String distance using the <a href=\"https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance\">Jaro-Winkler algorithm</a>"
+  },
+  {
+    "order": 4,
+    "name": "Infraspecific epithet",
+    "GBIF_fields": [
+      "infraspecificEpithet"
+    ]
+  },
+  {
+    "order": 5,
+    "name": "Coordinates",
+    "GBIF_fields": [
+      "decimalLatitude",
+      "decimalLongitude"
+    ],
+    "weight": 2,
+    "description": "Get the <a href=\"https://en.wikipedia.org/wiki/Haversine_formula\">Haversine distance</a>:\n        <ul>\n            <li>the score is 1 when the distance is 0</li>\n            <li>the score is 0.98 when the distance is 2km</li>\n            <li>the score is 0.92 when the distance is 10km</li>\n            <li>the score is 0.89 when the distance is 15km</li>\n            <li>the score is 0.79 when the distance is 30km</li>\n            <li>the score is 0.45 when the distance is 100km</li>\n            <li>the score is 0.21 when the distance is 200km</li>\n            <li>the score is 0.09 when the distance is 300km</li>\n        </ul>"
+  },
+  {
+    "order": 6,
+    "name": "Elevation",
+    "GBIF_fields": [
+      "elevation"
+    ],
+    "weight": 0.5,
+    "description": "Score according to the difference between the two elevations:\n        <ul>\n            <li>the score is 1 when the elevations are equals</li>\n            <li>the score is 0.88 when there is a 1 meter difference</li>\n            <li>the score is 0.6 when there is a 10 meters difference</li>\n            <li>the score is 0.23 when there is a 100 meters difference</li>\n            <li>the score is 0.04 when there is a 400 meters difference</li>\n        </ul>"
+  },
+  {
+    "order": 7,
+    "name": "Locality",
+    "GBIF_fields": [
+      "locality"
+    ],
+    "weight": 0.5,
+    "description": "String distance using the <a href=\"https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance\">Jaro-Winkler algorithm</a>"
+  },
+  {
+    "order": 8,
+    "name": "Country",
+    "GBIF_fields": [
+      "country"
+    ],
+    "weight": 1,
+    "description": "Exact match"
+  },
+  {
+    "order": 9,
+    "name": "Date",
+    "GBIF_fields": [
+      "year",
+      "month",
+      "day"
+    ],
+    "weight": 1,
+    "description": "Score according to the number of days between the two dates:\n        <ul>\n            <li>the score is 1 when the dates are equals</li>\n            <li>the score is 0.9 when there is 1 day distance</li>\n            <li>the score is 0.5 when there is 7 days distance</li>\n            <li>the score is 0.22 when there is on 15 days distance</li>\n        </ul>"
+  },
+  {
+    "order": 10,
+    "name": "Institution code",
+    "GBIF_fields": [
+      "institutionCode"
+    ],
+    "weight": 2,
+    "description": "Keep only the alphanumeric characters and then compare the values for either an exact match or substring"
+  },
+  {
+    "order": 11,
+    "name": "Collection code",
+    "GBIF_fields": [
+      "collectionCode"
+    ],
+    "weight": 2,
+    "description": "Keep only the alphanumeric characters and then compare the values for either an exact match or substring"
+  },
+  {
+    "order": 12,
+    "name": "Catalog nb",
+    "GBIF_fields": [
+      "catalogNumber"
+    ],
+    "weight": 2,
+    "description": "Keep only the alphanumeric characters and then compare the values for either an exact match or substring"
+  },
+  {
+    "order": 13,
+    "name": "Individual nb",
+    "GBIF_fields": [
+      "individualCount"
+    ],
+    "weight": 1,
+    "description": "Score using log(difference + 1):\n        <ul>\n            <li>the score is 1 when the difference is 0</li>\n            <li>the score is 0.66 when the difference is 10</li>\n            <li>the score is 0.34 when the difference is 100</li>\n            <li>the score is 0.11 when the difference is 500</li>\n        </ul>"
+  },
+  {
+    "order": 14,
+    "name": "Collector (recorded by)",
+    "GBIF_fields": [
+      "recordedBy"
+    ],
+    "weight": 2,
+    "description": "String distance using the <a href=\"https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance\">Jaro-Winkler algorithm</a>"
+  },
+  {
+    "order": 15,
+    "name": "Type",
+    "GBIF_fields": [
+      "typeStatus"
+    ],
+    "weight": 2,
+    "description": "Exact match"
+  },
+  {
+    "order": 16,
+    "name": "Record",
+    "GBIF_fields": [
+      "basisOfRecord"
+    ]
+  }
+]
