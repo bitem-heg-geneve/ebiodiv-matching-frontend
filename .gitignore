@@ -22,3 +22,7 @@ pnpm-debug.log*
 *.sln
 *.sw?
 
+# create_scoring
+create_scoring/scoring.json
+create_scoring/scoring.mjs
+create_scoring/store.mjs

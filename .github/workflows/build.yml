@@ -32,6 +32,9 @@ jobs:
       run: npm install
     - name: Build files
       run: npm run ${{ matrix.npmrunparam }}
+    - name: Create scoring.json
+      # the output file name is relatived to create_scoring.sh,
+      run: ./create_scoring/create_scoring.sh "../${{ matrix.folder }}/scoring.json"
     - name: Commit built files to the ${{ matrix.branch }} branch
       if:  github.ref == 'refs/heads/master'
       uses: s0/git-publish-subdir-action@develop
