@@ -1,4 +1,6 @@
 /*
+ * use create_scoring_json.sh to run this script
+ *
  * hack to create scoring.json
  * create the VueJS app with only the store
  * from that, read state.curation_characteristics
@@ -6,12 +8,10 @@
  * Since it requires ES Modules ("import ... from" instead of "const module = require(...)")
  * all files are named ".mjs" and it requires the "--experimental-modules" option like this:
  * node --experimental-modules index.mjs
- * 
- * The script except to run 
  */
 import fs from 'fs';
-import scoring from "./scoring.mjs";
-import store from "./store.mjs";
+import scoring from "./scoring.mjs"; // copy of src/services/scoring.js made by create_scoring_json.sh
+import store from "./store.mjs"; // copy of src/store/index.js made by create_scoring_json.sh
 import Vue from 'vue';
 import process from 'process';
 
@@ -26,7 +26,8 @@ function field_items(output_filename) {
         const get_score_function_desc = scoring.F_SCORE_DESC[get_score_function_name];
         if (Array.isArray(field_names)) {
             key = field_names[0];
-            field_names = field_names.join(", ");
+        } else {
+            field_names = [ field_names ];
         }
         field_descriptions[key] = {
             GBIF_fields: field_names,
@@ -46,12 +47,13 @@ function field_items(output_filename) {
         rows.push({
             order: i,
             name: cc.name,
+            GBIF_fields: cc.value,
             ...field_descriptions[cc.score]
         });
         i++;
     }
     const content = JSON.stringify(rows, null, "  ");
-    fs.writeFileSync('scoring.json', content, err => {
+    fs.writeFileSync(output_filename, content, err => {
         if (err) {
           console.error(err);
         }
