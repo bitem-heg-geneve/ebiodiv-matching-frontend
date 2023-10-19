@@ -16,7 +16,7 @@
             <template #message>
                 <p><b>Do you accept cookies that measure website use ?</b></p>
                 <p>
-                    We use <a href="https://marketingplatform.google.com/about/analytics/" target="_blank">Google Analytics</a> to
+                    We use <a href="https://matomo.org/" target="_blank">Matomo</a> to
                     measure how you use the website so we can improve it based on user needs. Google
                     Analytics sets cookies that store anonymised information about how you got to the site, the pages you visit,
                     how long you spend on each page and what you click on while you're visiting the site.
@@ -35,24 +35,24 @@
                 <path d="M417 207v-1c0-6-4-10-10-10-14-1-28-10-34-23a10 10 0 0 0-15-4 41 41 0 0 1-43 2c-13-8-21-23-20-39a10 10 0 0 0-10-10 40 40 0 0 1-37-63 10 10 0 0 0-4-15c-13-6-22-20-23-34 0-6-4-10-10-10h-3a209 209 0 1 0 209 207zM62 90a22 22 0 0 1-23 36c6-13 14-25 23-36zm303 224c-6-4-10-11-10-18a22 22 0 0 1 30-21c-5 14-12 27-20 39zm26-58c-4-2-8-2-13-2h-3a42 42 0 0 0-22 76c-10 11-20 21-32 29l-2 2A189 189 0 0 1 31 144v1a42 42 0 0 0 45-70c33-33 77-53 126-55 4 15 12 28 24 37a60 60 0 0 0 50 84 60 60 0 0 0 84 50c9 12 22 20 37 24-1 14-3 28-6 41z"/>
                 <path d="M246 314a54 54 0 1 0 0-108 54 54 0 0 0 0 108zm0-88a34 34 0 1 1 0 68 34 34 0 0 1 0-68z"/>
             </svg>
-            <b-modal id="cookieDecline" title="Decline Google Analytics cookies ?" @ok="cookieDecline" ok-title="Reject" ok-only ok-variant="danger">
+            <b-modal id="cookieDecline" title="Decline Matomo cookies ?" @ok="cookieDecline" ok-title="Reject" ok-only ok-variant="danger">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-body mx-auto">
                             <div>
-                                <p>Currently, Google Analytics measures this website's use. You can opt-out to this optional feature by clicking the "Reject" button below.</p>
+                                <p>Currently, Matomo measures this website's use. You can opt-out to this optional feature by clicking the "Reject" button below.</p>
                                 <b-alert show variant="warning">This action reloads the window</b-alert>
                             </div>
                         </div>
                     </div>
                 </div>
             </b-modal>
-            <b-modal id="cookieAccept" title="Accept Google Analytics cookies ?" @ok="cookieAccept" ok-title="Accept" ok-only ok-variant="success">
+            <b-modal id="cookieAccept" title="Accept Matomo cookies ?" @ok="cookieAccept" ok-title="Accept" ok-only ok-variant="success">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-body mx-auto">
                             <div>
-                                <p>Currently, Google Analytics does not measure this website's use. You can opt-in to this optional feature by clicking the "Accept" button below.</p>
+                                <p>Currently, Matomo does not measure this website's use. You can opt-in to this optional feature by clicking the "Accept" button below.</p>
                                 <b-alert show variant="warning">This action reloads the window</b-alert>
                             </div>
                         </div>
@@ -65,7 +65,6 @@
 <script>
 import 'vue-cookie-accept-decline/dist/vue-cookie-accept-decline.css';
 import VueCookieAcceptDecline from 'vue-cookie-accept-decline';
-import { bootstrap } from 'vue-gtag';
 import { mapState } from 'vuex'
 
 export default {
@@ -89,10 +88,10 @@ export default {
     watch: {
         user_tracking_consent: function (val) {
             if (val == 'accept') {
-                // the user has accept Google Analytics tracking
+                // the user has accept Matomo tracking
                 // --> load GA
                 // see https://matteo-gabriele.gitbook.io/vue-gtag/v/master/custom-installation#bootstrap-later
-                bootstrap().then(() => { })
+                this.$matomo.rememberConsentGiven();
             }
         }
     },
