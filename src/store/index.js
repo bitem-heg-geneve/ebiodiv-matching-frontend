@@ -169,11 +169,11 @@ export default new Vuex.Store({
     },
     occurrence_characteristics: [
         {title: 'Scientific name', field: 'occurrence.scientificName', selection: true},
-        {title: 'Verbatim label', field: 'occurrence.verbatimLabel', selection: true},
         {title: 'Type', field: 'occurrence.typeStatus', selection: true},
         {title: 'Record', field: 'occurrence.basisOfRecord', selection: true},
         {title: 'Year', field: 'occurrence.year', selection: true},
         {title: 'nb', field: 'relation_count', selection: true},
+        {title: 'Verbatim label', field: 'occurrence.verbatimLabel', selection: false},
         {title: 'Kingdom', field: 'occurrence.kingdom', selection: false},
         {title: 'Phylum', field: 'occurrence.phylum', selection: false},
         {title: 'Order', field: 'occurrence.order', selection: false},
