@@ -40,35 +40,38 @@
                             <div class="table-container">
                         
                                 <table>
-                                    <div :class="fields_popup">
-
-                                        <div class="right-container">
-                                            <button type="button" class="button-close" @click="closeFields()">
-                                                <img src="../assets/images/icon_close.png"  class="mini"/>
-                                                Close
-                                            </button>
-                                        </div>
-
-                                        <div class="content-popup">
-
-                                            <h1>Fields</h1>
-
-                                            <p v-for="field in occurrence_characteristics" :key="'allfields_'+field.title">
-                                                <input type="checkbox" id="fields" name="fields" :checked="field.selection" @change="changeSelection($event, field.field)">
-                                                <span v-if="field.title == 'nb'">{{ get_curation_name }}</span>     
-                                                {{ field.title }}
-                                            </p>
-
-                                        </div>
-                                    </div>
-        
+                
                                     <thead>
                                         <tr>
                                             <th>
-                                                <button  class="button-th" @click="popupFields()">
+                                                <button  ref="fieldsButton" class="button-th" @click="popupFields()">
                                                     <img :src="require('../assets/images/icon_more.png')" class="mini" />
                                                 </button> 
-                                                {{ get_occurrence_name }} ID</th>
+                                                {{ get_occurrence_name }} ID
+                                            
+                                                <div :class="fields_popup" :style="{ top: modalTop + 'px', left: modalLeft + 'px', zIndex: modalZIndex }">
+
+                                                    <div class="right-container">
+                                                        <button type="button" class="button-close" @click="closeFields()">
+                                                            <img src="../assets/images/icon_close.png"  class="mini"/>
+                                                            Close
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="content-popup">
+
+                                                        <h2>Fields</h2>
+
+                                                        <p v-for="field in occurrence_characteristics" :key="'allfields_'+field.title">
+                                                            <input type="checkbox" id="fields" name="fields" :checked="field.selection" @change="changeSelection($event, field.field)">
+                                                            <span v-if="field.title == 'nb'">{{ get_curation_name }}</span>     
+                                                            {{ field.title }}
+                                                        </p>
+
+                                                    </div>
+
+                                                </div>
+                                            </th>
                                             <th v-for="field in fields_to_display" :key="'display_'+field.field">
                                                 <span v-if="field.title == 'nb'">{{ get_curation_name }}</span>
                                                 {{ field.title }}
@@ -150,6 +153,9 @@ export default {
                 next: '>',
                 last: '>>'
             },
+            modalTop: 0,
+            modalLeft: 0,
+            modalZIndex: 1000000
         };
     },
     computed: {
@@ -278,10 +284,28 @@ export default {
             })
         },
         popupFields(){
-            this.popup_visibility = !this.popup_visibility
+            if (!this.popup_visibility){
+                const buttonRect = this.$refs.fieldsButton.getBoundingClientRect();
+                this.modalTop = buttonRect.top + 234;
+                this.modalLeft = buttonRect.left + window.scrollX + 145;
+                this.popup_visibility = true
+                window.addEventListener('scroll', this.handleScroll);
+            }
+            else {
+                this.popup_visibility = false
+                window.removeEventListener('scroll', this.handleScroll)
+            }
+        },
+        handleScroll() {
+            if (this.popup_visibility) {
+                const buttonRect = this.$refs.fieldsButton.getBoundingClientRect();
+                this.modalTop = buttonRect.top  +234;
+                this.modalLeft = buttonRect.left + window.scrollX + 145;
+            }
         },
         closeFields(){
             this.popup_visibility = false
+            window.removeEventListener('scroll', this.handleScroll)
         },
         changeSelection(event, field) {
             var fields = this.occurrence_characteristics
@@ -291,7 +315,7 @@ export default {
                 }
             }
             this.updateOccurrenceCharacteristics(fields)
-        }
+        },
     },
     watch: {
         "user_query.page": function () {
@@ -322,6 +346,9 @@ export default {
             deep: true
         },
     },
+    destroyed() {
+        window.removeEventListener('scroll', this.handleScroll);
+  },
 }
 
 </script>
@@ -380,12 +407,10 @@ table {
 }
 
 td:first-child, th:first-child {
-  position:sticky;
   left:0;
   z-index:1;
 }
 td:last-child, th:last-child {
-  position:sticky;
   right:0;
   z-index:1;
 }
@@ -448,7 +473,6 @@ th {
 }
 
 .fields-popup {
-    display: none;
     transform: translate(-50%, -50%);
     width: 300px;
     height: 400px;
@@ -456,10 +480,11 @@ th {
     background-color: #fff;
     text-align: left;
     padding: 10px;
-    position: absolute;
-    top: 240px;
-    left: 150px;
-    z-index: 9;
+    color: #000;
+
+  display: none;
+  position: fixed;
+  font-weight: normal;
 }
 
 .content-popup {
