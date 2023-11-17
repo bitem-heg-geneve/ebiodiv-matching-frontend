@@ -324,6 +324,9 @@ export default {
             },
             deep: true
         },
+        "user_query.basisOfRecord": function () {
+            this.loadFacet()
+        },
         "user_query.q": function (){
             this.loadFacet()
         },
