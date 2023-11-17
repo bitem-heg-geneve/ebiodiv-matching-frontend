@@ -9,8 +9,8 @@
         </td>   
         <td>
           <div class="progress-status">&nbsp;
-            <div class="done-yes-status" v-for="i in done_yes_count" :key="'done_'+i"></div>
-            <div class="done-no-status" v-for="i in done_no_count" :key="'done_'+i"></div>
+            <div class="done-yes-status" v-for="i in done_yes_count" :key="'doneyes_'+i"></div>
+            <div class="done-no-status" v-for="i in done_no_count" :key="'doneno_'+i"></div>
             <div class="udcb-status" v-for="i in udcb_count" :key="'udcb_'+i"></div>
             <div class="pending-status" v-for="i in pending_count" :key="'pndg_'+i"></div>
           </div>
