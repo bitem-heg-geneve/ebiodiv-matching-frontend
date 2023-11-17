@@ -406,13 +406,24 @@ table {
     position: relative;
 }
 
-td:first-child, th:first-child {
+th:first-child {
+    position: sticky;
   left:0;
-  z-index:1;
+  z-index:2;
 }
-td:last-child, th:last-child {
+th:last-child {
+    position: sticky;
   right:0;
-  z-index:1;
+  z-index:2;
+}
+
+td:first-child {
+  left:0;
+  z-index:2;
+}
+td:last-child {
+  right:0;
+  z-index:2;
 }
 
 td,
@@ -485,6 +496,7 @@ th {
   display: none;
   position: fixed;
   font-weight: normal;
+  z-index: 1
 }
 
 .content-popup {
