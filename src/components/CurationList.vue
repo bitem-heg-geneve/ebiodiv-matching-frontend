@@ -421,11 +421,14 @@ export default {
                 alert("failed to load relations: " + error)
             })
         },
-        searchNextCurationAPI(){
+        searchNextCurationAPI(saved_json){
             let response_promise = null;
             response_promise = this.$backend.fetch_next_occurrence_from_q(this.user_query, this.user_query.occurrence_key)
             response_promise.then(response => {
                 this.updateOccurrenceKey(response.data.subjectOccurrenceKeys[0])
+                if (saved_json != null){
+                    this.saveJson(saved_json)
+                }
             })
             .catch(error => {
                 alert("There are no more occurrence to process.")
@@ -519,14 +522,17 @@ export default {
                 this.$gtag.event('back');
             }
         },
-        nosaveNext(){
-            let go_next = Object.keys(this.change_list).length == 0 || confirm('Are you sure you want to continue without saving?')
-            if (go_next) {
+        nosaveNext(saved_data){
+            var go_next = false
+            if (saved_data == null){
+                go_next = Object.keys(this.change_list).length == 0 || confirm('Are you sure you want to continue without saving?')
+            }
+            if (go_next || saved_data != null) {
                 this.in_progress = true
                 this.empty_elements = []
                 this.current_page = 1
                 if (this.user_query.occurrences_keys.length == 0){
-                    this.searchNextCurationAPI()
+                    this.searchNextCurationAPI(saved_data)
                 }
                 else {
                     this.searchNextByList()
@@ -534,16 +540,16 @@ export default {
             }
         },
         saveBack() {
-            this.save()
             this.action = "back"
+            this.save()
         },
         saveNext() {
-            this.save()
             this.action = "next"
+            this.save()
         },
         saveStop() {
-            this.save()
             this.action = "stop"
+            this.save()
         },
         save() {
             this.pendingSave = Object.keys(this.change_list);
@@ -617,16 +623,20 @@ export default {
                 }
                 saved_data.push(element)
             }
-
             var saved_json = { "occurrenceRelations": saved_data }
+            if (this.action == "next"){
+                this.nosaveNext(saved_json)
+            }
+            else {
+                this.saveJson(saved_json)
+            }
+        },
+        saveJson(saved_json){
             this.$backend.post_matching(saved_json)
                 .then(() => {
                     this.change_list = {}
                     if (this.action == "back"){
                         this.nosaveBack()
-                    }
-                    else if (this.action == "next"){
-                        this.nosaveNext()
                     }
                     else if (this.action == "stop"){
                         this.searchCurationAPI()
