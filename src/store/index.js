@@ -99,6 +99,10 @@ export default new Vuex.Store({
             'hasRelationWithStatus': false,        
         }
     },
+    comment: {
+        selection: null,
+        saved: null
+    },
     institutions: {},
     
     fields: {
@@ -257,6 +261,12 @@ export default new Vuex.Store({
     UPDATE_FACET_VISIBILITY(state, value){
         state.user_query.facets_visibility[value.facet] = value.visibility
     },
+    UPDATE_COMMENT_SELECTION(state, value){
+        state.comment.selection = value
+    },
+    UPDATE_COMMENT_SAVED(state, value){
+        state.comment.saved = value
+    },
     UPDATE_OCCURRENCE_CHARACTERISTICS(state, value){
         state.occurrence_characteristics = value
     },
@@ -309,6 +319,12 @@ export default new Vuex.Store({
     },
     updateFacetVisibility(context, value){
         context.commit('UPDATE_FACET_VISIBILITY', value)
+    },
+    updateCommentSelection(context, value){
+        context.commit('UPDATE_COMMENT_SELECTION', value)
+    },
+    updateCommentSaved(context, value){
+        context.commit('UPDATE_COMMENT_SAVED', value)
     },
     updateOccurrenceCharacteristics(context, value){
         context.commit('UPDATE_OCCURRENCE_CHARACTERISTICS', value)

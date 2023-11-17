@@ -252,6 +252,8 @@
 
         </div>
 
+        <CommentDraggable/>
+
     </div>
 
 </template>
@@ -260,6 +262,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import CurationElement from '@/components/CurationElement.vue'
+import CommentDraggable from '@/components/CommentDraggable.vue'
 import shared_fields from '@/components/shared_fields.js'
 var PulseLoader = require('vue-spinner/src/PulseLoader.vue').default;
 import vPagination from 'vue-plain-pagination'
@@ -273,6 +276,7 @@ export default {
         CurationElement,
         PulseLoader,
         vPagination,
+        CommentDraggable
     },
     data() {
         return {
@@ -317,7 +321,8 @@ export default {
             'fields', 
             'user', 
             'step', 
-            'institutions'
+            'institutions',
+            'comment'
         ]),
         cssVars() {
             return {
@@ -374,6 +379,12 @@ export default {
             'updateOccurrenceKey', 
             'updateUsername'
         ]),
+        openDialog() {
+      this.isDialogVisible = true;
+    },
+    closeDialog() {
+      this.isDialogVisible = false;
+    },
         searchCurationAPI(){
             var query = {
                 ...this.$router.currentRoute.query,
@@ -913,6 +924,5 @@ button[disabled] {
     overflow-x: auto;
     flex-grow: 1;
 }
-
 
 </style>

@@ -95,7 +95,7 @@ export default {
     ],
     components: {
         CommentElement,
-        PulseLoader
+        PulseLoader,
     },
     props: {
         pre_occurrence: {
