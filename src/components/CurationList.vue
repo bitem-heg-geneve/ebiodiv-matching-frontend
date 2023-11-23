@@ -58,6 +58,14 @@
                         </ul>                        
                     </div>
                     <div class="expanded-box" v-if="'references' in get_occurrence">
+                        <label>Additional links:</label>
+                        <ul>
+                            <li><a :href="get_gbif_dataset" target="_blank">GBIF dataset {{ get_occurrence.datasetKey }}</a></li>
+                            <li><a :href="get_biotxplorer" target="_blank">Biotic interactions browser</a></li>
+                            <li><a :href="get_sibils" target="_blank">SIBiLS</a></li>
+                        </ul>                        
+                    </div>
+                    <div class="expanded-box" v-if="'references' in get_occurrence">
                         <a :href="get_report_link" target="_blank">Report an error     on the content</a>                   
                     </div>
                 </td>
@@ -348,6 +356,19 @@ export default {
         },
         get_mc() {
             return this.get_occurrence.references+this.get_occurrence.identifier.replace(".mc.", "#")
+        },
+        get_plazi_treatment_id() {
+            const refid = this.get_occurrence.references.split("/");
+            return refid[refid.length - 1];
+        },
+        get_sibils() {
+            return "https://sibils.text-analytics.ch/search/collections/plazi/" + this.get_plazi_treatment_id;
+        },
+        get_biotxplorer() {
+            return "https://denver.text-analytics.ch/BiotXplorer/collections/plazi/" + this.get_plazi_treatment_id;
+        },
+        get_gbif_dataset() {
+            return "https://www.gbif.org/dataset/" + this.get_occurrence.datasetKey;
         },
         to_process_curation() {
             return this.filterListToDo(this.relations, "PNDG")
