@@ -62,7 +62,7 @@ import shared_fields from '@/components/shared_fields.js'
             }
         },
         done_yes_count(){
-          if (this.occurrence.occurrenceRelationSummary.DONE_YES){
+          if ('occurrenceRelationSummary' in this.occurrence && this.occurrence.occurrenceRelationSummary.DONE_YES){
             return [...Array(this.occurrence.occurrenceRelationSummary.DONE_YES).keys()].slice(0,20)
           }
           else {
@@ -70,7 +70,7 @@ import shared_fields from '@/components/shared_fields.js'
           }
         },
         done_no_count(){
-          if (this.occurrence.occurrenceRelationSummary.DONE_NO){
+          if ('occurrenceRelationSummary' in this.occurrence && this.occurrence.occurrenceRelationSummary.DONE_NO){
             return [...Array(this.occurrence.occurrenceRelationSummary.DONE_NO).keys()].slice(0,20)
           }
           else {
@@ -78,7 +78,7 @@ import shared_fields from '@/components/shared_fields.js'
           }
         },
         udcb_count(){
-          if (this.occurrence.occurrenceRelationSummary.UDCB){
+          if ('occurrenceRelationSummary' in this.occurrence && this.occurrence.occurrenceRelationSummary.UDCB){
             return [...Array(this.occurrence.occurrenceRelationSummary.UDCB).keys()].slice(0,20)
           }
           else {
@@ -87,7 +87,7 @@ import shared_fields from '@/components/shared_fields.js'
           
         },
         pending_count(){
-          if (this.occurrence.occurrenceRelationSummary.PNDG){
+          if ('occurrenceRelationSummary' in this.occurrence && this.occurrence.occurrenceRelationSummary.PNDG){
             return [...Array(this.occurrence.occurrenceRelationSummary.PNDG).keys()].slice(0,20)
           }
           else {
