@@ -173,7 +173,7 @@
         </table>
         </div>
 
-        <div v-if="!in_progress && !warning">
+        <div v-if="!in_progress">
 
             <div class="button-container">
                 <button v-show="changes == 0" class="grey-button" @click="nosaveBack()">
