@@ -60,7 +60,6 @@ export default new class Backend {
     async fetch_next_occurrence_from_q(user_query, occurrence_key) {
         await this.fetch_urls()
         var url = this.urls.occurrences + "/" + occurrence_key + "/next?" + this.fillQuery(user_query)
-
         return await this.axios_get(url)
     }
 
@@ -131,7 +130,7 @@ export default new class Backend {
         for (const [name, values] of Object.entries(user_query.facets_selection)) {
             if (name != type){
                 if(values.length > 0){
-                    if (name == 'year'){
+                    if (name == 'eventYear' || name == "year"){
                         query += "&" +name + "=" + values.join(",")
                     }
                     else if (name == 'hasRelationWithStatus'){

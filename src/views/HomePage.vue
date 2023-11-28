@@ -134,8 +134,7 @@ export default {
             for (const name of Object.keys(this.user_query.facets_selection)) {
                 if (name in this.$route.query && this.$route.query[name].length > 0){
                     var values = this.$route.query[name].split("|")
-                    // TODO: year
-                    if (name == "year"){
+                    if (name == "eventYear" || name == "year"){
                         values = values.map(str => {
                             return parseInt(str, 10);
                         });

@@ -21,6 +21,8 @@ export default new Vuex.Store({
         occurrence_key: null,
         occurrences_keys: [],
         facets_selection: {
+            'eventYear': [],
+            'year': [],
             'scientificName': [],
             'acceptedScientificName': [],
             'kingdom': [],
@@ -46,7 +48,6 @@ export default new Vuex.Store({
             'citation': [],
             'author': [],
             'date': [],
-            'year': [],
             'journal': [],
             'publisher': [],
             'volume': [],   
@@ -60,6 +61,8 @@ export default new Vuex.Store({
             'hasRelationWithStatus': []
         },
         facets_visibility: {
+            'eventYear': false,
+            'year': false,
             'scientificName': false,
             'acceptedScientificName': false,
             'kingdom': false,
@@ -85,7 +88,6 @@ export default new Vuex.Store({
             'citation': false,
             'author': false,
             'date': false,
-            'year': false,
             'journal': false,
             'publisher': false,
             'volume': false,   
@@ -128,11 +130,12 @@ export default new Vuex.Store({
         ranking: [
             {title: 'identifier', field:'gbifDoi'},
             {title: 'scientific name', field:'scientificName'},
-            {title: 'matching number', field:'-associatedOccurrences'}
-            //{title: 'date', field:'-year'},
+            {title: 'matching number', field:'-associatedOccurrences'},
         ],
         facets: [
             {title: 'Status code', field:'hasRelationWithStatus'},
+            {title: 'Collection date', field:'eventYear'},
+            {title: 'Publication date', field:'year'},
             {title: 'Scientific name', field:'scientificName'},
             {title: 'Accepted scientific name', field:'acceptedScientificName'},
             {title: 'Kingdom', field:'kingdom'},
@@ -157,7 +160,6 @@ export default new Vuex.Store({
             {title: 'Creator', field:'creator'},
             {title: 'Citation', field:'citation'},
             {title: 'Author', field:'author'},
-            //{title: 'Date', field:'date'},
             //{title: 'Year', field:'year'},
             {title: 'Journal', field:'journal'},
             {title: 'Publisher', field:'publisher'},
@@ -176,6 +178,7 @@ export default new Vuex.Store({
         {title: 'Type', field: 'occurrence.typeStatus', selection: true},
         {title: 'Record', field: 'occurrence.basisOfRecord', selection: true},
         {title: 'Year', field: 'occurrence.year', selection: true},
+        {title: 'EventDate', field: 'occurrence.eventDate', selection: true},
         {title: 'nb', field: 'relation_count', selection: true},
         {title: 'Verbatim label', field: 'occurrence.verbatimLabel', selection: false},
         {title: 'Kingdom', field: 'occurrence.kingdom', selection: false},

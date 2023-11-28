@@ -8,19 +8,17 @@
             <PulseLoader v-if="in_progress" :color="theme_color.main" />
 
             <div v-else>
-                <input :ref="facet.field+'_input'" type="text" required v-model.trim="pre_value" placeholder="type to search" v-if="facet.field != 'year' && facet.field != 'hasRelationWithStatus'"/>
-                <hr/>
+                <input :ref="facet.field+'_input'" type="text" required v-model.trim="pre_value" placeholder="type to search" v-if="facet.field != 'eventYear' && facet.field != 'year' && facet.field != 'hasRelationWithStatus'"/>
+                <hr v-if="facet.field != 'eventYear' && facet.field != 'hasRelationWithStatus'" />
                 <div v-if="values.length > 0">
 
-                    <!-- TODO: year -->
-                    <div v-if="facet.field == 'year'">
-                        {{ user_query.facets_selection.year }}
-                        <vue-slider v-model="selected_date" :data="values" :marks="defined_labels"
-                                :tooltip="'always'"></vue-slider>
+                    <div v-if="facet.field == 'eventYear' || facet.field == 'year'">
+                        <br/>
+                        <vue-slider v-model="selected_date" :data="values" :marks="defined_labels" :tooltip="'always'" @change="changeDate(facet.field)"></vue-slider>
+                        <br/>
                     </div>
 
                     <div v-else>
-
                         <div :class="getClass(item)" v-for="item in values"
                             @click="changeFacet(facet.field, $event)" 
                             :key="facet.field+'_'+item.value">
@@ -106,14 +104,9 @@ export default {
         visibility(){
             return this.user_query.facets_visibility[this.facet.field]
         },
-        // TODO: year
         defined_labels: {
             get() {
-                var list = this.values
-                var minDate = Math.min.apply(Math, list)
-                var maxDate = Math.max.apply(Math, list)
-                var marks = [minDate, maxDate]
-                return marks
+                return [Math.min(...this.values), Math.max(...this.values)]
             },
             set(value) {
                 this.value = value
@@ -127,6 +120,7 @@ export default {
             'updatePage',
         ]),       
         loadFacet() {
+            
             
             if (this.facet.field == "hasRelationWithStatus"){
                     this.values = []
@@ -142,8 +136,7 @@ export default {
                 this.values = []
                 if (this.user_query.basisOfRecord != null){
                     var size = this.item_size
-                    // TODO: year
-                    if(this.facet.field == "year"){
+                    if(this.facet.field == "eventYear" || this.facet.field == "year" ){
                         size = 10000
                     }
                     let response_promise = this.$backend.fetch_facet_values(this.facet.field, this.user_query, size, 0)
@@ -180,29 +173,45 @@ export default {
                 this.in_progress = false
             })
         },
+        changeDate(field){
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => {   
+                this.updatePage(1)
+                if (this.selected_date[0] == this.defined_labels[0] && this.selected_date[1] == this.defined_labels[1]){
+                    this.updateFacetSelection(Object.freeze({'facet': field, 'list': [] }))
+                }
+                else {
+                    this.updateFacetSelection(Object.freeze({'facet': field, 'list': this.selected_date }))                   
+                }
+            }, 1000);
+        },
         updateFacetValues(values){
 
-            // TODO: year
-            if (this.facet.field == "year") {
-                var min_value = 100000
-                var max_value = 0
+            if (this.facet.field == "eventYear" || this.facet.field == "year") {
+                var dates = []
                 for (let c=0; c < values.length; c++){
-                    if (values[c].value > max_value){
-                        max_value = values[c].value
-                    }
-                    else if (values[c].value < min_value){
-                        min_value = values[c].value
-                    }
+                    dates.push(values[c].value)
                 }
-                var list = []
-                for (var i = min_value; i <= max_value; i++) {
+                var real_min_date = Math.min(...dates)
+                var min_date = real_min_date
+                var max_date = Math.max(...dates)
+                var list = [];
+                if (real_min_date == 0){
+                    list.push(0)
+                    const index = dates.indexOf("0");
+                    if (index !== -1) {
+                        dates.splice(index, 1);
+                    }
+                    min_date = Math.min(...dates)
+                }
+                for (let i = min_date; i <= max_date; i++) {
                     list.push(i);
                 }
-                if (this.user_query.facets_selection.year.length != 0){
-                    this.selected_date = this.user_query.facets_selection.year
+                if (this.user_query.facets_selection[this.facet.field].length != 0){
+                    this.selected_date = this.user_query.facets_selection[this.facet.field]
                 } 
                 else {
-                    this.selected_date = [min_value, max_value]
+                    this.selected_date = [real_min_date, max_date]
                 }
                 return list 
             }
@@ -281,7 +290,7 @@ export default {
         updateVisibility(val){
             if (val == true){
                 this.$nextTick(() => {
-                    if (this.facet.field != 'year' && this.facet.field != 'hasRelationWithStatus'){
+                    if (this.facet.field != 'eventYear' && this.facet.field != 'year' && this.facet.field != 'hasRelationWithStatus'){
                         this.$refs[this.facet.field+"_input"].focus();
                     }
                 });

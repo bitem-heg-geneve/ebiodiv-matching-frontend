@@ -62,9 +62,20 @@ import { mapState } from 'vuex'
       active_filters(){
           var active_filters = []
           for (const [key, list] of Object.entries(this.facets)) {
-              // TODO: year
-              if (key == "year"){
-                // TO DO: check for year filter
+              if (key == "eventYear" || key == "year"){
+                if (list.length > 0){
+                  let item = {}
+                  var name = ""
+                  if (key == "eventYear"){
+                    name = "coll."
+                  }
+                  else if (key == "year"){
+                    name = "pub."
+                  }
+                  item.name = name+" from "+list[0]+" to "+list[1]
+                  item.type = key
+                  active_filters.push(item)
+                }
               }
               else {
                   for (var i=0; i<list.length; i++){
@@ -87,7 +98,10 @@ import { mapState } from 'vuex'
     },
     methods:{
       removeFilter(facet_name, value){
-        if (facet_name != "keyword"){
+        if (facet_name == "eventYear" || facet_name == "year"){
+          this.updateFacetSelection({'facet': facet_name, 'list': [] })
+        }
+        else if (facet_name != "keyword"){
           var filter_list = this.facets[facet_name];
           for (var i = 0; i < filter_list.length; i++) {
               if (filter_list[i] == value) {
@@ -107,11 +121,11 @@ import { mapState } from 'vuex'
           this.updateQuery("")
       },
       shortIt(term){
-        if (term.length < 20){
+        if (term.length < 30){
           return term
         }
         else {
-          return term.replace(/^([\s\S]{20}\S*)[\s\S]*/, "$1 [...]");
+          return term.replace(/^([\s\S]{30}\S*)[\s\S]*/, "$1 [...]");
         }
       }
     },
