@@ -179,7 +179,7 @@ export default new Vuex.Store({
         {title: 'Record', field: 'occurrence.basisOfRecord', selection: true, sortable: false},
         {title: 'Publication year', field: 'occurrence.year', selection: true, sortable: false},
         {title: 'Collection date', field: 'occurrence.eventDate', selection: true, sortable: true},
-        {title: 'nb', field: 'relation_count', selection: true, sortable: false},
+        {title: 'nb', field: 'relation_count', selection: true, sortable: true, ranking: "associatedOccurrences"},
         {title: 'Verbatim label', field: 'occurrence.verbatimLabel', selection: false, sortable: false},
         {title: 'Kingdom', field: 'occurrence.kingdom', selection: false, sortable: true},
         {title: 'Phylum', field: 'occurrence.phylum', selection: false, sortable: true},
