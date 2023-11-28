@@ -79,13 +79,15 @@
                                                 </div>
                                             </th>
                                             <th v-for="field in fields_to_display" :key="'display_'+field.field">
-                                                <span v-if="field.title == 'nb'">{{ get_curation_name }}</span>
-                                                {{ field.title }}
-                                                <template v-if="field.sortable">
-                                                    <img v-if="!isRanking(field.field, 'asc')" :src="require('../assets/images/icon_sortasc.png')" class="extramini" @click="sortBy(field.field, 'asc')"/>
-                                                    <img v-if="isRanking(field.field, 'asc')" :src="require('../assets/images/icon_sortascsel.png')" class="extramini"/>
-                                                    <img v-if="!isRanking(field.field, 'dsc')" :src="require('../assets/images/icon_sortdsc.png')" class="extramini" @click="sortBy(field.field, 'dsc')"/>
-                                                    <img v-if="isRanking(field.field, 'dsc')" :src="require('../assets/images/icon_sortdscsel.png')" class="extramini"/>
+                                                <template v-if="user_query.basisOfRecord =='MATERIAL_CITATION' || field.field != 'occurrence.year'">
+                                                    <span v-if="field.title == 'nb'">{{ get_curation_name }}</span>
+                                                    {{ field.title }}
+                                                    <template v-if="field.sortable">
+                                                        <img v-if="!isRanking(field.field, 'asc')" :src="require('../assets/images/icon_sortasc.png')" class="extramini" @click="sortBy(field.field, 'asc')"/>
+                                                        <img v-if="isRanking(field.field, 'asc')" :src="require('../assets/images/icon_sortascsel.png')" class="extramini"/>
+                                                        <img v-if="!isRanking(field.field, 'dsc')" :src="require('../assets/images/icon_sortdsc.png')" class="extramini" @click="sortBy(field.field, 'dsc')"/>
+                                                        <img v-if="isRanking(field.field, 'dsc')" :src="require('../assets/images/icon_sortdscsel.png')" class="extramini"/>
+                                                    </template>
                                                 </template>
                                             </th>
                                             <th>Status</th>

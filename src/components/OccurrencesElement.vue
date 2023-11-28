@@ -4,8 +4,11 @@
         <td class="space">
           <a :href="'https://www.gbif.org/occurrence/'+occurrence['key']" target="_blank">{{ occurrence.key }}</a>
         </td>
-        <td v-for="field in fields_to_display" :key="field.title">{{ getValue(field.field) }}
-          <img v-if="field.field=='comment_count' && comment_count" src="../assets/images/icon_comment.png"  class="mini"/>
+        <td v-for="field in fields_to_display" :key="field.title">
+          <template v-if="user_query.basisOfRecord=='MATERIAL_CITATION' || field.field != 'occurrence.year'">
+            {{ getValue(field.field) }}
+            <img v-if="field.field=='comment_count' && comment_count" src="../assets/images/icon_comment.png"  class="mini"/>
+          </template>
         </td>   
         <td>
           <div class="progress-status">&nbsp;
