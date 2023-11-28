@@ -147,6 +147,15 @@ import shared_fields from '@/components/shared_fields.js'
           this.$gtag.event('displayOccurrence');
        },
        getValue(variable){
+          if (variable == "occurrence.eventDate"){
+            var content = eval("this."+variable)
+            if (content != null){
+              return content.slice(0, 10);
+            }
+            else{
+              return ""
+            }
+          }
           if (variable == "occurrence.typeStatus"){
             return (this.display_value_typeStatus(eval("this."+variable)))
           }

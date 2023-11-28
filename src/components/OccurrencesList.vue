@@ -48,6 +48,12 @@
                                                     <img :src="require('../assets/images/icon_more.png')" class="mini" />
                                                 </button> 
                                                 {{ get_occurrence_name }} ID
+                                                <template>
+                                                    <img v-if="!isRanking('gbifDoi', 'dsc')" :src="require('../assets/images/icon_sortdsc.png')" class="extramini" @click="sortBy('gbifDoi', 'dsc')"/>
+                                                    <img v-if="isRanking('gbifDoi', 'dsc')" :src="require('../assets/images/icon_sortdscsel.png')" class="extramini"/>
+                                                    <img v-if="!isRanking('gbifDoi', 'asc')" :src="require('../assets/images/icon_sortasc.png')" class="extramini" @click="sortBy('gbifDoi', 'asc')"/>
+                                                    <img v-if="isRanking('gbifDoi', 'asc')" :src="require('../assets/images/icon_sortascsel.png')" class="extramini"/>
+                                                </template>
                                             
                                                 <div :class="fields_popup" :style="{ top: modalTop + 'px', left: modalLeft + 'px', zIndex: modalZIndex }">
 
@@ -75,6 +81,12 @@
                                             <th v-for="field in fields_to_display" :key="'display_'+field.field">
                                                 <span v-if="field.title == 'nb'">{{ get_curation_name }}</span>
                                                 {{ field.title }}
+                                                <template v-if="field.sortable">
+                                                    <img v-if="!isRanking(field.field, 'dsc')" :src="require('../assets/images/icon_sortdsc.png')" class="extramini" @click="sortBy(field.field, 'dsc')"/>
+                                                    <img v-if="isRanking(field.field, 'dsc')" :src="require('../assets/images/icon_sortdscsel.png')" class="extramini"/>
+                                                    <img v-if="!isRanking(field.field, 'asc')" :src="require('../assets/images/icon_sortasc.png')" class="extramini" @click="sortBy(field.field, 'asc')"/>
+                                                    <img v-if="isRanking(field.field, 'asc')" :src="require('../assets/images/icon_sortascsel.png')" class="extramini"/>
+                                                </template>
                                             </th>
                                             <th>Status</th>
                                             <th></th>
@@ -199,6 +211,7 @@ export default {
         fields_popup(){
             return "fields-popup "+this.popup_visibility
         },
+        
     },
     methods: {
         ...mapActions([
@@ -316,6 +329,24 @@ export default {
             }
             this.updateOccurrenceCharacteristics(fields)
         },
+        getRankingValue(field, order){
+            var value = ""
+            if (order == "dsc"){
+                value = "-"
+            }
+            value += field.replace("occurrence.", "")
+            return value
+        },
+        sortBy(field, order){
+            var value = this.getRankingValue(field, order)
+            this.updateRanking(value)
+        },
+        isRanking(field, order){
+            if (this.getRankingValue(field, order) == this.user_query.ranking){
+                return true
+            }
+            return false
+        }
     },
     watch: {
         "user_query.page": function () {
@@ -447,6 +478,10 @@ th {
 
 .mini {
     width: 13px;
+    cursor: pointer;
+}
+.extramini {
+    width: 8px;
     cursor: pointer;
 }
 

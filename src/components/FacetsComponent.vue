@@ -19,8 +19,6 @@
 
         </div>
 
-        <SortDropdown  :updateSort="this.updateRanking" :options="filters.ranking" :selected="user_query.ranking"/>
-
         <h2>Filters</h2>
 
         <div v-for="facet in this.filters.facets" :key="facet.name">
@@ -36,13 +34,11 @@
 import { mapState } from 'vuex'
 import FacetElement from '@/components/FacetElement.vue'
 import '../assets/css/ebiodiv.css'
-import SortDropdown from '@/components/SortDropdown.vue'
 
 export default {
     name: 'FacetsComponent',
     components: {
         FacetElement,
-        SortDropdown
     },
     props: {
         item_size: {
