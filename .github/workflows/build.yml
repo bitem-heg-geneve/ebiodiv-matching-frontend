@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu
     strategy:
       matrix:
         include:
@@ -20,10 +20,10 @@ jobs:
             branch: "dist-sandbox"
             npmrunparam: "buildsandbox"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v6
       with:
         node-version: '14'
         cache: 'npm'
@@ -48,7 +48,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   deploy:
     name: Deploy on staging
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu
     if: github.ref == 'refs/heads/master'
     needs:
       - build
@@ -56,10 +56,9 @@ jobs:
       - name: Deploy on staging
         # CURL options:
         # -f : GitHub workflow fail if the HTTP status code is not 200
-        # see API on https://infra.text-analytics.ch/api/webstatic/
-        # $GITHUB_REPOSITORY is replaced by the repository name, for example bitem-heg-geneve/ebiodiv-matching-frontend
+        # Endpoint: update_from_git service on webstatic
         run: |
-          curl -f -X 'POST' "https://infra.text-analytics.ch/api/webstatic/deploy/github.com/${{ github.repository }}/dist-sandbox" \
+          curl -f -X 'POST' "https://deploy.text-analytics.ch/deploy/github.com/${{ github.repository }}/dist-sandbox" \
                -H 'accept: application/json' \
                -H 'Content-Type: application/x-www-form-urlencoded' \
                -d 'secret_key=${{secrets.SECRET_KEY}}'
